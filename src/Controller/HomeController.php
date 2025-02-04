@@ -15,11 +15,13 @@ final class HomeController extends AbstractController{
         ]);
     }
 
-    #[Route('/login', name: 'app_login')]
-    public function login(): Response
+    #[Route('/auth', name: 'app_auth')]
+    public function auth(): Response
     {
-        return $this->render('login/login.html.twig', [
+        return $this->render('auth/auth.html.twig', [
             'controller_name' => 'HomeController',
         ]);
     }
+
+
 }
