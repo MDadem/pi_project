@@ -40,4 +40,15 @@ class CommunityRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+
+public function findAllWithMemberCount(): array
+{
+    return $this->createQueryBuilder('c')
+        ->select('c, COUNT(cm.id) AS memberCount')
+        ->leftJoin('c.communityMembers', 'cm')
+        ->groupBy('c.id')
+        ->getQuery()
+        ->getResult();
+}
 }

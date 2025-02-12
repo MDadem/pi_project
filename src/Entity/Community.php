@@ -2,7 +2,10 @@
 
 namespace App\Entity;
 
+use App\Enums\CategoryGrp;
 use App\Repository\CommunityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -25,6 +28,20 @@ class Community
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $creationDate = null;
+
+    /**
+     * @var Collection<int, CommunityMembers>
+     */
+    #[ORM\OneToMany(targetEntity: CommunityMembers::class, mappedBy: 'community')]
+    private Collection $communityMembers;
+
+    #[ORM\Column(enumType: CategoryGrp::class)]
+    private ?CategoryGrp $category = null;
+
+    public function __construct()
+    {
+        $this->communityMembers = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -75,6 +92,48 @@ class Community
     public function setCreationDate(\DateTimeInterface $creationDate): static
     {
         $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommunityMembers>
+     */
+    public function getCommunityMembers(): Collection
+    {
+        return $this->communityMembers;
+    }
+
+    public function addCommunityMember(CommunityMembers $communityMember): static
+    {
+        if (!$this->communityMembers->contains($communityMember)) {
+            $this->communityMembers->add($communityMember);
+            $communityMember->setCommunity($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommunityMember(CommunityMembers $communityMember): static
+    {
+        if ($this->communityMembers->removeElement($communityMember)) {
+            // set the owning side to null (unless already changed)
+            if ($communityMember->getCommunity() === $this) {
+                $communityMember->setCommunity(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCategory(): ?CategoryGrp
+    {
+        return $this->category;
+    }
+
+    public function setCategory(CategoryGrp $category): static
+    {
+        $this->category = $category;
 
         return $this;
     }

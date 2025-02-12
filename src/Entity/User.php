@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -28,6 +30,17 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $profileIMG = null;
+
+    /**
+     * @var Collection<int, CommunityMembers>
+     */
+    #[ORM\OneToMany(targetEntity: CommunityMembers::class, mappedBy: 'user')]
+    private Collection $communityMembers;
+
+    public function __construct()
+    {
+        $this->communityMembers = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -90,6 +103,36 @@ class User
     public function setProfileIMG(string $profileIMG): static
     {
         $this->profileIMG = $profileIMG;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommunityMembers>
+     */
+    public function getCommunityMembers(): Collection
+    {
+        return $this->communityMembers;
+    }
+
+    public function addCommunityMember(CommunityMembers $communityMember): static
+    {
+        if (!$this->communityMembers->contains($communityMember)) {
+            $this->communityMembers->add($communityMember);
+            $communityMember->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommunityMember(CommunityMembers $communityMember): static
+    {
+        if ($this->communityMembers->removeElement($communityMember)) {
+            // set the owning side to null (unless already changed)
+            if ($communityMember->getUser() === $this) {
+                $communityMember->setUser(null);
+            }
+        }
 
         return $this;
     }
