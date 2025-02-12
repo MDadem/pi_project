@@ -1,0 +1,101 @@
+<div class="container-fluid footer py-5 wow fadeIn" data-wow-delay="0.2s">
+    <div class="container py-5 border-start-0 border-end-0" style="border: 1px solid; border-color: rgba(255, 255, 255, 0.08);">
+        <div class="row g-5">
+            <!-- Company Info -->
+            <div class="col-md-6 col-lg-6 col-xl-4">
+                <div class="footer-item">
+                    <a href="{{ path('app_home') }}" class="p-0">
+                        <h4 class="text-white"><i class="fas fa-search-dollar me-3"></i>Stocker</h4>
+                    </a>
+                    <p class="mb-4">Providing the best solutions for stock management and finance tracking.</p>
+                    <div class="d-flex">
+                        <a href="#" class="bg-primary d-flex rounded align-items-center py-2 px-3 me-2">
+                            <i class="fas fa-apple-alt text-white"></i>
+                            <div class="ms-3">
+                                <small class="text-white">Download on the</small>
+                                <h6 class="text-white">App Store</h6>
+                            </div>
+                        </a>
+                        <a href="#" class="bg-dark d-flex rounded align-items-center py-2 px-3 ms-2">
+                            <i class="fas fa-play text-primary"></i>
+                            <div class="ms-3">
+                                <small class="text-white">Get it on</small>
+                                <h6 class="text-white">Google Play</h6>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-md-6 col-lg-6 col-xl-2">
+                <div class="footer-item">
+                    <h4 class="text-white mb-4">Quick Links</h4>
+                    {% set quick_links = [
+                        { 'name': 'About Us', 'route': 'app_home' },
+                        { 'name': 'Feature', 'route': 'app_home' },
+                        { 'name': 'Attractions', 'route': 'app_home' },
+                        { 'name': 'Tickets', 'route': 'app_home' },
+                        { 'name': 'Blog', 'route': 'app_home' },
+                        { 'name': 'Contact Us', 'route': 'app_home' }
+                    ] %}
+                    {% for link in quick_links %}
+                        <a href="{{ path(link.route) }}"><i class="fas fa-angle-right me-2"></i> {{ link.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div class="col-md-6 col-lg-6 col-xl-3">
+                <div class="footer-item">
+                    <h4 class="text-white mb-4">Support</h4>
+                    {% set support_links = [
+                        { 'name': 'Privacy Policy', 'route': 'app_home' },
+                        { 'name': 'Terms & Conditions', 'route': 'app_home' },
+                        { 'name': 'Disclaimer', 'route': 'app_home' },
+                        { 'name': 'Support', 'route': 'app_home' },
+                        { 'name': 'FAQ', 'route': 'app_home' },
+                        { 'name': 'Help', 'route': 'app_home' }
+                    ] %}
+                    {% for link in support_links %}
+                        <a href="{{ path(link.route) }}"><i class="fas fa-angle-right me-2"></i> {{ link.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="col-md-6 col-lg-6 col-xl-3">
+                <div class="footer-item">
+                    <h4 class="text-white mb-4">Contact Info</h4>
+                    {% set contact_info = [
+                        { 'icon': 'map-marker-alt', 'text': '123 Street, New York, USA' },
+                        { 'icon': 'envelope', 'text': 'info@example.com' },
+                        { 'icon': 'phone-alt', 'text': '(+012) 3456 7890' },
+                        { 'icon': 'firefox-browser', 'text': 'Yoursite@ex.com' }
+                    ] %}
+                    {% for info in contact_info %}
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-{{ info.icon }} text-primary me-3"></i>
+                            <p class="text-white mb-0">{{ info.text }}</p>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Social Media -->
+                    <div class="d-flex mt-3">
+                        {% set social_links = [
+                            { 'platform': 'facebook-f', 'url': '#' },
+                            { 'platform': 'twitter', 'url': '#' },
+                            { 'platform': 'instagram', 'url': '#' },
+                            { 'platform': 'linkedin-in', 'url': '#' }
+                        ] %}
+                        {% for social in social_links %}
+                            <a class="btn btn-primary btn-sm-square rounded-circle me-3" href="{{ social.url }}">
+                                <i class="fab fa-{{ social.platform }} text-white"></i>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+<div class="container-fluid blog pb-5">
+    <div class="container pb-5">
+        <div class="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s" style="max-width: 800px;">
+            <h4 class="text-primary">Our Blog & News</h4>
+            <h1 class="display-5 mb-4">Articles For Pro Traders</h1>
+            <p class="mb-0">
+                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur adipisci facilis cupiditate recusandae aperiam temporibus corporis itaque quis facere, numquam, ad culpa deserunt sint dolorem autem obcaecati, ipsam mollitia hic.
+            </p>
+        </div>
+
+        {% set blogs = [
+            {'image': 'service-1.jpg', 'category': 'Dividend Stocks', 'title': 'Options Trading Business?', 'excerpt': 'Lorem, ipsum dolor sit amet consectetur...', 'author_img': 'testimonial-1.jpg', 'author': 'Admin', 'date': 'October 9, 2025'},
+            {'image': 'service-2.jpg', 'category': 'Non-Dividend Stocks', 'title': 'Options Trading Business?', 'excerpt': 'Lorem, ipsum dolor sit amet consectetur...', 'author_img': 'testimonial-2.jpg', 'author': 'Admin', 'date': 'October 9, 2025'},
+            {'image': 'service-3.jpg', 'category': 'Dividend Stocks', 'title': 'Options Trading Business?', 'excerpt': 'Lorem, ipsum dolor sit amet consectetur...', 'author_img': 'testimonial-3.jpg', 'author': 'Admin', 'date': 'October 9, 2025'},
+            {'image': 'service-4.jpg', 'category': 'Non-Dividend Stocks', 'title': 'Options Trading Business?', 'excerpt': 'Lorem, ipsum dolor sit amet consectetur...', 'author_img': 'testimonial-1.jpg', 'author': 'Admin', 'date': 'October 9, 2025'}
+        ] %}
+
+        <div class="owl-carousel blog-carousel wow fadeInUp" data-wow-delay="0.2s">
+            {% for blog in blogs %}
+                <div class="blog-item p-4">
+                    <div class="blog-img mb-4">
+                        <img src="{{ asset('img/' ~ blog.image) }}" class="img-fluid w-100 rounded" alt="{{ blog.category }}">
+                        <div class="blog-title">
+                            <a href="#" class="btn">{{ blog.category }}</a>
+                        </div>
+                    </div>
+                    <a href="#" class="h4 d-inline-block mb-3">{{ blog.title }}</a>
+                    <p class="mb-4">{{ blog.excerpt }}</p>
+                    <div class="d-flex align-items-center">
+                        <img src="{{ asset('img/' ~ blog.author_img) }}" class="img-fluid rounded-circle" style="width: 60px; height: 60px;" alt="{{ blog.author }}">
+                        <div class="ms-3">
+                            <h5>{{ blog.author }}</h5>
+                            <p class="mb-0">{{ blog.date }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
