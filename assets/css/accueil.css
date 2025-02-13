@@ -1,0 +1,20 @@
+/* Personnalisation de la sidebar */
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.nav-link {
+    color: #007bff;
+}
+
+.nav-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Personnalisation du contenu central */
+.col-lg-6 {
+    background-color: #ffffff;
+    border-left: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+}
