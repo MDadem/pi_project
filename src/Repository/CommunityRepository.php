@@ -51,4 +51,18 @@ public function findAllWithMemberCount(): array
         ->getQuery()
         ->getResult();
 }
+
+// src/Repository/CommunityRepository.php
+public function findCommunityWithMembers(int $id): ?Community
+{
+    return $this->createQueryBuilder('c')
+        ->leftJoin('c.communityMembers', 'cm')
+        ->leftJoin('cm.user', 'u')
+        ->addSelect('cm', 'u')
+        ->where('c.id = :id')
+        ->setParameter('id', $id)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+
 }
