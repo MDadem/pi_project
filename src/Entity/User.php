@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum\Role;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -20,16 +21,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'First name cannot be blank')]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Last name cannot be blank')]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Email cannot be blank')]
+    #[Assert\Email(message: 'Invalid email format')]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $pwd = null;
+//    #[Assert\NotBlank(message: 'Password cannot be blank')]
+//    #[Assert\Length(min: 8, minMessage: 'Password must be at least 8 characters long')]
+//    #[Assert\Regex(
+//        pattern: '/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/',
+//        message: 'Password must contain at least one uppercase letter, one digit, and one special character'
+//    )]
+    private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profileIMG = null;
@@ -74,14 +85,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPwd(): ?string
+    public function getPassword(): ?string
     {
-        return $this->pwd;
+        return $this->password;
     }
 
-    public function setPwd(string $pwd): static
+    public function setPassword(?string $password): static
     {
-        $this->pwd = $pwd;
+        $this->password = $password;
 
         return $this;
     }
@@ -119,11 +130,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials()
     {
         // TODO: Implement eraseCredentials() method.
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->pwd;
     }
 
     public function getUserIdentifier(): string

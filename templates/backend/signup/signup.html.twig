@@ -21,10 +21,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
-    <!-- Libraries Stylesheet -->
-    <link rel="stylesheet" href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}">
-
     <!-- Customized Bootstrap Stylesheet -->
     <link rel="stylesheet" href="{{ asset('css/bootstrap-backoffice.min.css') }}">
 
@@ -34,15 +30,6 @@
 
 <body>
 <div class="container-fluid position-relative bg-white d-flex p-0">
-    <!-- Spinner Start -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-    <!-- Spinner End -->
-
-    <!-- Sign Up Start -->
     <div class="container-fluid">
         <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
             <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
@@ -56,82 +43,49 @@
 
                     {# Display flash messages #}
                     {% for message in app.flashes('error') %}
-                        <div class="alert alert-danger">
-                            {{ message }}
-                        </div>
+                        <div class="alert alert-danger">{{ message }}</div>
                     {% endfor %}
 
                     {% for message in app.flashes('success') %}
-                        <div class="alert alert-success">
-                            {{ message }}
-                        </div>
+                        <div class="alert alert-success">{{ message }}</div>
                     {% endfor %}
-
-                    {# Display form errors #}
-                    {{ form_errors(registrationForm) }}
 
                     {# Start the form #}
                     {{ form_start(registrationForm, {'attr': {'class': 'form'}}) }}
 
                     {# First Name Field #}
                     <div class="form-floating mb-3">
-                        {{ form_widget(registrationForm.firstName, {
-                            'attr': {
-                                'class': 'form-control',
-                                'id': 'floatingFirstName',
-                                'placeholder': 'First Name'
-                            }
-                        }) }}
-                        <label for="floatingFirstName">First Name</label>
+                        {{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control', 'placeholder': 'First Name'}}) }}
+                        <label>First Name</label>
+                        {{ form_errors(registrationForm.firstName) }}
                     </div>
 
                     {# Last Name Field #}
                     <div class="form-floating mb-3">
-                        {{ form_widget(registrationForm.lastName, {
-                            'attr': {
-                                'class': 'form-control',
-                                'id': 'floatingLastName',
-                                'placeholder': 'Last Name'
-                            }
-                        }) }}
-                        <label for="floatingLastName">Last Name</label>
+                        {{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control', 'placeholder': 'Last Name'}}) }}
+                        <label>Last Name</label>
+                        {{ form_errors(registrationForm.lastName) }}
                     </div>
 
                     {# Email Field #}
                     <div class="form-floating mb-3">
-                        {{ form_widget(registrationForm.email, {
-                            'attr': {
-                                'class': 'form-control',
-                                'id': 'floatingEmail',
-                                'placeholder': 'Email'
-                            }
-                        }) }}
-                        <label for="floatingEmail">Email address</label>
+                        {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Email'}}) }}
+                        <label>Email address</label>
+                        {{ form_errors(registrationForm.email) }}
                     </div>
 
                     {# Password Field #}
                     <div class="form-floating mb-4">
-                        {{ form_widget(registrationForm.plainPassword, {
-                            'attr': {
-                                'class': 'form-control',
-                                'id': 'floatingPassword',
-                                'placeholder': 'Password'
-                            }
-                        }) }}
-                        <label for="floatingPassword">Password</label>
+                        {{ form_widget(registrationForm.password, {'attr': {'class': 'form-control', 'placeholder': 'Password'}}) }}
+                        <label>Password</label>
+                        {{ form_errors(registrationForm.password) }}
                     </div>
 
                     {# Agree Terms Field #}
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <div class="form-check">
-                            {{ form_widget(registrationForm.agreeTerms, {
-                                'attr': {
-                                    'class': 'form-check-input',
-                                    'id': 'agreeTerms'
-                                }
-                            }) }}
-                            <label class="form-check-label" for="agreeTerms">I agree to the terms</label>
-                        </div>
+                    <div class="form-check mb-4">
+                        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                        <label class="form-check-label">I agree to the terms</label>
+                        {{ form_errors(registrationForm.agreeTerms) }}
                     </div>
 
                     {# Submit Button #}
@@ -145,14 +99,11 @@
             </div>
         </div>
     </div>
-    <!-- Sign Up End -->
 </div>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" defer></script>
-<!-- Template Javascript -->
 <script src="{{ asset('js/main.js') }}" defer></script>
 </body>
-
 </html>

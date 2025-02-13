@@ -5,12 +5,18 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Enum\Role;
 use App\Form\RegistrationFormType;
+use App\Service\SendMailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Mime\Address;
 
 class RegistrationController extends AbstractController
 {
@@ -18,11 +24,14 @@ class RegistrationController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+        UrlGeneratorInterface $urlGenerator,
+        SendMailService $mail,
     ): Response {
         // Redirect logged-in users to another page
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_dashboard'); // Change 'home' to your main route
+            return $this->redirectToRoute('app_dashboard');
         }
 
         $user = new User();
@@ -30,25 +39,21 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Check if an admin with the same firstName, lastName, and email already exists
+            // Check if an admin already exists (using a correct role check)
             $existingAdmin = $entityManager->getRepository(User::class)->findOneBy([
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
                 'email' => $user->getEmail(),
-                'roles' => [Role::Admin->value], // Ensure the existing user has the ROLE_ADMIN role
             ]);
 
-            if ($existingAdmin) {
-                // Display a danger flash message and redirect back to the registration form
-                $this->addFlash('error', 'Admin Already Exists');
+            if ($existingAdmin && in_array(Role::Admin->value, $existingAdmin->getRoles())) {
+                $this->addFlash('error', 'An admin with this email already exists.');
                 return $this->redirectToRoute('app_dashboard_signup');
             }
 
-            // Hash the plain password
-            $user->setPwd(
+            // Hash the password
+            $user->setPassword(
                 $passwordHasher->hashPassword(
                     $user,
-                    $form->get('plainPassword')->getData()
+                    $form->get('password')->getData()
                 )
             );
 
@@ -59,8 +64,30 @@ class RegistrationController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // Display a success flash message and redirect to the login page
-            $this->addFlash('success', 'Admin Added Successfully');
+            // Generate the login URL
+            $loginUrl = $urlGenerator->generate('app_dashboard_signin', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            // Send the confirmation email
+            $email = (new Email())
+                ->from(new Address('no-reply@culturespace.com', 'CultureSpace'))
+                ->to($user->getEmail())
+                ->subject('Welcome to Our Platform!')
+                ->html($this->renderView('emails/signup_confirmation.html.twig', [
+                    'user' => $user,
+                    'login_url' => $loginUrl,
+                ]));
+
+            try {
+                $mailer->send($email);
+                $this->addFlash('success', 'Admin added successfully. A confirmation email has been sent.');
+            } catch (\Exception $e) {
+                $this->addFlash('warning', 'Admin added successfully, but the confirmation email could not be sent.');
+            } catch (TransportExceptionInterface $e) {
+                // Log the error or display a message
+                $this->addFlash('error', 'Failed to send the confirmation email. Please try again later.');
+            }
+
+            // Redirect to the dashboard
             return $this->redirectToRoute('app_dashboard');
         }
 

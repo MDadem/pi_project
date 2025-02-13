@@ -908,5 +908,9 @@
     background: var(--bs-dark);
 }
 /*** copyright end ***/
+.text-danger {
+    font-size: 14px;
+    margin-top: 5px;
+}
 
 
