@@ -44,10 +44,10 @@ class RegistrationController extends AbstractController
                 'email' => $user->getEmail(),
             ]);
 
-            if ($existingAdmin && in_array(Role::Admin->value, $existingAdmin->getRoles())) {
-                $this->addFlash('error', 'An admin with this email already exists.');
-                return $this->redirectToRoute('app_dashboard_signup');
-            }
+//            if ($existingAdmin && in_array(Role::Admin->value, $existingAdmin->getRoles())) {
+//                $this->addFlash('error', 'An admin with this email already exists.');
+//                return $this->redirectToRoute('app_dashboard_signup');
+//            }
 
             // Hash the password
             $user->setPassword(
@@ -58,8 +58,7 @@ class RegistrationController extends AbstractController
             );
 
             // Assign the ROLE_ADMIN role to the user
-            $user->setRoles([Role::Admin->value]);
-
+            $user->setRoles([Role::Student->value]);
             // Save the user
             $entityManager->persist($user);
             $entityManager->flush();
