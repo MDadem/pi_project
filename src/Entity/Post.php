@@ -29,6 +29,9 @@ class Post
     #[ORM\Column]
     private ?int $likes = null;
 
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    private ?Community $community = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -90,6 +93,18 @@ class Post
     public function setLikes(int $likes): static
     {
         $this->likes = $likes;
+
+        return $this;
+    }
+
+    public function getCommunity(): ?Community
+    {
+        return $this->community;
+    }
+
+    public function setCommunity(?Community $community): static
+    {
+        $this->community = $community;
 
         return $this;
     }

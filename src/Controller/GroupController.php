@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enums\CategoryGrp;
 use App\Form\GroupType;
 use App\Repository\CommunityRepository;
+use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -231,5 +232,21 @@ final class GroupController extends AbstractController
         return $this->redirectToRoute('app_groupList');
     }
     
+
+    #[Route('/accueil/group-list/{id}', name: 'joined_community')]
+public function getUserCommunities(int $id, CommunityRepository $communityRepository, UserRepository $userRepository): Response
+{
+    $user = $userRepository->find($id);
+
+    if (!$user) {
+        throw $this->createNotFoundException('Utilisateur non trouvé');
+    }
+
+    $communities = $communityRepository->findByUserParticipation($user);
+
+    return $this->render('accueil/user-community.html.twig', [
+        'communities' => $communities,
+    ]);
+}
     }
     

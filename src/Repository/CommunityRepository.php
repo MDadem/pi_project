@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Community;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\User;
 
 /**
  * @extends ServiceEntityRepository<Community>
@@ -63,6 +64,16 @@ public function findCommunityWithMembers(int $id): ?Community
         ->setParameter('id', $id)
         ->getQuery()
         ->getOneOrNullResult();
+}
+
+public function findByUserParticipation(User $user): array
+{
+    return $this->createQueryBuilder('c')
+        ->innerJoin('c.communityMembers', 'cm')
+        ->where('cm.user = :user')
+        ->setParameter('user', $user)
+        ->getQuery()
+        ->getResult();
 }
 
 }
