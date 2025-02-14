@@ -121,10 +121,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // Guarantee every user at least has ROLE_Student
-        $roles[] = Role::Student->value;
-        return array_unique($roles);
+        // Ensure roles are correctly retrieved
+        return array_unique($this->roles);
     }
 
     public function setRoles(array $roles): self

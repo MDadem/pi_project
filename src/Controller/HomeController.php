@@ -64,10 +64,10 @@ final class HomeController extends AbstractController{
         ]);
     }
 
-    #[Route('/dashboard/update', name: 'app_dashboard_update')]
-    public function update_ad(): Response
+        #[Route('/dashboard/users', name: 'app_dashboard_users')]
+    public function users(): Response
     {
-        return $this->render('backend/user/update_profile.html.twig', [
+        return $this->render('backend/user/users.html.twig', [
             'controller_name' => 'HomeController',
         ]);
     }

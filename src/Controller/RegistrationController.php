@@ -58,7 +58,7 @@ class RegistrationController extends AbstractController
             );
 
             // Assign the ROLE_ADMIN role to the user
-            $user->setRoles([Role::Student->value]);
+            $user->setRoles([Role::Admin->value]);
             // Save the user
             $entityManager->persist($user);
             $entityManager->flush();
