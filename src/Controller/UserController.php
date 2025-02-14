@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\UserType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -199,6 +200,49 @@ final class UserController extends AbstractController {
 
         $this->addFlash('success', 'User deleted successfully!');
         return $this->redirectToRoute('app_dashboard_users');
+    }
+
+
+
+    #[Route('/dashboard/update-user', name: 'app_update_user', methods: ['POST'])]
+    public function updateUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Decode JSON request
+        $data = json_decode($request->getContent(), true);
+
+        // Validate input data
+        if (!$data || !isset($data['id'], $data['firstName'], $data['lastName'], $data['email'], $data['roles'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid data received'], 400);
+        }
+
+        // Find user by ID
+        $user = $entityManager->getRepository(User::class)->find($data['id']);
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
+        }
+
+        // Validate email format
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid email format'], 400);
+        }
+
+        // Ensure roles are formatted correctly
+        if (!is_array($data['roles'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid roles format'], 400);
+        }
+
+        // Update user fields
+        $user->setFirstName(trim($data['firstName']));
+        $user->setLastName(trim($data['lastName']));
+        $user->setEmail(trim($data['email']));
+        $user->setRoles($data['roles']); // Expecting an array of roles
+
+        try {
+            $entityManager->flush();
+            return new JsonResponse(['status' => 'success', 'message' => 'User updated successfully']);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Database update failed'], 500);
+        }
     }
 
 }

@@ -94,4 +94,28 @@ class RegistrationController extends AbstractController
             'registrationForm' => $form->createView(),
         ]);
     }
+
+
+    #[Route('/dashboard/update-user/{id}', name: 'app_dashboard_update_user', methods: ['POST'])]
+    public function updateUser(Request $request, EntityManagerInterface $entityManager, $id): Response
+    {
+        // Find the user by ID
+        $user = $entityManager->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            return $this->json(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Update user details
+        $user->setFirstName($request->request->get('name'));
+        $user->setEmail($request->request->get('email'));
+        $user->setAddress($request->request->get('address'));
+        $user->setPhone($request->request->get('phone'));
+
+        // Persist changes to the database
+        $entityManager->flush();
+
+        // Return success response
+        return $this->json(['success' => 'User updated successfully']);
+    }
 }
