@@ -245,4 +245,45 @@ final class UserController extends AbstractController {
         }
     }
 
+
+
+    #[Route('/dashboard/admin/user-add', name: 'app_add_user', methods: ['POST'])]
+    public function addUser(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+        // Decode JSON request
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data) {
+            return new JsonResponse(['message' => 'Invalid JSON data'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Validate required fields
+        if (empty($data['firstName']) || empty($data['lastName']) || empty($data['email']) || empty($data['roles'])) {
+            return new JsonResponse(['message' => 'Missing required fields'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Check if user already exists
+        $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+        if ($existingUser) {
+            return new JsonResponse(['message' => 'Email already exists'], JsonResponse::HTTP_CONFLICT);
+        }
+
+        // Create new user
+        $user = new User();
+        $user->setFirstName($data['firstName']);
+        $user->setLastName($data['lastName']);
+        $user->setEmail($data['email']);
+        $user->setRoles($data['roles']); // Ensure roles are passed as an array
+
+        // Set a default password (CHANGE THIS IN REAL USE)
+        $defaultPassword = 'default123'; // Use a generated password or require user input
+        $hashedPassword = $passwordHasher->hashPassword($user, $defaultPassword);
+        $user->setPassword($hashedPassword);
+
+        // Persist and save user
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'User added successfully', 'userId' => $user->getId()], JsonResponse::HTTP_CREATED);
+    }
 }

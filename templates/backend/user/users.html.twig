@@ -60,6 +60,8 @@
                                     <h2>User <b>Management</b></h2>
                                 </div>
                                 <div class="col-sm-7">
+                                    <a href="#" class="add-new btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Add New User</span></a>
+
                                     <a href="{{ path('app_export_users_excel') }}" class="btn btn-secondary">
                                         <i class="material-icons">&#xE24D;</i>
                                         <span>Export to Excel</span>
@@ -186,6 +188,7 @@
     <script src="{{ asset('js/backoffice-main.js') }}"></script>
     <!-- Tooltip Initialization -->
     <script>
+
     $(document).ready(function() {
         // Initialize tooltips
         $('[data-toggle="tooltip"]').tooltip();
@@ -272,7 +275,165 @@
                 }
             });
         });
+
+        /*** 🚀 NEW FUNCTIONALITY: ADD USER 🚀 ***/
+
+        // Add new user row when "Add New User" button is clicked
+        $(".add-new").click(function() {
+            $(this).attr("disabled", "disabled");
+
+            var index = $("table tbody tr:last-child").index();
+            var newRow = `<tr class="new-user-row">
+            <td></td>
+            <td>
+                <input type="text" class="form-control new-input" name="firstName" placeholder="First Name">
+                <input type="text" class="form-control new-input" name="lastName" placeholder="Last Name">
+            </td>
+            <td><input type="email" class="form-control new-input" name="email" placeholder="Email"></td>
+            <td>
+                <select class="form-control new-input" name="role">
+                    <option value="ROLE_ADMIN">Admin</option>
+                    <option value="ROLE_STUDENT">Student</option>
+                </select>
+            </td>
+            <td><span class="status text-success">&bull; Active</span></td>
+            <td>
+                <a href="#" class="add" title="Save" data-toggle="tooltip"><i class="material-icons">&#xE161;</i></a>
+                <a href="#" class="delete-new" title="Cancel" data-toggle="tooltip"><i class="material-icons">&#xE5C9;</i></a>
+            </td>
+        </tr>`;
+
+            $("table tbody").append(newRow);
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        // Handle saving the new user
+        $(document).on("click", ".add", function() {
+            var row = $(this).closest("tr");
+            var newUserData = {
+                firstName: row.find("input[name='firstName']").val().trim(),
+                lastName: row.find("input[name='lastName']").val().trim(),
+                email: row.find("input[name='email']").val().trim(),
+                roles: [row.find("select[name='role']").val()]
+            };
+
+            if (!newUserData.firstName || !newUserData.lastName || !newUserData.email) {
+                alert("All fields are required.");
+                return;
+            }
+
+            $.ajax({
+                url: '{{ path("app_add_user") }}',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(newUserData),
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-CSRF-Token', '{{ csrf_token("add_user") }}');
+                },
+                success: function(response) {
+                    alert('User added successfully!');
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error adding user: ' + xhr.responseJSON.message);
+                }
+            });
+        });
+
+        // Remove row if user cancels adding a new user
+        $(document).on("click", ".delete-new", function() {
+            $(this).closest("tr").remove();
+            $(".add-new").removeAttr("disabled");
+        });
+
     });
+    {#$(document).ready(function() {#}
+    {#    // Initialize tooltips#}
+    {#    $('[data-toggle="tooltip"]').tooltip();#}
+
+    {#    // Handle delete button click#}
+    {#    $('.delete').on('click', function() {#}
+    {#        var userId = $(this).data('id'); // Get user ID#}
+    {#        $('#deleteForm').attr('action', '{{ path("app_delete_user", {"id": "USER_ID"}) }}'.replace('USER_ID', userId));#}
+    {#    });#}
+
+    {#    // Handle edit button click#}
+    {#    $(document).on("click", ".edit", function(e) {#}
+    {#        e.preventDefault();#}
+
+    {#        var row = $(this).closest("tr");#}
+
+    {#        // Convert editable fields into input fields#}
+    {#        row.find(".editable").each(function() {#}
+    {#            var cellText = $(this).text().trim();#}
+    {#            var fieldName = $(this).data("field");#}
+
+    {#            // Handle role as dropdown#}
+    {#            if (fieldName === "role") {#}
+    {#                var roleOptions = {#}
+    {#                    "Admin": "ROLE_ADMIN",#}
+    {#                    "Student": "ROLE_STUDENT"#}
+    {#                };#}
+    {#                var selectHtml = '<select class="form-control edit-input">';#}
+    {#                for (var roleLabel in roleOptions) {#}
+    {#                    var roleValue = roleOptions[roleLabel];#}
+    {#                    var selected = (cellText.indexOf(roleLabel) !== -1) ? 'selected' : '';#}
+    {#                    selectHtml += `<option value="${roleValue}" ${selected}>${roleLabel}</option>`;#}
+    {#                }#}
+    {#                selectHtml += '</select>';#}
+    {#                $(this).html(selectHtml);#}
+    {#            } else {#}
+    {#                $(this).html(`<input type="text" class="form-control edit-input" value="${cellText}" data-field="${fieldName}">`);#}
+    {#            }#}
+    {#        });#}
+
+    {#        // Toggle edit and save buttons#}
+    {#        row.find(".edit").hide();#}
+    {#        row.find(".save").show();#}
+    {#    });#}
+
+    {#    // Handle save button click#}
+    {#    $(document).on("click", ".save", function(e) {#}
+    {#        e.preventDefault();#}
+
+    {#        var row = $(this).closest("tr");#}
+    {#        var userId = row.find(".delete").data("id"); // Retrieve user ID from delete button#}
+
+    {#        if (!userId) {#}
+    {#            alert("User ID not found!");#}
+    {#            return;#}
+    {#        }#}
+
+    {#        var updatedData = {#}
+    {#            id: userId,#}
+    {#            firstName: row.find(".editable[data-field='firstName'] input").val().trim(),#}
+    {#            lastName: row.find(".editable[data-field='lastName'] input").val().trim(),#}
+    {#            email: row.find(".editable[data-field='email'] input").val().trim(),#}
+    {#            roles: [row.find(".editable[data-field='role'] select").val()]#}
+    {#        };#}
+
+    {#        console.log("User ID being sent:", userId);#}
+    {#        console.log("Updated Data:", updatedData);#}
+
+    {#        // Send AJAX request to save changes#}
+    {#        $.ajax({#}
+    {#            url: '{{ path("app_update_user") }}',#}
+    {#            method: 'POST',#}
+    {#            contentType: 'application/json',#}
+    {#            data: JSON.stringify(updatedData),#}
+    {#            beforeSend: function(xhr) {#}
+    {#                xhr.setRequestHeader('X-CSRF-Token', '{{ csrf_token("update_user") }}');#}
+    {#            },#}
+    {#            success: function(response) {#}
+    {#                alert('User updated successfully!');#}
+    {#                location.reload();#}
+    {#            },#}
+    {#            error: function(xhr) {#}
+    {#                alert('Error updating user: ' + xhr.responseJSON.message);#}
+    {#            }#}
+    {#        });#}
+    {#    });#}
+    {#});#}
 
 </script>
 
