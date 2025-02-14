@@ -25,7 +25,7 @@ final class GroupController extends AbstractController
             'groups' => $groups,
         ]);
     }
-    
+
     
         #[Route('backoffice/group-ajouter', name: 'app_ajoutergroup')]
         public function ajouterGroup(Request $re, ManagerRegistry $m): Response
@@ -185,6 +185,18 @@ final class GroupController extends AbstractController
         $em->flush();
     
         return $this->redirectToRoute('app_modifier', ['id' => $groupId]);
+    }
+    
+
+
+    #[Route('/accueil/group-list', name: 'app_groupList')]
+    public function GrpList(CommunityRepository $communityRepository): Response
+    {
+        $groups = $communityRepository->findAll();
+    
+        return $this->render('accueil/index.html.twig', [
+            'groups' => $groups,
+        ]);
     }
     
     

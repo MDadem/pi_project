@@ -38,9 +38,16 @@ class Community
     #[ORM\Column(enumType: CategoryGrp::class)]
     private ?CategoryGrp $category = null;
 
+    /**
+     * @var Collection<int, JoinRequest>
+     */
+    #[ORM\OneToMany(targetEntity: JoinRequest::class, mappedBy: 'community')]
+    private Collection $joinRequests;
+
     public function __construct()
     {
         $this->communityMembers = new ArrayCollection();
+        $this->joinRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -134,6 +141,36 @@ class Community
     public function setCategory(CategoryGrp $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, JoinRequest>
+     */
+    public function getJoinRequests(): Collection
+    {
+        return $this->joinRequests;
+    }
+
+    public function addJoinRequest(JoinRequest $joinRequest): static
+    {
+        if (!$this->joinRequests->contains($joinRequest)) {
+            $this->joinRequests->add($joinRequest);
+            $joinRequest->setCommunity($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJoinRequest(JoinRequest $joinRequest): static
+    {
+        if ($this->joinRequests->removeElement($joinRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($joinRequest->getCommunity() === $this) {
+                $joinRequest->setCommunity(null);
+            }
+        }
 
         return $this;
     }

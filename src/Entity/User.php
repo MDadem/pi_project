@@ -37,9 +37,16 @@ class User
     #[ORM\OneToMany(targetEntity: CommunityMembers::class, mappedBy: 'user')]
     private Collection $communityMembers;
 
+    /**
+     * @var Collection<int, JoinRequest>
+     */
+    #[ORM\OneToMany(targetEntity: JoinRequest::class, mappedBy: 'user')]
+    private Collection $joinRequests;
+
     public function __construct()
     {
         $this->communityMembers = new ArrayCollection();
+        $this->joinRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -131,6 +138,36 @@ class User
             // set the owning side to null (unless already changed)
             if ($communityMember->getUser() === $this) {
                 $communityMember->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, JoinRequest>
+     */
+    public function getJoinRequests(): Collection
+    {
+        return $this->joinRequests;
+    }
+
+    public function addJoinRequest(JoinRequest $joinRequest): static
+    {
+        if (!$this->joinRequests->contains($joinRequest)) {
+            $this->joinRequests->add($joinRequest);
+            $joinRequest->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJoinRequest(JoinRequest $joinRequest): static
+    {
+        if ($this->joinRequests->removeElement($joinRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($joinRequest->getUser() === $this) {
+                $joinRequest->setUser(null);
             }
         }
 
