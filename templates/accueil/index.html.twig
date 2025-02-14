@@ -41,14 +41,15 @@
                                 <p><strong>Nombre de membres :</strong> {{ group.communityMembers|length }}</p>
                             </div>
                             <div class="modal-footer">
+                                <form method="POST" action="{{ path('join_community', { 'id': group.id }) }}">
+                                    <button type="submit" class="btn btn-success">Rejoindre</button>
+                                </form>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            {% else %}
-                <p class="text-center">Aucun groupe trouvé.</p>
-            {% endfor %}
+            {% endfor %} <!-- 🔹 Ajout de la fermeture de la boucle -->
         </div>
     </div>
 {% endblock %}

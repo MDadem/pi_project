@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Community;
 use App\Entity\CommunityMembers;
+use App\Entity\JoinRequest;
 use App\Entity\User;
 use App\Enums\CategoryGrp;
 use App\Form\GroupType;
@@ -199,6 +200,36 @@ final class GroupController extends AbstractController
         ]);
     }
     
+    // ------------------- send request ------------------------------
+    #[Route('/community/join/{id}', name: 'join_community', methods: ['POST'])]
+    public function joinCommunity(Community $community, ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $entityManager = $doctrine->getManager();
+
+        // Vérifier si l'utilisateur a déjà fait une demande
+        $existingRequest = $doctrine->getRepository(JoinRequest::class)
+            ->findOneBy(['user' => $user, 'community' => $community]);
+
+        if ($existingRequest) {
+            $this->addFlash('warning', 'Vous avez déjà demandé à rejoindre ce groupe.');
+            return $this->redirectToRoute('app_groupList');
+        }
+
+        // Créer une nouvelle demande d'adhésion
+        $joinRequest = new JoinRequest();
+        $joinRequest->setUser($user);
+        $joinRequest->setCommunity($community);
+        $joinRequest->setStatus('pending'); // En attente
+        $joinRequest->setJoinDate(new \DateTime());
+
+        $entityManager->persist($joinRequest);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Votre demande d\'adhésion a été envoyée.');
+
+        return $this->redirectToRoute('app_groupList');
+    }
     
     }
     
