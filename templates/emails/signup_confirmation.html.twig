@@ -1,13 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Welcome to CultureSpace</title>
 </head>
-<body>
-<h2>Welcome {{ user.firstName }}!</h2>
-<p>Thank you for signing up as an admin. To access your dashboard, please log in using the link below:</p>
-<p><a href="{{ login_url }}" style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none;">Login Now</a></p>
-<p>If you did not sign up, please ignore this email.</p>
-<p>Best Regards,<br>CultureSpace Team</p>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center;">
+
+<!-- Header -->
+<table role="presentation" width="100%" style="background-color: #4CAF50; padding: 20px;">
+    <tr>
+        <td align="center">
+          <h3>Sign-in Welcome Email</h3>
+        </td>
+    </tr>
+</table>
+
+<!-- Main Content -->
+<table role="presentation" width="100%" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+    <tr>
+        <td align="center">
+            <h2 style="color: #333;">Welcome, {{ user.firstName|default('User') }}!</h2>
+            <p style="color: #555; font-size: 16px;">We're excited to have you on board as an admin.</p>
+            <p style="color: #555; font-size: 16px;">Click below to access your dashboard:</p>
+            <a href="{{ login_url }}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 10px;">Login Now</a>
+        </td>
+    </tr>
+</table>
+
+<!-- Footer -->
+<table role="presentation" width="100%" style="background-color: #333; padding: 20px; margin-top: 30px;">
+    <tr>
+        <td align="center" style="color: white; font-size: 14px;">
+            <p>&copy; {{ "now"|date("Y") }} CultureSpace Dev Team. All rights reserved.</p>
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>

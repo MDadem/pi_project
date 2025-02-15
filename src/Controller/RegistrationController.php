@@ -26,12 +26,11 @@ class RegistrationController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
-        UrlGeneratorInterface $urlGenerator,
-        SendMailService $mail,
+        UrlGeneratorInterface $urlGenerator
     ): Response {
         // Redirect logged-in users to another page
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_dashboard');
+            return $this->redirectToRoute('app_dashboard_users'); // Redirect to users page if already logged in
         }
 
         $user = new User();
@@ -39,15 +38,15 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Check if an admin already exists (using a correct role check)
+            // Check if an admin with the same email already exists
             $existingAdmin = $entityManager->getRepository(User::class)->findOneBy([
                 'email' => $user->getEmail(),
             ]);
 
-//            if ($existingAdmin && in_array(Role::Admin->value, $existingAdmin->getRoles())) {
-//                $this->addFlash('error', 'An admin with this email already exists.');
-//                return $this->redirectToRoute('app_dashboard_signup');
-//            }
+            if ($existingAdmin && in_array(Role::Admin->value, $existingAdmin->getRoles())) {
+                $this->addFlash('error', 'An admin with this email already exists.');
+                return $this->redirectToRoute('app_dashboard_signup');
+            }
 
             // Hash the password
             $user->setPassword(
@@ -59,6 +58,7 @@ class RegistrationController extends AbstractController
 
             // Assign the ROLE_ADMIN role to the user
             $user->setRoles([Role::Admin->value]);
+
             // Save the user
             $entityManager->persist($user);
             $entityManager->flush();
@@ -67,27 +67,24 @@ class RegistrationController extends AbstractController
             $loginUrl = $urlGenerator->generate('app_dashboard_signin', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
             // Send the confirmation email
-            $email = (new Email())
-                ->from(new Address('no-reply@culturespace.com', 'CultureSpace'))
-                ->to($user->getEmail())
-                ->subject('Welcome to Our Platform!')
-                ->html($this->renderView('emails/signup_confirmation.html.twig', [
-                    'user' => $user,
-                    'login_url' => $loginUrl,
-                ]));
-
             try {
+                $email = (new Email())
+                    ->from(new Address('no-reply@culturespace.com', 'CultureSpace'))
+                    ->to($user->getEmail())
+                    ->subject('Welcome to Our Platform!')
+                    ->html($this->renderView('emails/signup_confirmation.html.twig', [
+                        'user' => $user,
+                        'login_url' => $loginUrl,
+                    ]));
+
                 $mailer->send($email);
-                $this->addFlash('success', 'Admin added successfully. A confirmation email has been sent.');
-            } catch (\Exception $e) {
-                $this->addFlash('warning', 'Admin added successfully, but the confirmation email could not be sent.');
+                $this->addFlash('success', 'Your account has been created successfully. A confirmation email has been sent.');
             } catch (TransportExceptionInterface $e) {
-                // Log the error or display a message
-                $this->addFlash('error', 'Failed to send the confirmation email. Please try again later.');
+                $this->addFlash('warning', 'Your account has been created, but the confirmation email could not be sent.');
             }
 
-            // Redirect to the dashboard
-            return $this->redirectToRoute('app_dashboard');
+            // Redirect to the sign-in page with flash message
+            return $this->redirectToRoute('app_dashboard_signin');
         }
 
         return $this->render('backend/signup/signup.html.twig', [
@@ -95,27 +92,74 @@ class RegistrationController extends AbstractController
         ]);
     }
 
-
-    #[Route('/dashboard/update-user/{id}', name: 'app_dashboard_update_user', methods: ['POST'])]
-    public function updateUser(Request $request, EntityManagerInterface $entityManager, $id): Response
-    {
-        // Find the user by ID
-        $user = $entityManager->getRepository(User::class)->find($id);
-
-        if (!$user) {
-            return $this->json(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
+    #[Route('/home/signup', name: 'app_home_signup')]
+    public function registerStudent(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+        UrlGeneratorInterface $urlGenerator
+    ): Response {
+        // Redirect logged-in users
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
         }
 
-        // Update user details
-        $user->setFirstName($request->request->get('name'));
-        $user->setEmail($request->request->get('email'));
-        $user->setAddress($request->request->get('address'));
-        $user->setPhone($request->request->get('phone'));
+        $user = new User();
+        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form->handleRequest($request);
 
-        // Persist changes to the database
-        $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Check if a user with the same email already exists
+            $existingUser = $entityManager->getRepository(User::class)->findOneBy([
+                'email' => $user->getEmail(),
+            ]);
 
-        // Return success response
-        return $this->json(['success' => 'User updated successfully']);
+            if ($existingUser) {
+                $this->addFlash('error', 'A user with this email already exists.');
+                return $this->redirectToRoute('app_home_signup');
+            }
+
+            // Hash the password
+            $user->setPassword(
+                $passwordHasher->hashPassword(
+                    $user,
+                    $form->get('password')->getData()
+                )
+            );
+
+            // Assign the ROLE_STUDENT role
+            $user->setRoles([Role::Student->value]);
+
+            // Save the user
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            // Generate the login URL
+            $loginUrl = $urlGenerator->generate('app_home_signin', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            // Send the confirmation email
+            try {
+                $email = (new Email())
+                    ->from(new Address('no-reply@culturespace.com', 'CultureSpace'))
+                    ->to($user->getEmail())
+                    ->subject('Welcome to Our Platform!')
+                    ->html($this->renderView('emails/signup_confirmation.html.twig', [
+                        'user' => $user,
+                        'login_url' => $loginUrl,
+                    ]));
+
+                $mailer->send($email);
+                $this->addFlash('success', 'Your account has been created successfully. A confirmation email has been sent.');
+            } catch (TransportExceptionInterface $e) {
+                $this->addFlash('warning', 'Your account has been created, but the confirmation email could not be sent.');
+            }
+
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        return $this->render('frontend/auth/signup.html.twig', [
+            'registrationForm' => $form->createView(),
+        ]);
     }
 }

@@ -64,6 +64,50 @@ final class UserController extends AbstractController {
         ]);
     }
 
+    #[Route('/home/edit-profile/{id}', name: 'app_edit_profile_user')]
+    public function edit_student(User $user, Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        if ($this->getUser() !== $user) {
+            return $this->redirectToRoute('dashboard');
+        }
+
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('profileIMG')->getData();
+
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('profile_images_directory'),
+                        $newFilename
+                    );
+                    $user->setProfileIMG('uploads/profile_images/' . $newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Failed to upload image.');
+                }
+            }
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Profile updated successfully!');
+            return $this->redirectToRoute('app_edit_profile_user', ['id' => $user->getId()]);
+        }
+
+        return $this->render('frontend/user/edit_profile.html.twig', [
+            'form' => $form->createView(),
+            'user' => $user,
+        ]);
+    }
+
     #[Route('/dashboard/users', name: 'app_dashboard_users')]
     public function listUsers(EntityManagerInterface $entityManager, Request $request): Response
     {

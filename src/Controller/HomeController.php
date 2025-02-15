@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController{
-    #[Route('/', name: 'app_home')]
+    #[Route('/home', name: 'app_home')]
     public function index(): Response
     {
         return $this->render('frontend/home/base.html.twig', [
@@ -15,10 +15,10 @@ final class HomeController extends AbstractController{
         ]);
     }
 
-    #[Route('/auth', name: 'app_auth')]
-    public function auth(): Response
+    #[Route('/login-user', name: 'app_login_user')]
+    public function login_user(): Response
     {
-        return $this->render('frontend/auth/auth.html.twig', [
+        return $this->render('frontend/auth/signin.html.twig', [
             'controller_name' => 'HomeController',
         ]);
     }
@@ -72,6 +72,12 @@ final class HomeController extends AbstractController{
         ]);
     }
 
-
+//    #[Route('/login_user', name: 'app_login_user')]
+//    public function login_user(): Response
+//    {
+//        return $this->render('frontend/auth/login.html.twig', [
+//            'controller_name' => 'HomeController',
+//        ]);
+//    }
 
 }

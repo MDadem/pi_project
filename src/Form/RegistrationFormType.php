@@ -33,7 +33,7 @@ class RegistrationFormType extends AbstractType
             ])
             ->add('password', PasswordType::class, [
                 'label' => 'Password',
-                'mapped' => false,
+                'mapped' => true,
                 'constraints' => [
                     new NotBlank(['message' => 'Password cannot be blank']),
                     new Length([

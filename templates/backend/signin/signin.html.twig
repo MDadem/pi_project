@@ -53,6 +53,28 @@
                         <h3>Sign In</h3>
                     </div>
 
+                    <!-- Flash Messages -->
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('warning') %}
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
                     {% if error %}
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             {{ error.messageKey|trans(error.messageData, 'security') }}
@@ -60,17 +82,9 @@
                         </div>
                     {% endif %}
 
-                    {% if app.user %}
-                        <div class="mb-3">
-                            <div class="alert alert-dismissible alert-info">
-                            You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
-                            </div>
-                        </div>
-                    {% endif %}
-
                     <form method="post">
                         <div class="form-floating mb-3">
-                            <input type="email" name="email" value="{{ last_username }}" class="form-control" id="floatingInput" placeholder="name@example.com"  autofocus>
+                            <input type="email" name="email" value="{{ last_username }}" class="form-control" id="floatingInput" placeholder="name@example.com" autofocus>
                             <label for="floatingInput">Email address</label>
                         </div>
                         <div class="form-floating mb-4">
@@ -90,6 +104,7 @@
                     </form>
                     <p class="text-center mb-0">Don't have an Account? <a href="{{ path('app_dashboard_signup') }}">Sign Up</a></p>
                 </div>
+
             </div>
         </div>
     </div>

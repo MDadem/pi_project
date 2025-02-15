@@ -1,3 +1,4 @@
+
 #security:
 #    password_hashers:
 #        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
@@ -19,16 +20,20 @@
 #            entry_point: App\Security\LoginFormAuthenticator
 #            custom_authenticators:
 #                - App\Security\LoginFormAuthenticator
+#                - App\Security\UserLoginFormAuthenticator
 #            logout:
 #                path: app_logout
 #                target: app_dashboard_signin
 #
+#
 #    access_control:
-#        - { path: ^/dashboard/signin, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-#        - { path: ^/dashboard/signup, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+#        - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
+#        - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
+#
 #        - { path: ^/dashboard, roles: ROLE_ADMIN }
 
-# config/packages/security.yaml
+
+
 
 security:
     password_hashers:
@@ -48,17 +53,25 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-#            entry_point: App\Security\LoginFormAuthenticator
+            entry_point: App\Security\UserLoginFormAuthenticator
             custom_authenticators:
+                - App\Security\UserLoginFormAuthenticator  # User authentication
                 - App\Security\LoginFormAuthenticator
             logout:
                 path: app_logout
-                target: app_dashboard_signin
+                target: app_home  # Redirect users to homepage after logout
+#
+#        admin:
+#            lazy: true
+#            provider: app_user_provider
+##            entry_point: App\Security\LoginFormAuthenticator
+#            custom_authenticators:
+#                - App\Security\LoginFormAuthenticator
+#            logout:
+#                path: app_logout
+#                target: app_dashboard_signin  # Redirect admins to dashboard login after logout
 
     access_control:
-        # Public access to signin and signup pages
         - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
         - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
-
-        # Restrict access to the dashboard to authenticated users
         - { path: ^/dashboard, roles: ROLE_ADMIN }
