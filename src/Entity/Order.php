@@ -19,10 +19,16 @@ class Order
     private ?int $quantity = null;
 
     #[ORM\Column]
-    private ?float $totalPrice = null;
+    private ?float $total_price = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $creation_date = null;
+
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    private ?Product $product = null;
 
     public function getId(): ?int
     {
@@ -43,12 +49,12 @@ class Order
 
     public function getTotalPrice(): ?float
     {
-        return $this->totalPrice;
+        return $this->total_price;
     }
 
-    public function setTotalPrice(float $totalPrice): static
+    public function setTotalPrice(float $total_price): static
     {
-        $this->totalPrice = $totalPrice;
+        $this->total_price = $total_price;
 
         return $this;
     }
@@ -61,6 +67,30 @@ class Order
     public function setCreationDate(\DateTimeInterface $creation_date): static
     {
         $this->creation_date = $creation_date;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
+
+    public function setProduct(?Product $product): static
+    {
+        $this->product = $product;
 
         return $this;
     }

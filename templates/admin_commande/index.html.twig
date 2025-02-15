@@ -1,0 +1,73 @@
+
+{% block title %}Liste des Commandes{% endblock %}
+
+{% block body %}
+<h1 class="my-4">Liste des Commandes</h1>
+
+<table class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Quantité</th>
+            <th>Prix Total (Dt)</th>
+            <th>Date de Création</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for commande in commandes %}
+            <tr>
+                <td>{{ commande.id }}</td>
+                <td>{{ commande.quantity }}</td>
+                <td>{{ commande.totalPrix|number_format(2, '.', ',') }}</td>
+                <td>{{ commande.dateCreation|date('d/m/Y H:i') }}</td>
+                <td>
+                    <span class="badge {% if commande.status == 'En attente' %}bg-warning{% elseif commande.status == 'Validée' %}bg-success{% else %}bg-info{% endif %}">
+                        {{ commande.status }}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal-{{ commande.id }}">
+                        Changer Statut
+                    </button>
+                </td>
+            </tr>
+
+            <!-- Modal pour changer le statut -->
+            <div class="modal fade" id="modal-{{ commande.id }}" tabindex="-1" aria-labelledby="modalLabel-{{ commande.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel-{{ commande.id }}">Changer le statut de la commande</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="{{ path('admin_commande_change_status', { id: commande.id }) }}">
+                                <div class="mb-3">
+                                    <label for="status-{{ commande.id }}" class="form-label">Nouveau statut</label>
+                                    <select name="status" id="status-{{ commande.id }}" class="form-select">
+                                        <option value="En attente" {% if commande.status == 'En attente' %}selected{% endif %}>En attente</option>
+                                        <option value="Validée" {% if commande.status == 'Validée' %}selected{% endif %}>Validée</option>
+                                        <option value="En préparation" {% if commande.status == 'En préparation' %}selected{% endif %}>En préparation</option>
+                                        <option value="Expédiée" {% if commande.status == 'Expédiée' %}selected{% endif %}>Expédiée</option>
+                                        <option value="Livrée" {% if commande.status == 'Livrée' %}selected{% endif %}>Livrée</option>
+                                    </select>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-success">Confirmer</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Aucune commande trouvée.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

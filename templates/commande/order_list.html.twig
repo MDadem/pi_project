@@ -1,0 +1,39 @@
+
+{% block title %}Liste des Commandes{% endblock %}
+
+{% block body %}
+<h1 class="my-4">Liste des Commandes</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date de Création</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for commande in commandes %}
+            <tr>
+                <td>{{ commande.id }}</td>
+                <td>{{ commande.createdAt|date('d/m/Y H:i') }}</td>
+                <td>{{ commande.status }}</td>
+                <td>
+                    <form action="{{ path('admin_commande_change_status', {'id': commande.id}) }}" method="POST" class="d-flex">
+                        <select name="status" class="form-control me-2">
+                            <option value="En cours" {% if commande.status == 'En cours' %}selected{% endif %}>En cours</option>
+                            <option value="Expédiée" {% if commande.status == 'Expédiée' %}selected{% endif %}>Expédiée</option>
+                            <option value="Livrée" {% if commande.status == 'Livrée' %}selected{% endif %}>Livrée</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Modifier</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4" class="text-center">Aucune commande trouvée.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
