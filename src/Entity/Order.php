@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -16,7 +18,7 @@ class Order
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?int $quantity = null;
+    private ?int $quantity = 1;
 
     #[ORM\Column]
     private ?float $total_price = null;
@@ -24,11 +26,19 @@ class Order
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $creation_date = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $status = 'En cours';
+
     #[ORM\ManyToOne(inversedBy: 'orders')]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
-    private ?Product $product = null;
+    #[ORM\ManyToMany(targetEntity: Product::class)]
+    private Collection $products;
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -40,10 +50,9 @@ class Order
         return $this->quantity;
     }
 
-    public function setQuantity(int $quantity): static
+    public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
-
         return $this;
     }
 
@@ -52,10 +61,9 @@ class Order
         return $this->total_price;
     }
 
-    public function setTotalPrice(float $total_price): static
+    public function setTotalPrice(float $total_price): self
     {
         $this->total_price = $total_price;
-
         return $this;
     }
 
@@ -64,10 +72,20 @@ class Order
         return $this->creation_date;
     }
 
-    public function setCreationDate(\DateTimeInterface $creation_date): static
+    public function setCreationDate(\DateTimeInterface $creation_date): self
     {
         $this->creation_date = $creation_date;
+        return $this;
+    }
 
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
         return $this;
     }
 
@@ -76,22 +94,28 @@ class Order
         return $this->user;
     }
 
-    public function setUser(?User $user): static
+    public function setUser(?User $user): self
     {
         $this->user = $user;
-
         return $this;
     }
 
-    public function getProduct(): ?Product
+    public function getProducts(): Collection
     {
-        return $this->product;
+        return $this->products;
     }
 
-    public function setProduct(?Product $product): static
+    public function addProduct(Product $product): self
     {
-        $this->product = $product;
+        if (!$this->products->contains($product)) {
+            $this->products[] = $product;
+        }
+        return $this;
+    }
 
+    public function removeProduct(Product $product): self
+    {
+        $this->products->removeElement($product);
         return $this;
     }
 }
