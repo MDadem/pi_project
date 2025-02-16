@@ -1,3 +1,7 @@
+
+{% block title %}Commande Validée{% endblock %}
+
+{% block body %}
 <div class="container my-5">
     <div class="alert alert-success text-center" role="alert">
         <h4 class="alert-heading">Commande Validée !</h4>
@@ -11,3 +15,4 @@
         <a href="{{ path('panier_index') }}" class="btn btn-outline-secondary">Revenir au panier</a>
     </div>
 </div>
+{% endblock %}

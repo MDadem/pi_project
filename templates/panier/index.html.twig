@@ -3,44 +3,67 @@
 
 {% block body %}
 <h1 class="my-4">Panier</h1>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Produit</th>
-            <th>Prix</th>
-            <th>Quantité</th>
-            <th>Total du produit</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in cartItems %}
-            <tr>
-                <td>{{ item.product.getNom() }}</td>
-                <td>{{ item.product.getPrix() }} TND</td>
-                <td>
-                    <form action="{{ path('panier_update', {'id': item.id}) }}" method="POST" class="d-flex">
-                        <input type="number" name="quantity" value="{{ item.getProductQuantity() }}" min="1" class="form-control me-2" style="max-width: 80px;">
-                        <button type="submit" class="btn btn-primary">Modifier</button>
-                    </form>
-                </td>
-                <td>{{ item.getTotal() }} TND</td>
-                <td>
-                    <a href="{{ path('panier_clear', {'id': item.id}) }}" class="btn btn-danger">Supprimer</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5" class="text-center">Votre panier est vide.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 {% if cartItems is not empty %}
+    <h4>Produits dans votre panier :</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix</th>
+                <th>Quantité</th>
+                <th>Total du produit</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cartItems %}
+                <tr>
+                    <td>{{ item.product.getNom() }}</td>
+                    <td>{{ item.product.getPrix() }} TND</td>
+                    <td>
+                        <form action="{{ path('panier_update', {'id': item.id}) }}" method="GET" class="d-flex">
+                            <input type="number" name="quantity" value="{{ item.getProductQuantity() }}" min="1" class="form-control me-2" style="max-width: 80px;">
+                            <button type="submit" class="btn btn-primary">Modifier</button>
+                        </form>
+                    </td>
+                    <td>{{ item.getTotal() }} TND</td>
+                    <td>
+                        <a href="{{ path('panier_remove', {'id': item.id}) }}" class="btn btn-danger">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     <div class="text-end">
         <h4>Total général : <strong>{{ totalGeneral }} TND</strong></h4>
     </div>
+
+{% elseif validatedCart is not empty %}
+    <h4>Produits récemment validés :</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix</th>
+                <th>Quantité</th>
+                <th>Total du produit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in validatedCart %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.price }} TND</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.total }} TND</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="text-center">Votre panier est vide.</p>
 {% endif %}
 
 <div class="d-flex justify-content-between mt-4">
@@ -48,4 +71,5 @@
     <a href="{{ path('order_validate') }}" class="btn btn-success">Valider ma commande</a>
     <a href="{{ path('panier_clear') }}" class="btn btn-danger">Vider le panier</a>
 </div>
+
 {% endblock %}
