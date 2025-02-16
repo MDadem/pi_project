@@ -45,14 +45,13 @@ class PanierController extends AbstractController
 
         if ($existingCartItem) {
             $existingCartItem->setProductQuantity($existingCartItem->getProductQuantity() + $quantity);
-            $existingCartItem->setTotal($existingCartItem->getProduct()->getProductPrice() * $existingCartItem->getProductQuantity());
+            $existingCartItem->setTotal($existingCartItem->getProduct()->getPrix() * $existingCartItem->getProductQuantity());
         } else {
             $cartItem = new Cart();
             $cartItem->setProduct($product);
             $cartItem->setProductQuantity($quantity);
             $cartItem->setTotal($product->getPrix() * $quantity);
             $cartItem->setPrice($product->getPrix());
-
             $em->persist($cartItem);
         }
 
@@ -79,24 +78,20 @@ class PanierController extends AbstractController
     }
 
     #[Route('/panier/clear', name: 'panier_clear')]
-public function clear(Request $request, EntityManagerInterface $em): Response
-{
-    // Suppression des articles du panier
-    $cartItems = $em->getRepository(Cart::class)->findAll();
-    foreach ($cartItems as $cartItem) {
-        $em->remove($cartItem);
+    public function clear(Request $request, EntityManagerInterface $em): Response
+    {
+        $cartItems = $em->getRepository(Cart::class)->findAll();
+        foreach ($cartItems as $cartItem) {
+            $em->remove($cartItem);
+        }
+        $em->flush();
+
+        $session = $request->getSession();
+        $session->remove('validated_cart');
+
+        $this->addFlash('success', 'Le panier a été vidé.');
+        return $this->redirectToRoute('panier_index');
     }
-    $em->flush();
-
-    // Suppression des produits validés de la session
-    $session = $request->getSession();
-    $session->remove('validated_cart');
-
-    $this->addFlash('success', 'Le panier a été vidé.');
-    return $this->redirectToRoute('panier_index');
-}
-
-
 
     #[Route('/panier/remove/{id}', name: 'panier_remove')]
     public function remove(Cart $cartItem, EntityManagerInterface $em): Response
@@ -109,60 +104,66 @@ public function clear(Request $request, EntityManagerInterface $em): Response
     }
 
     #[Route('/order/validate', name: 'order_validate')]
-public function validateOrder(Request $request, EntityManagerInterface $em): Response
-{
-    $cartItems = $em->getRepository(Cart::class)->findAll();
+    public function validateOrder(Request $request, EntityManagerInterface $em): Response
+    {
+        $cartItems = $em->getRepository(Cart::class)->findAll();
 
-    if (empty($cartItems)) {
-        $this->addFlash('error', 'Votre panier est vide.');
-        return $this->redirectToRoute('panier_index');
+        if (empty($cartItems)) {
+            $this->addFlash('error', 'Votre panier est vide.');
+            return $this->redirectToRoute('panier_index');
+        }
+
+        $totalGeneral = array_reduce($cartItems, function ($total, $item) {
+            return $total + $item->getTotal();
+        }, 0);
+
+        // Création de la commande
+        $order = new Order();
+        $order->setCreationDate(new \DateTime());
+        $order->setStatus('En cours');
+        $order->setTotalPrice($totalGeneral);
+        $order->setUser($this->getUser());
+
+        $session = $request->getSession();
+        $sessionCartItems = [];
+
+        // Associer chaque article du panier à la commande
+        foreach ($cartItems as $cartItem) {
+            $cartItem->setOrder($order);
+            $sessionCartItems[] = [
+                'product_name' => $cartItem->getProduct()->getNom(),
+                'quantity' => $cartItem->getProductQuantity(),
+                'price' => $cartItem->getPrice(),
+                'total' => $cartItem->getTotal(),
+            ];
+        }
+
+        $em->persist($order);
+        $em->flush();
+
+        // Supprimer tous les articles du panier
+        foreach ($cartItems as $cartItem) {
+            $em->remove($cartItem);
+        }
+        $em->flush();
+
+        $session->set('validated_cart', $sessionCartItems);
+
+        $this->addFlash('success', 'Votre commande a été validée avec succès.');
+        return $this->redirectToRoute('order_confirmation');
     }
 
-    $totalGeneral = array_reduce($cartItems, function ($total, $item) {
-        return $total + $item->getTotal();
-    }, 0);
+    #[Route('/order/confirmation', name: 'order_confirmation')]
+    public function confirmation(Request $request): Response
+    {
+        $session = $request->getSession();
+        $validatedCart = $session->get('validated_cart', []);
 
-    $order = new Order();
-    $order->setCreationDate(new \DateTime());
-    $order->setStatus('En cours');
-    $order->setTotalPrice($totalGeneral);
+        $session->remove('validated_cart');
 
-    $session = $request->getSession();
-    $sessionCartItems = [];
-
-    foreach ($cartItems as $cartItem) {
-        $order->addProduct($cartItem->getProduct());
-        $sessionCartItems[] = [
-            'product_name' => $cartItem->getProduct()->getNom(),
-            'quantity' => $cartItem->getProductQuantity(),
-            'price' => $cartItem->getPrice(),
-            'total' => $cartItem->getTotal(),
-        ];
-        $em->remove($cartItem);
+        return $this->render('panier/confirmation.html.twig', [
+            'message' => 'Votre commande a été validée avec succès !',
+            'validatedCart' => $validatedCart,
+        ]);
     }
-
-    $em->persist($order);
-    $em->flush();
-
-    $session->set('validated_cart', $sessionCartItems);
-
-    // Redirection vers la confirmation pour éviter les re-soumissions
-    return $this->redirectToRoute('order_confirmation');
-}
-
-#[Route('/order/confirmation', name: 'order_confirmation')]
-public function confirmation(Request $request): Response
-{
-    $session = $request->getSession();
-    $validatedCart = $session->get('validated_cart', []);
-
-    // Vider la session après l'affichage des produits validés
-    $session->remove('validated_cart');
-
-    return $this->render('panier/confirmation.html.twig', [
-        'message' => 'Votre commande a été validée avec succès !',
-        'validatedCart' => $validatedCart,
-    ]);
-}
-
 }

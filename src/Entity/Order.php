@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
@@ -18,9 +17,6 @@ class Order
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?int $quantity = 1;
-
-    #[ORM\Column]
     private ?float $total_price = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -32,28 +28,17 @@ class Order
     #[ORM\ManyToOne(inversedBy: 'orders')]
     private ?User $user = null;
 
-    #[ORM\ManyToMany(targetEntity: Product::class)]
-    private Collection $products;
+    #[ORM\OneToMany(targetEntity: Cart::class, mappedBy: 'order', cascade: ['persist', 'remove'])]
+    private Collection $cartItems;
 
     public function __construct()
     {
-        $this->products = new ArrayCollection();
+        $this->cartItems = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getQuantity(): ?int
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(int $quantity): self
-    {
-        $this->quantity = $quantity;
-        return $this;
     }
 
     public function getTotalPrice(): ?float
@@ -100,22 +85,30 @@ class Order
         return $this;
     }
 
-    public function getProducts(): Collection
+    /**
+     * @return Collection<int, Cart>
+     */
+    public function getCartItems(): Collection
     {
-        return $this->products;
+        return $this->cartItems;
     }
 
-    public function addProduct(Product $product): self
+    public function addCartItem(Cart $cartItem): self
     {
-        if (!$this->products->contains($product)) {
-            $this->products[] = $product;
+        if (!$this->cartItems->contains($cartItem)) {
+            $this->cartItems->add($cartItem);
+            $cartItem->setOrder($this);
         }
         return $this;
     }
 
-    public function removeProduct(Product $product): self
+    public function removeCartItem(Cart $cartItem): self
     {
-        $this->products->removeElement($product);
+        if ($this->cartItems->removeElement($cartItem)) {
+            if ($cartItem->getOrder() === $this) {
+                $cartItem->setOrder(null);
+            }
+        }
         return $this;
     }
 }

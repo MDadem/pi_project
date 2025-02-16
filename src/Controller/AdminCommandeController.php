@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Order;
-use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,9 +12,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class AdminCommandeController extends AbstractController
 {
     #[Route('/admin/commande', name: 'admin_commande')]
-    public function index(OrderRepository $orderRepository): Response
+    public function index(EntityManagerInterface $em): Response
     {
-        $commandes = $orderRepository->findAll();
+        $commandes = $em->getRepository(Order::class)->findAll();
+
         return $this->render('commande/order_list.html.twig', [
             'commandes' => $commandes,
         ]);
@@ -32,6 +32,26 @@ class AdminCommandeController extends AbstractController
         } else {
             $this->addFlash('error', 'Le statut est invalide.');
         }
+
         return $this->redirectToRoute('admin_commande');
     }
+
+    #[Route('/admin/commande/{id}/delete', name: 'admin_commande_delete')]
+    public function delete(Order $order, EntityManagerInterface $entityManager): Response
+    {
+        $entityManager->remove($order);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'La commande a été supprimée avec succès.');
+        return $this->redirectToRoute('admin_commande');
+    }
+    #[Route('/admin/commande/{id}', name: 'admin_commande_detail')]
+    public function show(Order $order): Response
+    {
+        return $this->render('commande/order_detail.html.twig', [
+            'order' => $order,
+        ]);
+    }
 }
+
+

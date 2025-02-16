@@ -28,6 +28,11 @@ class Cart
     #[ORM\ManyToOne(inversedBy: 'carts')]
     private ?Product $product = null;
 
+    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'cartItems')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Order $order = null;
+    
+
     public function getId(): ?int
     {
         return $this->id;
@@ -41,7 +46,6 @@ class Cart
     public function setPrice(float $price): static
     {
         $this->price = $price;
-
         return $this;
     }
 
@@ -53,7 +57,6 @@ class Cart
     public function setTotal(float $total): static
     {
         $this->total = $total;
-
         return $this;
     }
 
@@ -65,7 +68,6 @@ class Cart
     public function setProductQuantity(int $product_quantity): static
     {
         $this->product_quantity = $product_quantity;
-
         return $this;
     }
 
@@ -76,18 +78,15 @@ class Cart
 
     public function setUser(?User $user): static
     {
-        // unset the owning side of the relation if necessary
         if ($user === null && $this->user !== null) {
             $this->user->setCart(null);
         }
 
-        // set the owning side of the relation if necessary
         if ($user !== null && $user->getCart() !== $this) {
             $user->setCart($this);
         }
 
         $this->user = $user;
-
         return $this;
     }
 
@@ -99,7 +98,17 @@ class Cart
     public function setProduct(?Product $product): static
     {
         $this->product = $product;
+        return $this;
+    }
 
+    public function getOrder(): ?Order
+    {
+        return $this->order;
+    }
+
+    public function setOrder(?Order $order): static
+    {
+        $this->order = $order;
         return $this;
     }
 }
