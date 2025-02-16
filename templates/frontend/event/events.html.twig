@@ -1,0 +1,59 @@
+{% extends 'frontend/base.html.twig' %}
+
+{% block title %}Events{% endblock %}
+
+{% block body %}
+<div class="container-fluid service py-6">
+    <div class="container py-5">
+        <div class="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s" style="max-width: 800px; margin-top: 80px;">
+            <h4 class="text-primary text-uppercase mb-4">Our Events</h4>
+            <h1 class="display-5 mb-5">Discover Our Upcoming Events</h1>
+            <p class="fs-5 mb-0">Join us for exciting events and experiences. Browse through our upcoming events and register for those that interest you.</p>
+        </div>
+        <div class="row g-4">
+            {% for event in events %}
+                <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="{{ loop.index * 0.2 }}s">
+                    <div class="service-item">
+                        <div class="service-img">
+                            {% if event.imageFilename %}
+                                <img src="{{ asset('uploads/events/' ~ event.imageFilename) }}" class="img-fluid rounded-top w-100" alt="{{ event.title }}">
+                            {% else %}
+                                <img src="{{ asset('img/event-default.jpg') }}" class="img-fluid rounded-top w-100" alt="Default Event Image">
+                            {% endif %}
+                        </div>
+                        <div class="rounded-bottom p-4">
+                            <div class="d-flex justify-content-between mb-4">
+                                <a href="#" class="h4 d-inline-block">{{ event.title }}</a>
+                                <span class="badge bg-primary">{{ event.category.name }}</span>
+                            </div>
+                            <p class="mb-4">{{ event.eventDescription|length > 150 ? event.eventDescription|slice(0, 150) ~ '...' : event.eventDescription }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="far fa-calendar-alt text-primary me-2"></i>
+                                    {{ event.eventDate|date('d M Y') }}
+                                </div>
+                                <div>
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    {{ event.eventLocation }}
+                                </div>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <a class="btn btn-primary rounded-pill py-2 px-4" href="{{ path('app_event_details', {'id': event.id}) }}">
+                                    <i class="fas fa-info-circle me-2"></i>More Details
+                                </a>
+                                <a class="btn btn-success rounded-pill py-2 px-4" href="{{ path('app_event_register', {'id': event.id}) }}">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 text-center">
+                    <p>No events available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
