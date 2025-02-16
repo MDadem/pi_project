@@ -1,0 +1,106 @@
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Event Analytics{% endblock %}
+
+{% block body %}
+<div class="container-fluid position-relative bg-white d-flex p-0">
+    {% include 'backend/sidebar/sidebar.html.twig' %}
+
+    <div class="content">
+        {% include 'backend/navbar/navbar.html.twig' %}
+        
+        <div class="container-fluid pt-4 px-4">
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="bg-light rounded p-4" style="height: 400px;">
+                        <h6 class="mb-4">Monthly Event Distribution</h6>
+                        <div style="height: 300px;">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-4">
+                <div class="col-12">
+                    <div class="bg-light rounded p-4" style="height: 400px;">
+                        <h6 class="mb-4">Category Distribution</h6>
+                        <div style="height: 300px;">
+                            <canvas id="categoryBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include 'backend/footer/footer.html.twig' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Monthly Events Chart
+        const monthlyData = {{ monthlyEvents|json_encode|raw }};
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyLabels = monthlyData.map(item => monthNames[parseInt(item.month) - 1]);
+        const monthlyValues = monthlyData.map(item => item.count);
+
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'line',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Number of Events',
+                    data: monthlyValues,
+                    fill: false,
+                    borderColor: '#4e73df',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Category Distribution Chart
+        const categoryData = {{ categoryDistribution|json_encode|raw }};
+        const categoryLabels = categoryData.map(item => item.name);
+        const categoryValues = categoryData.map(item => item.count);
+
+        new Chart(document.getElementById('categoryBarChart'), {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Events per Category',
+                    data: categoryValues,
+                    backgroundColor: '#36b9cc',
+                    borderColor: '#2c9faf',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
