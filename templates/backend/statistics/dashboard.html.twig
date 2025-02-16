@@ -1,0 +1,92 @@
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Statistics Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid position-relative bg-white d-flex p-0">
+    {% include 'backend/sidebar/sidebar.html.twig' %}
+
+    <div class="content">
+        {% include 'backend/navbar/navbar.html.twig' %}
+        
+        <div class="container-fluid pt-4 px-4">
+            <div class="row g-4">
+                <div class="col-sm-6 col-xl-4">
+                    <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                        <i class="fa fa-calendar fa-3x text-primary"></i>
+                        <div class="ms-3">
+                            <p class="mb-2">Total Events</p>
+                            <h6 class="mb-0">{{ totalEvents }}</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                    <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                        <i class="fa fa-list fa-3x text-primary"></i>
+                        <div class="ms-3">
+                            <p class="mb-2">Total Categories</p>
+                            <h6 class="mb-0">{{ totalCategories }}</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-4">
+                    <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                        <i class="fa fa-ticket-alt fa-3x text-primary"></i>
+                        <div class="ms-3">
+                            <p class="mb-2">Available Places</p>
+                            <h6 class="mb-0">{{ totalPlaces }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-4">
+                <div class="col-12">
+                    <div class="bg-light rounded p-4" style="height: 400px;">
+                        <h6 class="mb-4">Events Distribution by Category</h6>
+                        <div style="height: 300px;">
+                            <canvas id="categoryPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include 'backend/footer/footer.html.twig' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Prepare data for the pie chart
+        const categoryData = {{ eventsPerCategory|json_encode|raw }};
+        const labels = categoryData.map(item => item.name);
+        const data = categoryData.map(item => item.eventCount);
+
+        // Create pie chart
+        new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                        '#858796', '#5a5c69', '#2c9faf', '#3c9b6c', '#e83e8c'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,16 +1,6 @@
+{% extends 'backend/base.html.twig' %}
 
-{% block stylesheets %}
-    <link href="{{ asset('img/favicon.ico') }}" rel="icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/bootstrap-backoffice.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/backoffice-style.css') }}" rel="stylesheet">
-{% endblock %}
+{% block title %}Events & Categories{% endblock %}
 
 {% block body %}
     <div class="container-fluid position-relative bg-white d-flex p-0">
@@ -21,16 +11,192 @@
             </div>
         </div>
         <!-- Spinner End -->
+
         {% include 'backend/sidebar/sidebar.html.twig' %}
+
         <div class="content">
             {% include 'backend/navbar/navbar.html.twig' %}
+            
             <div class="container-fluid pt-4 px-4">
-                <div class="row vh-100 bg-light rounded align-items-center justify-content-center mx-0">
-                    <div class="col-md-6 text-center">
-                        <h3>This is a blank page</h3>
+                <div class="row g-4">
+                    <!-- Categories Section -->
+                    <div class="col-12 col-xl-4">
+                        <div class="bg-light rounded h-100 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h6 class="mb-0">Categories</h6>
+                            </div>
+                            
+                            <!-- Category Form -->
+                            <div class="bg-white rounded p-3 mb-4">
+                                {{ form_start(categoryForm) }}
+                                    {{ form_row(categoryForm.name) }}
+                                    {{ form_row(categoryForm.description) }}
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-plus me-1"></i> Add Category
+                                        </button>
+                                    </div>
+                                {{ form_end(categoryForm) }}
+                            </div>
+
+                            <!-- Categories Table -->
+                            <div class="table-responsive">
+                                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                                    <thead>
+                                        <tr class="text-dark">
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Events</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category in categories %}
+                                            <tr>
+                                                <td>
+                                                    <span class="category-name" data-id="{{ category.id }}">{{ category.name }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="category-description" data-id="{{ category.id }}">{{ category.description }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">{{ category.eventCount }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-sm btn-primary edit-category" data-id="{{ category.id }}">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <form method="post" action="{{ path('app_dashboard_category_delete', {'id': category.id}) }}" 
+                                                              onsubmit="return confirm('Are you sure you want to delete this category?');" 
+                                                              style="display: inline-block;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
+                                                            <button type="submit" class="btn btn-sm btn-danger" {{ category.eventCount > 0 ? 'disabled' : '' }}>
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Events Section -->
+                    <div class="col-12 col-xl-8">
+                        <div class="bg-light rounded h-100 p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <h6 class="mb-0">Events List</h6>
+                                <a href="{{ path('app_dashboard_event_new') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus me-1"></i> Create New Event
+                                </a>
+                            </div>
+
+                            {% include 'backend/event/_filters.html.twig' %}
+
+                            {% if events is empty %}
+                                <div class="text-center p-4">
+                                    <p class="text-muted mb-4">No events found. Create your first event!</p>
+                                    <img src="{{ asset('img/calendar.png') }}" alt="No events" class="mb-4" style="width: 150px;">
+                                </div>
+                            {% else %}
+                                <div class="table-responsive">
+                                    <table class="table text-start align-middle table-bordered table-hover mb-0">
+                                        <thead>
+                                            <tr class="text-dark">
+                                                <th>Image</th>
+                                                <th>
+                                                    <a href="{{ path('app_dashboard_blank', {'sort': 'title', 'order': app.request.query.get('sort') == 'title' and app.request.query.get('order') == 'ASC' ? 'DESC' : 'ASC'}) }}" class="text-dark text-decoration-none">
+                                                        Title
+                                                        {% if app.request.query.get('sort') == 'title' %}
+                                                            <i class="fas fa-sort-{{ app.request.query.get('order') == 'ASC' ? 'up' : 'down' }}"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th>Category</th>
+                                                <th>
+                                                    <a href="{{ path('app_dashboard_blank', {'sort': 'eventDate', 'order': app.request.query.get('sort') == 'eventDate' and app.request.query.get('order') == 'ASC' ? 'DESC' : 'ASC'}) }}" class="text-dark text-decoration-none">
+                                                        Date
+                                                        {% if app.request.query.get('sort') == 'eventDate' %}
+                                                            <i class="fas fa-sort-{{ app.request.query.get('order') == 'ASC' ? 'up' : 'down' }}"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th>Location</th>
+                                                <th>
+                                                    <a href="{{ path('app_dashboard_blank', {'sort': 'numberOfPlaces', 'order': app.request.query.get('sort') == 'numberOfPlaces' and app.request.query.get('order') == 'ASC' ? 'DESC' : 'ASC'}) }}" class="text-dark text-decoration-none">
+                                                        Places
+                                                        {% if app.request.query.get('sort') == 'numberOfPlaces' %}
+                                                            <i class="fas fa-sort-{{ app.request.query.get('order') == 'ASC' ? 'up' : 'down' }}"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for event in events %}
+                                                <tr>
+                                                    <td>
+                                                        {% if event.imageFilename %}
+                                                            <img src="{{ asset('uploads/events/' ~ event.imageFilename) }}" 
+                                                                 alt="{{ event.title }}" 
+                                                                 class="rounded-circle" 
+                                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                                        {% else %}
+                                                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                                                 style="width: 40px; height: 40px;">
+                                                                <i class="fas fa-image text-white"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ event.title }}</td>
+                                                    <td>
+                                                        <span class="badge bg-primary">{{ event.category.name }}</span>
+                                                    </td>
+                                                    <td>{{ event.eventDate|date('d M Y H:i') }}</td>
+                                                    <td>{{ event.eventLocation }}</td>
+                                                    <td>{{ event.numberOfPlaces }}</td>
+                                                    <td>
+                                                        <span class="badge {{ {
+                                                            'active': 'bg-success',
+                                                            'cancelled': 'bg-danger',
+                                                            'completed': 'bg-secondary'
+                                                        }[event.status] }}">
+                                                            {{ event.status|title }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group" role="group">
+                                                            <a href="{{ path('app_dashboard_event_edit', {'id': event.id}) }}" 
+                                                               class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                            <form method="post" action="{{ path('app_dashboard_event_delete', {'id': event.id}) }}" 
+                                                                  style="display: inline-block;"
+                                                                  onsubmit="return confirm('Are you sure you want to delete this event?');">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
+
             {% include 'backend/footer/footer.html.twig' %}
         </div>
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
@@ -38,14 +204,75 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('lib/chart/chart.min.js') }}"></script>
-    <script src="{{ asset('lib/easing/easing.min.js') }}"></script>
-    <script src="{{ asset('lib/waypoints/waypoints.min.js') }}"></script>
-    <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
-    <script src="{{ asset('lib/tempusdominus/js/moment.min.js') }}"></script>
-    <script src="{{ asset('lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
-    <script src="{{ asset('lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
-    <script src="{{ asset('js/backoffice-main.js') }}"></script>
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to attach edit button listener
+            function attachEditListener(button) {
+                button.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const nameSpan = document.querySelector(`.category-name[data-id="${id}"]`);
+                    const descSpan = document.querySelector(`.category-description[data-id="${id}"]`);
+                    
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.value = nameSpan.textContent.trim();
+                    nameInput.className = 'form-control form-control-sm';
+                    
+                    const descInput = document.createElement('input');
+                    descInput.type = 'text';
+                    descInput.value = descSpan.textContent.trim();
+                    descInput.className = 'form-control form-control-sm';
+                    
+                    const saveButton = document.createElement('button');
+                    saveButton.className = 'btn btn-sm btn-success';
+                    saveButton.innerHTML = '<i class="fas fa-save"></i>';
+                    
+                    nameSpan.parentNode.replaceChild(nameInput, nameSpan);
+                    descSpan.parentNode.replaceChild(descInput, descSpan);
+                    this.parentNode.replaceChild(saveButton, this);
+                    
+                    saveButton.addEventListener('click', async function() {
+                        try {
+                            const response = await fetch(`/dashboard/category/${id}/edit`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    name: nameInput.value,
+                                    description: descInput.value
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                nameSpan.textContent = nameInput.value;
+                                descSpan.textContent = descInput.value;
+                                nameInput.parentNode.replaceChild(nameSpan, nameInput);
+                                descInput.parentNode.replaceChild(descSpan, descInput);
+                                
+                                const editButton = document.createElement('button');
+                                editButton.className = 'btn btn-sm btn-primary edit-category';
+                                editButton.dataset.id = id;
+                                editButton.innerHTML = '<i class="fas fa-edit"></i>';
+                                saveButton.parentNode.replaceChild(editButton, saveButton);
+                                
+                                // Reattach the edit listener to the new button
+                                attachEditListener(editButton);
+                            } else {
+                                throw new Error('Failed to update category');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('An error occurred while saving the category');
+                        }
+                    });
+                });
+            }
+
+            // Attach listeners to all edit buttons
+            const editButtons = document.querySelectorAll('.edit-category');
+            editButtons.forEach(button => attachEditListener(button));
+        });
+    </script>
 {% endblock %}
