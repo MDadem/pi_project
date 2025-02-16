@@ -19,8 +19,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/daterangepicker/daterangepicker.css') }}">
     <link rel="stylesheet" href="{{ asset('css/form-util.css') }}">
     <link rel="stylesheet" href="{{ asset('css/form-main.css') }}">
-</head>
-<body>
+</head><body>
 
 <div class="limiter">
     <div class="container-login100">
@@ -37,6 +36,19 @@
                     {{ error.messageKey|trans(error.messageData, 'security') }}
                 </div>
             {% endif %}
+
+            {# Display flash messages #}
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('warning') %}
+                <div class="alert alert-warning" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
 
             <form class="login100-form validate-form" method="POST" action="{{ path('app_home_signin') }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
@@ -61,7 +73,7 @@
                         </label>
                     </div>
                     <div>
-                        <a href="#" class="txt1">
+                        <a href="{{ path('app_forgot_password') }}" class="txt1">
                             Forgot Password?
                         </a>
                     </div>

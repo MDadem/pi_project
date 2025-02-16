@@ -18,6 +18,17 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Twig\Environment;
+
+
+// related to the reset pwd
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+
+
 final class UserController extends AbstractController {
 
     #[Route('/dashboard/edit-profile/{id}', name: 'app_edit_profile')]
@@ -330,4 +341,91 @@ final class UserController extends AbstractController {
 
         return new JsonResponse(['message' => 'User added successfully', 'userId' => $user->getId()], JsonResponse::HTTP_CREATED);
     }
+
+    #[Route('/forgot-password', name: 'app_forgot_password')]
+    public function requestPasswordReset(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+        UrlGeneratorInterface $urlGenerator,
+        SessionInterface $session,
+        Environment $twig // Correctly inject Twig service
+    ) {
+        if ($request->isMethod('POST')) {
+            $email = $request->request->get('email');
+            $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+            if (!$user) {
+                $this->addFlash('error', 'If an account exists with that email, a password reset link has been sent.');
+                return $this->redirectToRoute('app_home');
+            }
+
+            $resetToken = bin2hex(random_bytes(32));
+            $expirationTime = new \DateTime('+10 minutes');
+
+            $session->set('password_reset_token', $resetToken);
+            $session->set('password_reset_expiration', $expirationTime);
+
+            $resetUrl = $urlGenerator->generate('app_reset_password', ['token' => $resetToken], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            // Render the email template using Twig
+            $emailBody = $twig->render('emails/password_reset.html.twig', [
+                'resetUrl' => $resetUrl,
+            ]);
+
+            // Create and send the email
+            $emailMessage = (new Email())
+                ->from('no-reply@yourdomain.com')
+                ->to($user->getEmail())
+                ->subject('Password Reset Request')
+                ->html($emailBody);
+
+            $mailer->send($emailMessage);
+
+            $this->addFlash('success', 'If an account exists with that email, a password reset link has been sent.');
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        return $this->render('password_reset/forgot_password.html.twig');
+    }
+
+
+    #[Route('/reset-password/{token}', name: 'app_reset_password')]
+    public function resetPassword(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, SessionInterface $session, $token)
+    {
+        // Retrieve the reset token and expiration time from the session
+        $storedToken = $session->get('password_reset_token');
+        $expirationTime = $session->get('password_reset_expiration');
+
+        if (!$storedToken || $storedToken !== $token || new \DateTime() > $expirationTime) {
+            $this->addFlash('error', 'The reset token is invalid or has expired.');
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        if ($request->isMethod('POST')) {
+            $newPassword = $request->request->get('password');
+            $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $request->get('email')]);
+
+            if ($user) {
+                // Use UserPasswordHasherInterface instead of UserPasswordEncoderInterface
+                $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+                $user->setPassword($hashedPassword);
+
+                $entityManager->flush();
+
+                // Clear the session data
+                $session->remove('password_reset_token');
+                $session->remove('password_reset_expiration');
+
+                $this->addFlash('success', 'Your password has been reset successfully.');
+                return $this->redirectToRoute('app_home');
+            } else {
+                $this->addFlash('error', 'User not found.');
+            }
+        }
+
+        return $this->render('password_reset/reset.html.twig');
+    }
+
+
 }

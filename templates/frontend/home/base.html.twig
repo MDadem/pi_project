@@ -43,8 +43,20 @@
 
 <!-- Navbar & Hero Start -->
     {% include 'frontend/navbar/navbar.html.twig' %}{% endblock %}
-<!-- Navbar & Hero End -->
+{#<!-- Navbar & Hero End -->#}
+{#{% for message in app.flashes('error') %}#}
+{#    <div class="alert alert-danger alert-dismissible fade show" role="alert">#}
+{#        {{ message }}#}
+{#        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>#}
+{#    </div>#}
+{#{% endfor %}#}
 
+{#{% for message in app.flashes('success') %}#}
+{#    <div class="alert alert-success alert-dismissible fade show" role="alert">#}
+{#        {{ message }}#}
+{#        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>#}
+{#    </div>#}
+{#{% endfor %}#}
 <!-- About Start -->
 {% block body%}
     {% include 'frontend/about/about.html.twig' %}

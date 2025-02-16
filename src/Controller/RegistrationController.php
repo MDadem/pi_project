@@ -78,7 +78,7 @@ class RegistrationController extends AbstractController
                     ]));
 
                 $mailer->send($email);
-                $this->addFlash('success', 'Your account has been created successfully. A confirmation email has been sent.');
+                $this->addFlash('success', 'Your account has been created successfully. A Welcome email has been sent.');
             } catch (TransportExceptionInterface $e) {
                 $this->addFlash('warning', 'Your account has been created, but the confirmation email could not be sent.');
             }
@@ -144,13 +144,13 @@ class RegistrationController extends AbstractController
                     ->from(new Address('no-reply@culturespace.com', 'CultureSpace'))
                     ->to($user->getEmail())
                     ->subject('Welcome to Our Platform!')
-                    ->html($this->renderView('emails/signup_confirmation.html.twig', [
+                    ->html($this->renderView('emails/signup_user_confirmation.html.twig', [
                         'user' => $user,
                         'login_url' => $loginUrl,
                     ]));
 
                 $mailer->send($email);
-                $this->addFlash('success', 'Your account has been created successfully. A confirmation email has been sent.');
+                $this->addFlash('success', 'Your account has been created successfully. A Welcome email has been sent.');
             } catch (TransportExceptionInterface $e) {
                 $this->addFlash('warning', 'Your account has been created, but the confirmation email could not be sent.');
             }
