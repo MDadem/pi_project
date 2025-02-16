@@ -14,7 +14,7 @@
                     <div class="col-md-4 mb-4">
                         <div class="card shadow-sm">
                             {% if community.banner %}
-                                <img src="{{ asset('uploads/banners/' ~ community.banner) }}" class="card-img-top" alt="Bannière de {{ community.name }}">
+                                <img src="{{ asset(community.banner) }}" class="card-img-top" alt="Bannière de {{ community.name }}">
                             {% else %}
                                 <img src="{{ asset('img/default-banner.jpg') }}" class="card-img-top" alt="Bannière par défaut">
                             {% endif %}

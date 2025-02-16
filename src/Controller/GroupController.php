@@ -12,9 +12,11 @@ use App\Repository\CommunityRepository;
 use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 final class GroupController extends AbstractController
 {
@@ -30,20 +32,42 @@ final class GroupController extends AbstractController
 
     
         #[Route('backoffice/group-ajouter', name: 'app_ajoutergroup')]
-        public function ajouterGroup(Request $re, ManagerRegistry $m): Response
+        public function ajouterGroup(Request $re, ManagerRegistry $m, SluggerInterface $slugger): Response
         {
-    
             $em = $m->getManager();
             $grp = new Community();
-            $addGrpf = $this->createForm(GroupType::class, $grp );
-            $addGrpf -> handleRequest($re);
-            if($addGrpf -> isSubmitted() && $addGrpf->isValid()){
+            $grp->setCreationDate(new \DateTime());  
+
+            $addGrpf = $this->createForm(GroupType::class, $grp);
+            $addGrpf->handleRequest($re);
+        
+            if ($addGrpf->isSubmitted() && $addGrpf->isValid()) {
+                $imageFile = $addGrpf->get('banner')->getData(); 
+        
+                if ($imageFile) {
+                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+        
+                    try {
+                        $imageFile->move(
+                            $this->getParameter('group_images_directory'), // Ensure this parameter is defined in services.yaml
+                            $newFilename
+                        );
+                        $grp->setBanner('uploads/group_images/' . $newFilename);
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Failed to upload image.');
+                    }
+                }
+        
                 $em->persist($grp);
                 $em->flush();
+        
                 return $this->redirectToRoute("app_group");
             }
+        
             return $this->render('group/ajoutergrp.html.twig', [
-                'form' => $addGrpf,
+                'form' => $addGrpf->createView(),
             ]);
         }
     
