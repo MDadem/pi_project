@@ -20,7 +20,18 @@ class Cart
     private ?float $total = null;
 
     #[ORM\Column]
-    private ?int $productQuantity = null;
+    private ?int $product_quantity = null;
+
+    #[ORM\OneToOne(mappedBy: 'cart', cascade: ['persist', 'remove'])]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'carts')]
+    private ?Product $product = null;
+
+    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'cartItems')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Order $order = null;
+    
 
     public function getId(): ?int
     {
@@ -35,7 +46,6 @@ class Cart
     public function setPrice(float $price): static
     {
         $this->price = $price;
-
         return $this;
     }
 
@@ -47,19 +57,58 @@ class Cart
     public function setTotal(float $total): static
     {
         $this->total = $total;
-
         return $this;
     }
 
     public function getProductQuantity(): ?int
     {
-        return $this->productQuantity;
+        return $this->product_quantity;
     }
 
-    public function setProductQuantity(int $productQuantity): static
+    public function setProductQuantity(int $product_quantity): static
     {
-        $this->productQuantity = $productQuantity;
+        $this->product_quantity = $product_quantity;
+        return $this;
+    }
 
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        if ($user === null && $this->user !== null) {
+            $this->user->setCart(null);
+        }
+
+        if ($user !== null && $user->getCart() !== $this) {
+            $user->setCart($this);
+        }
+
+        $this->user = $user;
+        return $this;
+    }
+
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
+
+    public function setProduct(?Product $product): static
+    {
+        $this->product = $product;
+        return $this;
+    }
+
+    public function getOrder(): ?Order
+    {
+        return $this->order;
+    }
+
+    public function setOrder(?Order $order): static
+    {
+        $this->order = $order;
         return $this;
     }
 }

@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande Validée{% endblock %}
+
+{% block body %}
+<div class="alert alert-success text-center my-4">
+    <h2>Commande Validée !</h2>
+    <p>{{ message }}</p>
+</div>
+
+{% if validatedCart is not empty %}
+    <h4>Produits commandés :</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix</th>
+                <th>Quantité</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in validatedCart %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.price }} TND</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.total }} TND</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<div class="d-flex justify-content-center mt-4">
+    <a href="{{ path('product_list') }}" class="btn btn-primary mx-2">Retour aux produits</a>
+    <a href="{{ path('home') }}" class="btn btn-secondary mx-2">Retour à l'accueil</a>
+</div>
+{% endblock %}
