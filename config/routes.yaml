@@ -3,3 +3,12 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+# Define the login route
+app_dashboard_signin:
+    path: /dashboard/signin
+    controller: App\Controller\SecurityController::signin
+    methods: [GET, POST]
+
+# Define the logout route
+app_logout:
+    path: /logout

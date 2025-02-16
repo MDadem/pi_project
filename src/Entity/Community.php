@@ -6,6 +6,7 @@ use App\Enums\CategoryGrp;
 use App\Repository\CommunityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -56,7 +57,6 @@ class Community
         $this->joinRequests = new ArrayCollection();
         $this->posts = new ArrayCollection();
     }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -109,6 +109,7 @@ class Community
 
         return $this;
     }
+
 
     /**
      * @return Collection<int, CommunityMembers>

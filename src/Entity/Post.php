@@ -17,6 +17,7 @@ class Post
     #[ORM\Column(length: 255)]
     private ?string $content = null;
 
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $postImg = null;
 
@@ -26,6 +27,7 @@ class Post
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $modification_date = null;
 
+
     #[ORM\Column(nullable: true)]
     private ?int $likes = null;
 
@@ -34,7 +36,6 @@ class Post
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
     private ?User $user = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -48,6 +49,7 @@ class Post
     public function setContent(string $content): static
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -70,6 +72,7 @@ class Post
     public function setCreationDate(\DateTimeInterface $creation_date): static
     {
         $this->creation_date = $creation_date;
+
         return $this;
     }
 
@@ -81,6 +84,7 @@ class Post
     public function setModificationDate(\DateTimeInterface $modification_date): static
     {
         $this->modification_date = $modification_date;
+
         return $this;
     }
 

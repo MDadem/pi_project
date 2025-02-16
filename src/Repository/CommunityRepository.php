@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\User;
 
+
 /**
  * @extends ServiceEntityRepository<Community>
  */
@@ -41,9 +42,8 @@ class CommunityRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
-
-
-public function findAllWithMemberCount(): array
+  
+  public function findAllWithMemberCount(): array
 {
     return $this->createQueryBuilder('c')
         ->select('c, COUNT(cm.id) AS memberCount')
