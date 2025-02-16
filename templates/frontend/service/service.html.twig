@@ -1,30 +1,61 @@
-<div class="container-fluid service pb-5">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nos Groupes</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <style>
+        /* Style pour uniformiser les images */
+        .groupe-img img {
+            width: 100%;
+            height: 250px; /* Hauteur fixe */
+            object-fit: cover; /* Ajuste l'image sans déformation */
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .groupe-item {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .groupe-item:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid groupes pb-5">
     <div class="container pb-5">
         <div class="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s" style="max-width: 800px;">
-            <h4 class="text-primary">Our Services</h4>
-            <h1 class="display-5 mb-4">We Services provided best offer</h1>
-            <p class="mb-0">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur adipisci facilis cupiditate recusandae aperiam temporibus corporis itaque quis facere, numquam, ad culpa deserunt sint dolorem autem obcaecati, ipsam mollitia hic.</p>
+            <h4 class="text-primary">Nos Groupes</h4>
+            <h1 class="display-5 mb-4">Rejoignez nos communautés sociales</h1>
+            <p class="mb-0">Partagez vos passions et échangez avec d'autres membres au sein de nos groupes thématiques.</p>
         </div>
         <div class="row g-4">
-            {% set services = [
-                {'image': 'service-1.jpg', 'title': 'Strategy Consulting'},
-                {'image': 'service-2.jpg', 'title': 'Financial Advisory'},
-                {'image': 'service-3.jpg', 'title': 'Managements'},
-                {'image': 'service-4.jpg', 'title': 'Supply Optimization'},
-                {'image': 'service-5.jpg', 'title': 'HR Consulting'},
-                {'image': 'service-6.jpg', 'title': 'Marketing Consulting'}
+            {% set groupes = [
+                {'image': 'grp-art.jpg', 'title': 'Art'},
+                {'image': 'grp-music.jpg', 'title': 'Musique'},
+                {'image': 'grp-ciema.jpg', 'title': 'Cinéma'},
+                {'image': 'grp-theatre.jpg', 'title': 'Théâtre'},
+                {'image': 'grp-arch.jpg', 'title': 'Architecture'},
+                {'image': 'grp-dance.jpg', 'title': 'Danse'}
             ] %}
 
-            {% for service in services %}
+            {% for groupe in groupes %}
                 <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="{{ loop.index * 0.2 }}s">
-                    <div class="service-item">
-                        <div class="service-img">
-                            <img src="{{ asset('img/' ~ service.image) }}" class="img-fluid rounded-top w-100" alt="Image">
+                    <div class="groupe-item">
+                        <div class="groupe-img">
+                            <img src="{{ asset('/img/' ~ groupe.image) }}" class="img-fluid" alt="Image de {{ groupe.title }}">
                         </div>
                         <div class="rounded-bottom p-4">
-                            <a href="#" class="h4 d-inline-block mb-4">{{ service.title }}</a>
-                            <p class="mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur, sint? Excepturi facilis neque nesciunt similique officiis veritatis,</p>
-                            <a class="btn btn-primary rounded-pill py-2 px-4" href="#">Learn More</a>
+                            <a href="#" class="h4 d-inline-block mb-4">{{ groupe.title }}</a>
+                            <p class="mb-4">Rejoignez le groupe {{ groupe.title }} pour échanger avec d'autres passionnés et partager vos expériences.</p>
+                            <a class="btn btn-primary rounded-pill py-2 px-4" href="#">Découvrir</a>
                         </div>
                     </div>
                 </div>
@@ -32,3 +63,6 @@
         </div>
     </div>
 </div>
+
+</body>
+</html>

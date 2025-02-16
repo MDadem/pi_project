@@ -17,8 +17,8 @@ class Post
     #[ORM\Column(length: 255)]
     private ?string $content = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $postIMG = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $postImg = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $creation_date = null;
@@ -26,8 +26,14 @@ class Post
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $modification_date = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $likes = null;
+
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    private ?Community $community = null;
+
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -42,19 +48,17 @@ class Post
     public function setContent(string $content): static
     {
         $this->content = $content;
-
         return $this;
     }
 
-    public function getPostIMG(): ?string
+    public function getPostImg(): ?string
     {
-        return $this->postIMG;
+        return $this->postImg;
     }
 
-    public function setPostIMG(string $postIMG): static
+    public function setPostImg(?string $postImg): static
     {
-        $this->postIMG = $postIMG;
-
+        $this->postImg = $postImg;
         return $this;
     }
 
@@ -66,7 +70,6 @@ class Post
     public function setCreationDate(\DateTimeInterface $creation_date): static
     {
         $this->creation_date = $creation_date;
-
         return $this;
     }
 
@@ -78,7 +81,6 @@ class Post
     public function setModificationDate(\DateTimeInterface $modification_date): static
     {
         $this->modification_date = $modification_date;
-
         return $this;
     }
 
@@ -87,10 +89,31 @@ class Post
         return $this->likes;
     }
 
-    public function setLikes(int $likes): static
+    public function setLikes(?int $likes): static
     {
         $this->likes = $likes;
+        return $this;
+    }
 
+    public function getCommunity(): ?Community
+    {
+        return $this->community;
+    }
+
+    public function setCommunity(?Community $community): static
+    {
+        $this->community = $community;
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
         return $this;
     }
 }
