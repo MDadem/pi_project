@@ -24,7 +24,9 @@
     <link rel="stylesheet" href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}">
     <link rel="stylesheet" href="{{ asset('lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}">
 
+
     <!-- Customized Bootstrap Stylesheet -->
+
     <link rel="stylesheet" href="{{ asset('css/bootstrap-backoffice.min.css') }}">
 
     <!-- Template Stylesheet -->
@@ -52,6 +54,7 @@
                         </a>
                         <h3>Sign In</h3>
                     </div>
+
 
                     <!-- Flash Messages -->
                     {% for message in app.flashes('success') %}
@@ -104,7 +107,6 @@
                     </form>
                     <p class="text-center mb-0">Don't have an Account? <a href="{{ path('app_dashboard_signup') }}">Sign Up</a></p>
                 </div>
-
             </div>
         </div>
     </div>
@@ -127,3 +129,4 @@
 </body>
 
 </html>
+
