@@ -7,13 +7,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController{
-    #[Route('/', name: 'app_home')]
+
+    #[Route('/home', name: 'app_home')]
+
     public function index(): Response
     {
         return $this->render('frontend/home/base.html.twig', [
             'controller_name' => 'HomeController',
         ]);
     }
+
 
     #[Route('/auth', name: 'app_auth')]
     public function auth(): Response
@@ -63,7 +66,6 @@ final class HomeController extends AbstractController{
             'controller_name' => 'HomeController',
         ]);
     }
-
 
 
 }
