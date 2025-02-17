@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Backend;
+namespace App\Controller;
 
 use App\Entity\Event;
 use App\Entity\Category;
@@ -11,7 +11,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/dashboard')]
 class StatisticsController extends AbstractController
 {
     #[Route('/statistics', name: 'app_dashboard_statistics')]

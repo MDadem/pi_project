@@ -37,7 +37,7 @@ final class UserController extends AbstractController {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         if ($this->getUser() !== $user) {
-            return $this->redirectToRoute('dashboard');
+            return $this->redirectToRoute('dashboard_signin');
         }
 
         $form = $this->createForm(UserType::class, $user);
@@ -427,5 +427,59 @@ final class UserController extends AbstractController {
         return $this->render('password_reset/reset.html.twig');
     }
 
+    #[Route('/contact/submit', name: 'contact_submit', methods: ['POST'])]
+    public function submitContactForm(Request $request, MailerInterface $mailer, Environment $twig): Response
+    {
+    
 
+
+        // Get form data
+        $name = $request->request->get('name');
+        $email = $request->request->get('email');
+        $phone = $request->request->get('phone');
+        $project = $request->request->get('project');
+        $subject = $request->request->get('subject');
+        $message = $request->request->get('message');
+
+      // Simple Validation
+    if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+        $this->addFlash('error', 'All required fields must be filled.');
+        return $this->redirectToRoute('app_contact');
+    }
+
+    // Email validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $this->addFlash('error', 'Invalid email format.');
+        return $this->redirectToRoute('app_contact');
+    }
+
+    // Simulate message processing (Save to DB or Send Email)
+    try {
+        // Render the email template
+        $emailContent = $twig->render('emails/contact-email.html.twig', [
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'project' => $project,
+            'subject' => $subject,
+            'message' => $message
+        ]);
+
+        // Create email
+        $email = (new Email())
+            ->from($email) // Sender's email
+            ->to('culturespaceTeam@gmail.com') // Recipient's email
+            ->subject('New Contact Form Submission: ' . $subject)
+            ->html($emailContent);
+
+        // Send email
+        $mailer->send($email);
+
+        $this->addFlash('success', 'Your message has been sent successfully!');
+    } catch (\Exception $e) {
+        $this->addFlash('error', 'There was an error sending your message: ' . $e->getMessage());
+    }
+
+    return $this->redirectToRoute('app_contact');
+}
 }

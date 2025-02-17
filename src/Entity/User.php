@@ -44,12 +44,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isBlocked = false;
     #[ORM\Column(length: 255)]
-//    #[Assert\NotBlank(message: 'Password cannot be blank')]
-//    #[Assert\Length(min: 8, minMessage: 'Password must be at least 8 characters long')]
-//    #[Assert\Regex(
-//        pattern: '/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/',
-//        message: 'Password must contain at least one uppercase letter, one digit, and one special character'
-//    )]
+    #[Assert\NotBlank(message: 'Password cannot be blank')]
+    #[Assert\Length(min: 8, minMessage: 'Password must be at least 8 characters long')]
+    #[Assert\Regex(
+        pattern: '/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/',
+        message: 'Password must contain at least one uppercase letter, one digit, and one special character'
+    )]
     private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]

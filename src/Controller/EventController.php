@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Backend;
+namespace App\Controller;
 
 use App\Entity\Event;
 use App\Entity\Category;
@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
-#[Route('/dashboard')]
 class EventController extends AbstractController
 {
     #[Route('/blank', name: 'app_dashboard_blank')]
@@ -109,24 +108,24 @@ class EventController extends AbstractController
         return $this->json(['success' => true]);
     }
 
-    #[Route('/category/{id}/delete', name: 'app_dashboard_category_delete', methods: ['POST'])]
-    public function deleteCategory(Request $request, Category $category, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
-            // Check if category is being used by any events
-            $events = $entityManager->getRepository(Event::class)->findBy(['category' => $category]);
-            if (count($events) > 0) {
-                $this->addFlash('error', 'Cannot delete category that is being used by events');
-                return $this->redirectToRoute('app_dashboard_blank');
-            }
+    // #[Route('/category/{id}/delete', name: 'app_dashboard_category_delete', methods: ['POST'])]
+    // public function deleteCategory(Request $request, Category $category, EntityManagerInterface $entityManager): Response
+    // {
+    //     if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
+    //         // Check if category is being used by any events
+    //         $events = $entityManager->getRepository(Event::class)->findBy(['category' => $category]);
+    //         if (count($events) > 0) {
+    //             $this->addFlash('error', 'Cannot delete category that is being used by events');
+    //             return $this->redirectToRoute('app_dashboard_blank');
+    //         }
 
-            $entityManager->remove($category);
-            $entityManager->flush();
-            $this->addFlash('success', 'Category deleted successfully');
-        }
+    //         $entityManager->remove($category);
+    //         $entityManager->flush();
+    //         $this->addFlash('success', 'Category deleted successfully');
+    //     }
 
-        return $this->redirectToRoute('app_dashboard_blank');
-    }
+    //     return $this->redirectToRoute('app_dashboard_blank');
+    // }
 
     #[Route('/new', name: 'app_dashboard_event_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
