@@ -17,10 +17,12 @@ class CategoryType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Category Name',
+                'empty_data' =>'',
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('description', TextareaType::class, [ // Fixed typo here
                 'label' => 'Description', // Fixed label
+                'empty_data' =>'',
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('save', SubmitType::class, [

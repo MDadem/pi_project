@@ -43,7 +43,7 @@
 
 {% block body %}
     <h1>Edit Category</h1>
-    {{ form_start(form) }}
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
         {{ form_widget(form) }}
     {{ form_end(form) }}
     <a href="{{ path('category_index') }}" class="btn btn-secondary mt-3">Back to List</a>
