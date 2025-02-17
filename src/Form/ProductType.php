@@ -3,7 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Product;
-use App\Enum\Category;
+use App\Entity\Category;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -17,6 +17,7 @@ use App\Form\DataTransformer\CategoryToStringTransformer;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\GreaterThan;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class ProductType extends AbstractType
 {
@@ -79,20 +80,15 @@ class ProductType extends AbstractType
                 ],
             ])
             // Categories Selection (Multiple)
-            ->add('categories', ChoiceType::class, [
-                'choices' => array_combine(
-                    array_map(fn(Category $category) => ucfirst($category->value), Category::cases()), 
-                    array_map(fn(Category $category) => $category->value, Category::cases())
-                ),
-                'multiple' => true, 
-                'expanded' => false,
-                'label'    => 'Select Categories',
-                'required' => true,
-                'data'     => [Category::ELECTRONICS],
+            ->add('category', EntityType::class, [
+                'class' => Category::class,
+                'choice_label' => 'name', // displays the category name
+                'label' => 'Select Ad Category',
+                'attr' => [
+                    'class' => 'form-control bg-white',
+                ],
             ]);
-
         // Apply a data transformer for categories if needed.
-        $builder->get('categories')->addModelTransformer(new CategoryToStringTransformer());
 
         // Note: The "owner" field is not included in the form.
         // It is set in the controller based on the logged-in user.
