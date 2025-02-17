@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
@@ -28,12 +29,12 @@ class Order
     #[ORM\ManyToOne(inversedBy: 'orders')]
     private ?User $user = null;
 
-    #[ORM\OneToMany(targetEntity: Cart::class, mappedBy: 'order', cascade: ['persist', 'remove'])]
-    private Collection $cartItems;
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'])]
+    private Collection $orderItems;
 
     public function __construct()
     {
-        $this->cartItems = new ArrayCollection();
+        $this->orderItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -86,27 +87,27 @@ class Order
     }
 
     /**
-     * @return Collection<int, Cart>
+     * @return Collection<int, OrderItem>
      */
-    public function getCartItems(): Collection
+    public function getOrderItems(): Collection
     {
-        return $this->cartItems;
+        return $this->orderItems;
     }
 
-    public function addCartItem(Cart $cartItem): self
+    public function addOrderItem(OrderItem $orderItem): self
     {
-        if (!$this->cartItems->contains($cartItem)) {
-            $this->cartItems->add($cartItem);
-            $cartItem->setOrder($this);
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems[] = $orderItem;
+            $orderItem->setOrder($this);
         }
         return $this;
     }
 
-    public function removeCartItem(Cart $cartItem): self
+    public function removeOrderItem(OrderItem $orderItem): self
     {
-        if ($this->cartItems->removeElement($cartItem)) {
-            if ($cartItem->getOrder() === $this) {
-                $cartItem->setOrder(null);
+        if ($this->orderItems->removeElement($orderItem)) {
+            if ($orderItem->getOrder() === $this) {
+                $orderItem->setOrder(null);
             }
         }
         return $this;

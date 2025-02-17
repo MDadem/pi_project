@@ -29,18 +29,19 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in order.cartItems %}
-            <tr>
-                <td>{{ item.product.nom }}</td>
-                <td>{{ item.price }} TND</td>
-                <td>{{ item.productQuantity }}</td>
-                <td>{{ item.total }} TND</td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4" class="text-center">Aucun article trouvé pour cette commande.</td>
-            </tr>
-        {% endfor %}
+        {% for item in order.orderItems %}  {# Vérifie que la relation utilisée est correcte #}
+    <tr>
+        <td>{{ item.product.nom }}</td>
+        <td>{{ item.price }} TND</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.total }} TND</td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="4" class="text-center">Aucun article trouvé pour cette commande.</td>
+    </tr>
+{% endfor %}
+
     </tbody>
 </table>
 
