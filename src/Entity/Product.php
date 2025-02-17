@@ -6,14 +6,11 @@ use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use App\Enum\Category;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {
-    public function __construct()
-    {
-        $this->categories = []; // Initialize as an empty array
-    }
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -43,6 +40,9 @@ class Product
     #[ORM\Column(type: "json")]  // Store as JSON in the database
     private array $categories = [];
 
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'products')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $owner = null;
 
     public function getId(): ?int
     {
@@ -133,17 +133,6 @@ class Product
         return $this;
     }
 
-    // public function getCategories(): array
-    // {
-    //     return  array_unique($this->categories);
-    // }
-
-    // public function setCategories(array $categories): self
-    // {
-    // $this->categories = $categories;
-    // return $this;
-    // }
-
     public function getCategories(): array
     {
         return $this->categories ?? [];
@@ -153,6 +142,17 @@ class Product
     {
         // Ensure all values are strings (Enum values)
         $this->categories = array_map(fn(Category $category) => $category->value, $categories);
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(User $owner): self
+    {
+        $this->owner = $owner;
         return $this;
     }
 }

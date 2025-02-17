@@ -3,28 +3,43 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Entity\User;
 use App\Form\ProductType;
-use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 
 class ProductController extends AbstractController
 {
     #[Route('/product/new', name: 'product_new')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        // For testing: if no real user is logged in, fetch a test user
+        $user = $this->getUser();
+        if (!$user) {
+            $user = $entityManager->getRepository(User::class)->find(1);
+            if (!$user) {
+                throw new \Exception("Test user not found. Please insert a test user.");
+            }
+        }
+
         $product = new Product();
-        $form = $this->createForm(ProductType::class, $product);
+        $form = $this->createForm(ProductType::class, $product, [
+            'attr' => ['enctype' => 'multipart/form-data']
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             if (null === $product->getCreatedAt()) {
                 $product->setCreatedAt(new \DateTime());
             }
+            
+            // Set the owner (for testing; ownership restrictions are ignored here)
+            $product->setOwner($user);
 
             /** @var UploadedFile $imageFile */
             $imageFile = $form->get('image_url')->getData();
@@ -33,8 +48,12 @@ class ProductController extends AbstractController
                 if (!is_dir($uploadsDirectory)) {
                     mkdir($uploadsDirectory, 0777, true);
                 }
-                $newFilename = uniqid().'.'.$imageFile->guessExtension();
-                $imageFile->move($uploadsDirectory, $newFilename);
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                try {
+                    $imageFile->move($uploadsDirectory, $newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Image upload failed.');
+                }
                 $product->setImageUrl('/uploads/products/' . $newFilename);
             }
 
@@ -42,11 +61,70 @@ class ProductController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Product created successfully!');
-            return $this->redirectToRoute('product_new', ['id' => $product->getId()]);
+            return $this->redirectToRoute('product_list');
+        } elseif ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'There was an error creating the product. Please check your form.');
         }
 
         return $this->render('frontend/product/add_product.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/product/list', name: 'product_list')]
+    public function list(EntityManagerInterface $entityManager): Response
+    {
+        $products = $entityManager->getRepository(Product::class)->findAll();
+        return $this->render('frontend/product/list_product.html.twig', [
+            'products' => $products,
+        ]);
+    }
+
+    #[Route('/product/{id}/edit', name: 'product_edit')]
+    public function edit(Request $request, Product $product, EntityManagerInterface $entityManager): Response
+    {
+        // No user restriction – anyone can edit
+        $form = $this->createForm(ProductType::class, $product, [
+            'attr' => ['enctype' => 'multipart/form-data']
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile $imageFile */
+            $imageFile = $form->get('image_url')->getData();
+            if ($imageFile) {
+                $uploadsDirectory = $this->getParameter('kernel.project_dir') . '/public/uploads/products';
+                if (!is_dir($uploadsDirectory)) {
+                    mkdir($uploadsDirectory, 0777, true);
+                }
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                try {
+                    $imageFile->move($uploadsDirectory, $newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Image upload failed.');
+                }
+                $product->setImageUrl('/uploads/products/' . $newFilename);
+            }
+            $entityManager->flush();
+            $this->addFlash('success', 'Product updated successfully!');
+            return $this->redirectToRoute('product_list');
+        }
+
+        return $this->render('frontend/product/edit_product.html.twig', [
+            'form'    => $form->createView(),
+            'product' => $product,
+        ]);
+    }
+
+    #[Route('/product/{id}', name: 'product_delete', methods: ['POST'])]
+    public function delete(Request $request, Product $product, EntityManagerInterface $entityManager): Response
+    {
+        // No user restriction – anyone can delete
+        if ($this->isCsrfTokenValid('delete' . $product->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($product);
+            $entityManager->flush();
+            $this->addFlash('success', 'Product deleted successfully!');
+        }
+        return $this->redirectToRoute('product_list');
     }
 }

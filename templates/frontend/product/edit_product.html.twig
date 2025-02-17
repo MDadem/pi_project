@@ -1,0 +1,53 @@
+{# templates/frontend/product/edit_product.html.twig #}
+
+{% block title %}Edit Product{% endblock %}
+
+{% block body %}
+<h2 class="text-center mb-5">Edit Product</h2>
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="form-group">
+            {{ form_label(form.productName) }}
+            {{ form_widget(form.productName, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.productName) }}
+          </div>
+          <div class="form-group">
+            {{ form_label(form.productDescription) }}
+            {{ form_widget(form.productDescription, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.productDescription) }}
+          </div>
+          <div class="row">
+            <div class="col-md-6 form-group">
+              {{ form_label(form.productPrice) }}
+              {{ form_widget(form.productPrice, {'attr': {'class': 'form-control'}}) }}
+              {{ form_errors(form.productPrice) }}
+            </div>
+            <div class="col-md-6 form-group">
+              {{ form_label(form.productStock) }}
+              {{ form_widget(form.productStock, {'attr': {'class': 'form-control'}}) }}
+              {{ form_errors(form.productStock) }}
+            </div>
+          </div>
+          <div class="form-group">
+            {{ form_label(form.categories) }}
+            {{ form_widget(form.categories, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.categories) }}
+          </div>
+          <div class="form-group">
+            {{ form_label(form.image_url) }}<br>
+            {% if product.imageUrl %} 
+              <img src="{{ product.imageUrl }}" alt="{{ product.productName }}" class="img-thumbnail mb-2" style="max-height: 150px;">
+            {% endif %}
+            {{ form_widget(form.image_url, {'attr': {'class': 'form-control-file'}}) }}
+            {{ form_errors(form.image_url) }}
+          </div>
+          <button type="submit" class="btn btn-primary">Update Product</button>
+        </div>
+      </div>
+    {{ form_end(form) }}
+  </div>
+</div>
+{% endblock %}

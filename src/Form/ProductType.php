@@ -23,7 +23,7 @@ class ProductType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            // Title of Ad (Product Name)
+            // Product Name (Title of Ad)
             ->add('productName', TextType::class, [
                 'label'    => 'Title Of Ad',
                 'required' => true,
@@ -58,9 +58,9 @@ class ProductType extends AbstractType
             ])
             // Image Upload (using FileType instead of UrlType)
             ->add('image_url', FileType::class, [
-                'label' => 'Upload Image',
-                'mapped' => false, // Prevent automatic mapping to entity
-                'required' => true, // Ensure file is required
+                'label'    => 'Upload Image',
+                'mapped'   => false, // Prevent automatic mapping to the entity (handled in controller)
+                'required' => true,
                 'constraints' => [
                     new NotNull(['message' => 'Please upload an image.']),
                     new File([
@@ -86,11 +86,16 @@ class ProductType extends AbstractType
                 ),
                 'multiple' => true, 
                 'expanded' => false,
-                'label' => 'Select Categories',
+                'label'    => 'Select Categories',
                 'required' => true,
+                'data'     => [Category::ELECTRONICS],
             ]);
-    
+
+        // Apply a data transformer for categories if needed.
         $builder->get('categories')->addModelTransformer(new CategoryToStringTransformer());
+
+        // Note: The "owner" field is not included in the form.
+        // It is set in the controller based on the logged-in user.
     }
 
     public function configureOptions(OptionsResolver $resolver)
