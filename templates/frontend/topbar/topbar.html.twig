@@ -10,6 +10,7 @@
         </div>
         <div class="col-lg-4 text-center text-lg-end">
             <div class="d-inline-flex align-items-center" style="height: 45px;">
+
                 {% if not app.user %}
                     <a href="{{ path('app_home_signup') }}">
                         <small class="me-3 text-dark">
@@ -17,11 +18,14 @@
                         </small>
                     </a>
 
+
                     <a href="{{ path('app_home_signin') }}">
+
                         <small class="me-3 text-dark">
                             <i class="fa fa-sign-in-alt text-primary me-2"></i>Login
                         </small>
                     </a>
+
                 {% else %}
                     <!-- Display user's details if logged in -->
                     <div class="d-flex align-items-center me-3">
@@ -30,6 +34,7 @@
                             {{ app.user.firstName }} {{ app.user.lastName }}
                         </span>
                     </div>
+
                 {% endif %}
 
                 <div class="dropdown">
@@ -40,6 +45,8 @@
                         </small>
                     </a>
                     <div class="dropdown-menu rounded">
+
+
                         {% if app.user %}
                             <a href="{{ path('app_edit_profile_user', {'id': app.user.id}) }}" class="dropdown-item">
                                 <i class="fas fa-cog me-2"></i> My Profile
@@ -47,6 +54,7 @@
                             <a href="{{ path('app_logout') }}" class="dropdown-item">
                                 <i class="fas fa-power-off me-2"></i> Log Out
                             </a>
+
                         {% endif %}
                     </div>
                 </div>

@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Event;
 
+
 final class HomeController extends AbstractController{
 
     #[Route('/home', name: 'app_home')]
@@ -53,7 +54,7 @@ final class HomeController extends AbstractController{
     }
 
     #[Route('/dashboard/404', name: 'app_dashboard_404')]
-    public function dashboard_404(): Response
+    public function dashboard_404(): Response 
     {
         return $this->render('backend/404/404.html.twig', [
             'controller_name' => 'HomeController',

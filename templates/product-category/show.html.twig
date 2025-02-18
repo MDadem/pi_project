@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Category Details | CultureSpace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    {% include 'frontend/navbar/navbar.html.twig' %}
+
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">Category Details</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>ID:</strong> {{ productCategory.id }}</p>
+                <p><strong>Name:</strong> {{ productCategory.name }}</p>
+                <p><strong>Description:</strong> {{ productCategory.description }}</p>
+                
+                <a href="{{ path('product_category_edit', {'id': productCategory.id}) }}" class="btn btn-warning">Edit</a>
+                <a href="{{ path('product_category_index') }}" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+
+    {% include 'frontend/footer/footer.html.twig' %}
+</body>
+</html>
