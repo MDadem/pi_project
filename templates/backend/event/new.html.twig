@@ -1,0 +1,43 @@
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Create New Event{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Create New Event</h1>
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-calendar-plus me-1"></i>
+                        New Event Details
+                    </div>
+                    <a href="{{ path('app_dashboard_blank') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                    {{ form_row(form.title, {'row_attr': {'class': 'mb-3'}}) }}
+                    {{ form_row(form.eventDescription, {'row_attr': {'class': 'mb-3'}}) }}
+                    {{ form_row(form.eventDate, {'row_attr': {'class': 'mb-3'}}) }}
+                    {{ form_row(form.eventLocation, {'row_attr': {'class': 'mb-3'}}) }}
+                    {{ form_row(form.category, {'row_attr': {'class': 'mb-3'}}) }}
+                    {{ form_row(form.numberOfPlaces, {'row_attr': {'class': 'mb-3'}}) }}
+                    {{ form_row(form.status, {'row_attr': {'class': 'mb-3'}}) }}
+                    {{ form_row(form.imageFile, {
+                        'row_attr': {'class': 'mb-4'},
+                        'help': 'Supported formats: JPEG, PNG. Max size: 1MB'
+                    }) }}
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-save me-1"></i> Create Event
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Commande{% endblock %}
+
+{% block body %}
+<h1 class="my-4">Détails de la Commande #{{ order.id }}</h1>
+
+<div class="mb-4">
+    <p><strong>Date de création :</strong> {{ order.creationDate|date('d/m/Y H:i') }}</p>
+    <p><strong>Statut :</strong> {{ order.status }}</p>
+    <p><strong>Utilisateur :</strong> 
+        {% if order.user %}
+            {{ order.user.username }}
+        {% else %}
+            Non défini
+        {% endif %}
+    </p>
+    <p><strong>Total :</strong> {{ order.totalPrice }} TND</p>
+</div>
+
+<h4>Articles de la commande :</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Produit</th>
+            <th>Prix unitaire</th>
+            <th>Quantité</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in order.orderItems %}  {# Vérifie que la relation utilisée est correcte #}
+    <tr>
+        <td>{{ item.product.nom }}</td>
+        <td>{{ item.price }} TND</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.total }} TND</td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="4" class="text-center">Aucun article trouvé pour cette commande.</td>
+    </tr>
+{% endfor %}
+
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between mt-4">
+    <a href="{{ path('admin_commande') }}" class="btn btn-outline-secondary">Retour à la liste des commandes</a>
+</div>
+{% endblock %}

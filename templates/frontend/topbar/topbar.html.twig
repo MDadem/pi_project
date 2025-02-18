@@ -10,19 +10,23 @@
         </div>
         <div class="col-lg-4 text-center text-lg-end">
             <div class="d-inline-flex align-items-center" style="height: 45px;">
-                {# {% if not app.user %} #}
-                    {# <a href="{{ path('app_home_signup') }}"> #}
+
+                {% if not app.user %}
+                    <a href="{{ path('app_home_signup') }}">
                         <small class="me-3 text-dark">
                             <i class="fa fa-user text-primary me-2"></i>Register
                         </small>
                     </a>
 
-                    {# <a href="{{ path('app_home_signin') }}"> #}
+
+                    <a href="{{ path('app_home_signin') }}">
+
                         <small class="me-3 text-dark">
                             <i class="fa fa-sign-in-alt text-primary me-2"></i>Login
                         </small>
                     </a>
-                {# {% else %}
+
+                {% else %}
                     <!-- Display user's details if logged in -->
                     <div class="d-flex align-items-center me-3">
                         <img class="rounded-circle me-lg-2" src="{{ app.user.profileIMG ? asset(app.user.profileIMG) : asset('img/team-3.jpg') }}" alt="" style="width: 40px; height: 40px;">
@@ -30,7 +34,8 @@
                             {{ app.user.firstName }} {{ app.user.lastName }}
                         </span>
                     </div>
-                {% endif %} #}
+
+                {% endif %}
 
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle text-dark" data-bs-toggle="dropdown">
@@ -40,14 +45,17 @@
                         </small>
                     </a>
                     <div class="dropdown-menu rounded">
-                        {# {% if app.user %}
+
+
+                        {% if app.user %}
                             <a href="{{ path('app_edit_profile_user', {'id': app.user.id}) }}" class="dropdown-item">
                                 <i class="fas fa-cog me-2"></i> My Profile
                             </a>
                             <a href="{{ path('app_logout') }}" class="dropdown-item">
                                 <i class="fas fa-power-off me-2"></i> Log Out
                             </a>
-                        {% endif %} #}
+
+                        {% endif %}
                     </div>
                 </div>
             </div>

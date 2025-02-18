@@ -1,0 +1,55 @@
+{% extends 'accueil/base.html.twig' %}
+
+{% block title %}Liste des Groupes{% endblock %}
+
+{% block content %}
+    <h1 class="text-center my-4">Liste des Groupes</h1>
+
+    <div class="container">
+        <div class="row">
+            {% for group in groups %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        {% if group.banner %}
+                            <img src="{{group.banner}}" class="card-img-top" alt="Bannière de {{ group.name }}">
+                        {% else %}
+                            <img src="{{ asset('img/default-banner.jpg') }}" class="card-img-top" alt="Bannière par défaut">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ group.name }}</h5>
+                            <p class="card-text">{{ group.description }}</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#groupModal{{ group.id }}">
+                                Découvrir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal pour chaque groupe -->
+                <div class="modal fade" id="groupModal{{ group.id }}" tabindex="-1" aria-labelledby="groupModalLabel{{ group.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="groupModalLabel{{ group.id }}">{{ group.name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <img src="{{ asset('uploads/banners/' ~ group.banner) }}" class="img-fluid mb-3" alt="Bannière de {{ group.name }}">
+                                <p><strong>Description :</strong> {{ group.description }}</p>
+                                <p><strong>Catégorie :</strong> {{ group.category.value|default('Non spécifiée') }}</p>
+                                <p><strong>Date de création :</strong> {{ group.creationDate|date('d/m/Y') }}</p>
+                                <p><strong>Nombre de membres :</strong> {{ group.communityMembers|length }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <form method="POST" action="{{ path('join_community', { 'id': group.id }) }}">
+                                    <button type="submit" class="btn btn-success">Rejoindre</button>
+                                </form>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %} <!-- 🔹 Ajout de la fermeture de la boucle -->
+        </div>
+    </div>
+{% endblock %}
