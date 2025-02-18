@@ -71,14 +71,14 @@
             </div>
           </div>
           <div class="form-group">
-            {{ form_label(form.category) }}
+            {{ form_label(form.productCategory) }}
            <h6 class="font-weight-bold pt-4 pb-1">Select Ad Category:</h6>
-									{{ form_widget(form.category, {
+									{{ form_widget(form.productCategory, {
 											'attr': {
 												'class': 'form-control bg-white', 
 											}
 										}) }}
-            {{ form_errors(form.category) }}
+            {{ form_errors(form.productCategory) }}
           </div>
           <div class="form-group">
             {{ form_label(form.image_url) }}<br>

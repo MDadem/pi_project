@@ -39,7 +39,7 @@ class ProductController extends AbstractController
                 $product->setCreatedAt(new \DateTime());
             }
             
-            // Set the owner (for testing; ownership restrictions are ignored here)
+            // Set the owner 
             $product->setOwner($user);
 
             /** @var UploadedFile $imageFile */
