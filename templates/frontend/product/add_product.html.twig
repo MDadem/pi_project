@@ -94,12 +94,12 @@
 
 							<div class="col-lg-6">
 								<h6 class="font-weight-bold pt-4 pb-1">Select Ad Category:</h6>
-								{{ form_widget(form.category, {
+								{{ form_widget(form.productCategory, {
                   'attr': {
                     'class': 'form-control bg-white'
                   }
                 }) }}
-								{% for error in form.category.vars.errors %}
+								{% for error in form.productCategory.vars.errors %}
 									<div class="text-danger">{{ error.message }}</div>
 								{% endfor %}
 

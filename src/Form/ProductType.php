@@ -3,7 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Product;
-use App\Entity\Category;
+use App\Entity\ProductCategory;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -80,8 +80,8 @@ class ProductType extends AbstractType
                 ],
             ])
             // Categories Selection (Multiple)
-            ->add('category', EntityType::class, [
-                'class' => Category::class,
+            ->add('productCategory', EntityType::class, [
+                'class' => ProductCategory::class,
                 'choice_label' => 'name', // displays the category name
                 'label' => 'Select Ad Category',
                 'attr' => [

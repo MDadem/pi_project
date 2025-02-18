@@ -6,6 +6,7 @@ use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
+use App\Entity\ProductCategory;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -49,20 +50,20 @@ class Product
     #[ORM\JoinColumn(nullable: true)]
     private ?User $owner = null;
 
-    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
+    #[ORM\ManyToOne(targetEntity: ProductCategory::class, inversedBy: 'products')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Category $category = null;
+    private ?ProductCategory $productCategory = null;
 
     // Getter and Setter methods...
 
-    public function getCategory(): ?Category
+    public function getProductCategory(): ?ProductCategory
     {
-        return $this->category;
+        return $this->productCategory;
     }
 
-    public function setCategory(?Category $category): self
+    public function setProductCategory(?ProductCategory $productCategory): self
     {
-        $this->category = $category;
+        $this->productCategory = $productCategory;
         return $this;
     }
 

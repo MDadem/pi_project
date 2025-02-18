@@ -2,15 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\CategoryRepository;
+use App\Repository\ProductCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Product;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: CategoryRepository::class)]
-class Category
+#[ORM\Entity(repositoryClass: ProductCategoryRepository::class)]
+class ProductCategory
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -18,10 +18,10 @@ class Category
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Assert\NotBlank(message: "The category name cannot be blank.")]
+    #[Assert\NotBlank(message: "The product category name cannot be blank.")]
     #[Assert\Regex(
         pattern: "/^\S+$/",
-        message: "The category name must be a single word without spaces."
+        message: "The product category name must be a single word without spaces."
     )]
     private ?string $name = null;
     
@@ -35,7 +35,7 @@ class Category
     )]
     private ?string $description = null;
 
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class)]
+    #[ORM\OneToMany(mappedBy: 'productCategory', targetEntity: Product::class)]
     private Collection $products;
 
     public function __construct()
@@ -78,8 +78,8 @@ class Category
     public function removeProduct(Product $product): self
     {
         if ($this->products->removeElement($product)) {
-            if ($product->getCategory() === $this) {
-                $product->setCategory(null);
+            if ($product->getProductCategory() === $this) {
+                $product->setProductCategory(null);
             }
         }
         return $this;
