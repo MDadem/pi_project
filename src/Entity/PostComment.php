@@ -20,10 +20,9 @@ class PostComment
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $creationDate = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-
     #[ORM\ManyToOne(inversedBy: 'postComments')]
-    private ?User $user = null;
+#[ORM\JoinColumn(nullable: false)]
+private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'postComments')]
     private ?Post $post = null;

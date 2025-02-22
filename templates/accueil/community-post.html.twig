@@ -181,6 +181,110 @@
     white-space: normal;
 }
 
+.timeline-comments {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #e2e7eb;
+}
+
+.timeline-comments h6 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d353c;
+    margin-bottom: 15px;
+}
+
+.timeline-comment {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #e2e7eb;
+}
+
+.timeline-comment .timeline-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.timeline-comment .userimage {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.timeline-comment .userimage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.timeline-comment .username {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d353c;
+}
+
+.timeline-comment .timeline-content {
+    font-size: 13px;
+    color: #575d63;
+    line-height: 1.5;
+}
+
+.timeline-comment-box {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f2f3f4;
+    border-radius: 6px;
+}
+
+.timeline-comment-box .user {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.timeline-comment-box .user img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.timeline-comment-box .input {
+    flex: 1;
+}
+
+.timeline-comment-box .input textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e7eb;
+    resize: none;
+    font-size: 13px;
+}
+
+.timeline-comment-box .input button {
+    margin-top: 10px;
+    padding: 8px 15px;
+    background: #2d353c;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.timeline-comment-box .input button:hover {
+    background: #242a30;
+}
+
 </style>
 
 <div class="container">
@@ -188,30 +292,30 @@
     
     <div class="mb-4 p-4 bg-white rounded shadow-sm">
         <h4>Ajouter une nouvelle publication</h4>
-        <form method="post" action="{{ path('community_posts_manage', {'id': community.id}) }}" enctype="multipart/form-data">
-            {{ form_start(form) }}
+        <form method="post" action="{{ path('community_posts_manage', {'id': community.id}) }}" enctype="multipart/form-data" novalidate>
+            {{ form_start(postForm, {'attr': {'novalidate': 'novalidate'}}) }}
             
             <div class="mb-3">
-    {{ form_label(form.content, 'Contenu', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(form.content, {'attr': {'class': 'form-control', 'rows': 3, 'required': 'required'}}) }}
-    {% if form_errors(form.content) %}
-        <div class="form-error-message">{{ form_errors(form.content) }}</div>
-    {% endif %}
-</div>
+                {{ form_label(postForm.content, 'Contenu', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(postForm.content, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                {% if form_errors(postForm.content) %}
+                    <div class="form-error-message">{{ form_errors(postForm.content) }}</div>
+                {% endif %}
+            </div>
 
-<div class="mb-3">
-    {{ form_label(form.postImg, 'Image', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(form.postImg, {'attr': {'class': 'form-control-file'}}) }}
-    {% if form_errors(form.postImg) %}
-        <div class="form-error-message">{{ form_errors(form.postImg) }}</div>
-    {% endif %}
-</div>
+            <div class="mb-3">
+                {{ form_label(postForm.postImg, 'Image', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(postForm.postImg, {'attr': {'class': 'form-control-file'}}) }}
+                {% if form_errors(postForm.postImg) %}
+                    <div class="form-error-message">{{ form_errors(postForm.postImg) }}</div>
+                {% endif %}
+            </div>
 
             <input type="hidden" name="_token" value="{{ csrf_token('post_add') }}">
 
             <button type="submit" class="btn btn-primary">Publier</button>
 
-            {{ form_end(form) }}
+            {{ form_end(postForm) }}
         </form>
     </div>
 
@@ -228,21 +332,55 @@
                 </div>
 
                 <div class="timeline-body">
-    <div class="timeline-header">
-        <span class="userimage">
-            <img src="{{ post.user.profileIMG ? asset(post.user.profileIMG) : 'https://bootdey.com/img/Content/avatar/avatar1.png' }}" 
-                 alt="{{ post.user.firstName }}">
-        </span>
-        <span class="username">
-            {{ post.user.firstName }}
-        </span>
-        <span class="pull-right text-muted">{{ post.likes }} Likes</span>
-    </div>
-    <div class="timeline-content">
-        <p>{{ post.content|nl2br }}</p>
-        {% if post.postImg %}
-            <img src="{{ asset(post.postImg) }}" alt="Post Image" class="img-fluid">
-        {% endif %}
+                    <div class="timeline-header">
+                        <span class="userimage">
+                            <img src="{{ post.user.profileIMG ? asset(post.user.profileIMG) : 'https://bootdey.com/img/Content/avatar/avatar1.png' }}" 
+                                 alt="{{ post.user.firstName }}">
+                        </span>
+                        <span class="username">
+                            {{ post.user.firstName }}
+                        </span>
+                        <span class="pull-right text-muted">{{ post.likes }} Likes</span>
+                    </div>
+                    <div class="timeline-content">
+                        <p>{{ post.content|nl2br }}</p>
+                        {% if post.postImg %}
+                            <img src="{{ asset(post.postImg) }}" alt="Post Image" class="img-fluid">
+                        {% endif %}
+                    </div>
+                <div class="timeline-comments">
+    <h6>Commentaires:</h6>
+    {% if post.postComments is not empty %}
+        {% for comment in post.postComments %}
+            <div class="timeline-comment">
+                <div class="timeline-header">
+                    <span class="userimage">
+                        <img src="{{ comment.user.profileIMG ? asset(comment.user.profileIMG) : 'https://bootdey.com/img/Content/avatar/avatar2.png' }}" 
+                             alt="{{ comment.user.firstName }}">
+                    </span>
+                    <span class="username">
+                        {{ comment.user.firstName }}
+                    </span>
+                    <span class="pull-right text-muted">{{ comment.creationDate|date('d/m/Y') }}</span>
+                </div>
+                <div class="timeline-content">
+                    <p>{{ comment.pcommentContent|nl2br }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-center">Aucun commentaire pour ce post.</p>
+    {% endif %}
+
+    <div class="timeline-comment-box">
+        <form method="post" action="{{ path('community_posts_manage', {id: community.id}) }}">
+            {{ form_start(commentForms[post.id]) }}
+            <div class="input">
+                {{ form_widget(commentForms[post.id].pcommentContent, {'attr': {'class': 'form-control', 'placeholder': 'Ajouter un commentaire...', 'rows': 2}}) }}
+                <button type="submit" name="comment_submit_{{ post.id }}" class="btn btn-primary mt-2">Commenter</button>
+            </div>
+            {{ form_end(commentForms[post.id]) }}
+        </form>
     </div>
 </div>
             </li>

@@ -2,7 +2,9 @@
 
 namespace App\Form;
 
+use App\Entity\Post;
 use App\Entity\PostComment;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -13,13 +15,7 @@ class CommentType extends AbstractType
     {
         $builder
             ->add('pcommentContent')
-            ->add('creationDate', null, [
-                'widget' => 'single_text',
-            ])
-            ->add('modificationDate', null, [
-                'widget' => 'single_text',
-            ])
-            ->add('status')
+           
         ;
     }
 
