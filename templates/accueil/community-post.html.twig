@@ -373,15 +373,15 @@
     {% endif %}
 
     <div class="timeline-comment-box">
-        <form method="post" action="{{ path('community_posts_manage', {id: community.id}) }}">
-            {{ form_start(commentForms[post.id]) }}
-            <div class="input">
-                {{ form_widget(commentForms[post.id].pcommentContent, {'attr': {'class': 'form-control', 'placeholder': 'Ajouter un commentaire...', 'rows': 2}}) }}
-                <button type="submit" name="comment_submit_{{ post.id }}" class="btn btn-primary mt-2">Commenter</button>
-            </div>
-            {{ form_end(commentForms[post.id]) }}
-        </form>
-    </div>
+    <form method="post" action="{{ path('community_posts_manage', {id: community.id}) }}" novalidate>
+        {{ form_start(commentForms[post.id], {'attr': {'novalidate': 'novalidate'}}) }}
+        <div class="input">
+            {{ form_widget(commentForms[post.id].pcommentContent, {'attr': {'class': 'form-control', 'placeholder': 'Ajouter un commentaire...', 'rows': 2}}) }}
+            <button type="submit" name="comment_submit_{{ post.id }}" class="btn btn-primary mt-2">Commenter</button>
+        </div>
+        {{ form_end(commentForms[post.id]) }}
+    </form>
+</div>
 </div>
             </li>
         {% else %}
