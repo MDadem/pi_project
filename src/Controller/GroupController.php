@@ -23,6 +23,9 @@ final class GroupController extends AbstractController
     #[Route('backoffice/group', name: 'app_group')]
     public function index(CommunityRepository $communityRepository): Response
     {
+
+        
+
         $groups = $communityRepository->findAllWithMemberCount();
     
         return $this->render('group/index.html.twig', [
@@ -111,43 +114,43 @@ final class GroupController extends AbstractController
     
         return $this->redirectToRoute('app_group');
     }
-    #[Route('/test-add-user', name: 'test_add_user')]
-    public function testAddUserToCommunity(ManagerRegistry $m): Response
-    {
-        $em = $m->getManager();
-        // Création de données statiques
-        $user = new User();
-        $user->setFirstName('John');
-        $user->setLastName('Doe');
-        $user->setEmail('johndoe@example.com');
-        $user->setPwd('password123'); // Idéalement, hachez le mot de passe
-        $user->setProfileImg('default.jpg');
+    // #[Route('/test-add-user', name: 'test_add_user')]
+    // public function testAddUserToCommunity(ManagerRegistry $m): Response
+    // {
+    //     $em = $m->getManager();
+    //     // Création de données statiques
+    //     $user = new User();
+    //     $user->setFirstName('John');
+    //     $user->setLastName('Doe');
+    //     $user->setEmail('johndoe@example.com');
+    //     $user->setPwd('password123'); // Idéalement, hachez le mot de passe
+    //     $user->setProfileImg('default.jpg');
     
-        $community = new Community();
-        $community->setName('Symfony Devs');
-        $community->setDescription('Une communauté pour les développeurs Symfony');
-        $community->setBanner('banner.jpg');
-        $community->setCreationDate(new \DateTime());
-        $community->setCategory(CategoryGrp::ART); // Remplacez par une valeur valide de votre Enum
+    //     $community = new Community();
+    //     $community->setName('Symfony Devs');
+    //     $community->setDescription('Une communauté pour les développeurs Symfony');
+    //     $community->setBanner('banner.jpg');
+    //     $community->setCreationDate(new \DateTime());
+    //     $community->setCategory(CategoryGrp::ART); // Remplacez par une valeur valide de votre Enum
     
-        $em->persist($user);
-        $em->persist($community);
-        $em->flush();
+    //     $em->persist($user);
+    //     $em->persist($community);
+    //     $em->flush();
     
-        // Création d'une instance CommunityMembers avec une date statique
-        $communityMember = new CommunityMembers();
-        $communityMember->setUser($user);
-        $communityMember->setCommunity($community);
+    //     // Création d'une instance CommunityMembers avec une date statique
+    //     $communityMember = new CommunityMembers();
+    //     $communityMember->setUser($user);
+    //     $communityMember->setCommunity($community);
     
-        // Définir une date statique (exemple : 15/02/2025)
-        $dateStatic = \DateTime::createFromFormat('d/m/Y', '15/02/2025');
-        $communityMember->setJoinedAt($dateStatic);
+    //     // Définir une date statique (exemple : 15/02/2025)
+    //     $dateStatic = \DateTime::createFromFormat('d/m/Y', '15/02/2025');
+    //     $communityMember->setJoinedAt($dateStatic);
     
-        $em->persist($communityMember);
-        $em->flush();
+    //     $em->persist($communityMember);
+    //     $em->flush();
     
-        return new Response('Utilisateur ajouté avec succès à la communauté.');
-    }
+    //     return new Response('Utilisateur ajouté avec succès à la communauté.');
+    // }
     
     //////////////////////////----------  Supprimer member form grp -------------------- //////////////////
     #[Route('backoffice/group/{groupId}/remove-member/{memberId}', name: 'app_remove_member')]
@@ -258,19 +261,23 @@ final class GroupController extends AbstractController
     
 
     #[Route('/accueil/group-list/{id}', name: 'joined_community')]
-public function getUserCommunities(int $id, CommunityRepository $communityRepository, UserRepository $userRepository): Response
-{
-    $user = $userRepository->find($id);
-
-    if (!$user) {
-        throw $this->createNotFoundException('Utilisateur non trouvé');
+    public function getUserCommunities(CommunityRepository $communityRepository): Response
+    {
+        // Récupérer l'utilisateur connecté
+        $user = $this->getUser();
+    
+        // Vérifier si l'utilisateur est authentifié
+        if (!$user) {
+            return $this->redirectToRoute('dashboard_signin');
+        }
+    
+        // Récupérer les communautés auxquelles l'utilisateur a adhéré
+        $communities = $communityRepository->findByUserParticipation($user);
+    
+        return $this->render('accueil/user-community.html.twig', [
+            'communities' => $communities,
+        ]);
     }
-
-    $communities = $communityRepository->findByUserParticipation($user);
-
-    return $this->render('accueil/user-community.html.twig', [
-        'communities' => $communities,
-    ]);
-}
+    
     }
     

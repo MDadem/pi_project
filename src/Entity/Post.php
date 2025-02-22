@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PostRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -36,6 +38,17 @@ class Post
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
     private ?User $user = null;
+
+    /**
+     * @var Collection<int, PostComment>
+     */
+    #[ORM\OneToMany(targetEntity: PostComment::class, mappedBy: 'post')]
+    private Collection $postComments;
+
+    public function __construct()
+    {
+        $this->postComments = new ArrayCollection();
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -118,6 +131,36 @@ class Post
     public function setUser(?User $user): static
     {
         $this->user = $user;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PostComment>
+     */
+    public function getPostComments(): Collection
+    {
+        return $this->postComments;
+    }
+
+    public function addPostComment(PostComment $postComment): static
+    {
+        if (!$this->postComments->contains($postComment)) {
+            $this->postComments->add($postComment);
+            $postComment->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostComment(PostComment $postComment): static
+    {
+        if ($this->postComments->removeElement($postComment)) {
+            // set the owning side to null (unless already changed)
+            if ($postComment->getPost() === $this) {
+                $postComment->setPost(null);
+            }
+        }
+
         return $this;
     }
 }

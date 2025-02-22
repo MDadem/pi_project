@@ -11,9 +11,10 @@
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
                         {% if group.banner %}
-                            <img src="{{group.banner}}" class="card-img-top" alt="Bannière de {{ group.name }}">
+                       
+                            <img src="{{ asset(group.banner) }}" class="card-img-top" alt="Bannière de {{ group.name }}"  width="300" height="200">
                         {% else %}
-                            <img src="{{ asset('img/default-banner.jpg') }}" class="card-img-top" alt="Bannière par défaut">
+                            <img src="{{ asset(group.banner) }}" class="card-img-top" alt="Bannière par défaut"  width="300" height="200">
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ group.name }}</h5>
@@ -34,7 +35,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                             </div>
                             <div class="modal-body">
-                                <img src="{{ asset('uploads/banners/' ~ group.banner) }}" class="img-fluid mb-3" alt="Bannière de {{ group.name }}">
+                                <img src="{{ asset(group.banner) }}" class="img-fluid mb-3" alt="Bannière de {{ group.name }}">
                                 <p><strong>Description :</strong> {{ group.description }}</p>
                                 <p><strong>Catégorie :</strong> {{ group.category.value|default('Non spécifiée') }}</p>
                                 <p><strong>Date de création :</strong> {{ group.creationDate|date('d/m/Y') }}</p>
