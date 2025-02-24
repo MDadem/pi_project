@@ -9,9 +9,12 @@ use App\Entity\User;
 use App\Form\CommentType;
 use App\Form\PostType;
 use App\Repository\CommunityRepository;
+use App\Repository\PostCommentRepository;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpParser\Node\Expr\Cast\Array_;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
@@ -127,19 +130,37 @@ class PostController extends AbstractController
     }
     
 
-    #[Route('/delete/{postId}', name: 'community_post_delete', methods: ['POST'])]
-    public function deletePost(int $id, int $postId, Request $request): Response
+    #[Route('/dashboard/posts', name: 'community_post_list', methods: ['GET'])]
+
+    public function allPosts(PostRepository $postRepository):Response
     {
-        $post = $this->postRepository->find($postId);
-        if (!$post || $post->getCommunity()->getId() !== $id) {
-            throw $this->createNotFoundException('Post not found');
-        }
-
-        if ($this->isCsrfTokenValid('delete' . $post->getId(), $request->request->get('_token'))) {
-            $this->entityManager->remove($post);
-            $this->entityManager->flush();
-        }
-
-        return $this->redirectToRoute('community_posts_manage', ['id' => $id]);
+      $post = $postRepository->findAll();
+      return $this->render('post/posts-list.html.twig',[
+        'posts' => $post
+      ]);
     }
+
+    #[Route('/delete/{postId}', name: 'community_post_delete', methods: ['POST'])]
+public function deletePost(int $postId, Request $request, ManagerRegistry $m, PostRepository $rep, PostCommentRepository $commentRep): Response
+{
+    $em = $m->getManager();
+    $post = $rep->find($postId);
+    
+
+    if (!$post) {
+        throw $this->createNotFoundException('Post not found');
+    }
+
+    // Supprimer les commentaires liés au post
+    $comments = $commentRep->findBy(['post' => $post]);
+    foreach ($comments as $comment) {
+        $em->remove($comment);
+    }
+
+    $em->remove($post);
+    $em->flush();
+
+    return $this->redirectToRoute('community_post_list');
+}
+
 }
