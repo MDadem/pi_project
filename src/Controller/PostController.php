@@ -7,6 +7,7 @@ use App\Entity\Post;
 use App\Entity\PostComment;
 use App\Entity\User;
 use App\Form\CommentType;
+use App\Form\CommunitNameType;
 use App\Form\PostType;
 use App\Repository\CommunityRepository;
 use App\Repository\PostCommentRepository;
@@ -130,15 +131,29 @@ class PostController extends AbstractController
     }
     
 
-    #[Route('/dashboard/posts', name: 'community_post_list', methods: ['GET'])]
-
-    public function allPosts(PostRepository $postRepository):Response
+    #[Route('/dashboard/posts', name: 'community_post_list')]
+    public function allPosts(Request $request, PostRepository $postRepository): Response
     {
-      $post = $postRepository->findAll();
-      return $this->render('post/posts-list.html.twig',[
-        'posts' => $post
-      ]);
+        // Create the form
+        $form = $this->createForm(CommunitNameType::class);
+        $form->handleRequest($request);
+
+        // Check if the form is submitted and valid
+        if ($form->isSubmitted() && $form->isValid()) {
+            $community = $form->get('community')->getData(); 
+            $communityName = $community ? $community->getName() : null;// Get the selected community
+            $posts = $postRepository->findByCommunityName($communityName);
+        } else {
+            $posts = $postRepository->findAll(); // Default: show all posts
+        }
+
+        return $this->render('post/posts-list.html.twig', [
+            'form' => $form->createView(),
+            'posts' => $posts,
+        ]);
     }
+
+
 
     #[Route('/delete/{postId}', name: 'community_post_delete', methods: ['POST'])]
 public function deletePost(int $postId, Request $request, ManagerRegistry $m, PostRepository $rep, PostCommentRepository $commentRep): Response

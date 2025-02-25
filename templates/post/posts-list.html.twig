@@ -11,34 +11,62 @@
     <link href="{{ asset('css/backoffice-style.css') }}" rel="stylesheet">
     <style>
         .content-cell {
-            max-width: 200px;
+            max-width: 250px;
             word-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .modal-content-cell {
-            max-width: 300px;
+            max-width: 350px;
             word-wrap: break-word;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .table img {
+            border-radius: 8px;
+        }
+        .filter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
     </style>
 {% endblock %}
 
 {% block body %}
     <div class="container-fluid position-relative bg-white d-flex p-0">
-        <!-- Spinner Start -->
+        <!-- Spinner -->
         <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
         </div>
-        <!-- Spinner End -->
+
         {% include 'backend/sidebar/sidebar.html.twig' %}
         <div class="content">
             {% include 'backend/navbar/navbar.html.twig' %}
             <div class="container-fluid pt-4 px-4">
-                <div class="row vh-100 bg-light rounded align-items-center justify-content-center mx-0">
-                    <div class="col-md-10">
-                        <h2>Liste des Posts</h2>
-                        <table class="table table-striped">
-                            <thead>
+                <div class="row bg-light rounded p-4">
+                    <div class="col-md-12">
+                        <div class="filter-container">
+                            <h2 > Liste des Posts</h2>
+                            <!-- Filter Form -->
+                            <form method="post">
+    {{ form_start(form) }}
+    <div class="d-flex gap-2">
+        {{ form_widget(form.community, { 'attr': {'class': 'form-select'} }) }}
+        {{ form_widget(form.submit) }}
+    </div>
+    {{ form_end(form) }}
+</form>
+                        </div>
+
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
                                 <tr>
                                     <th>ID</th>
                                     <th>Contenu</th>
@@ -55,54 +83,59 @@
                                     <td class="content-cell">{{ post.content }}</td>
                                     <td>
                                         {% if post.postImg %}
-                                            <img src="{{ asset(post.postImg) }}" alt="Image du post" width="100">
+                                            <img src="{{ asset(post.postImg) }}" alt="Image du post" width="80">
                                         {% else %}
-                                            Pas d'image
+                                            <span class="text-muted">Pas d'image</span>
                                         {% endif %}
                                     </td>
                                     <td>{{ post.creationDate|date('d/m/Y H:i') }}</td>
                                     <td>{{ post.user.firstName }} {{ post.user.lastName }}</td>
                                     <td>
-                                        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#postModal{{ post.id }}">
-                                            Détails
+                                        <!-- Details Button -->
+                                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#postModal{{ post.id }}">
+                                            <i class="bi bi-eye"></i> Détails
                                         </button>
-                                        <div class="modal fade" id="postModal{{ post.id }}" tabindex="-1" aria-labelledby="postModalLabel{{ post.id }}" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="postModalLabel{{ post.id }}">Détails du Post</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p><strong>Contenu:</strong> <span class="modal-content-cell">{{ post.content }}</span></p>
-                                                        <p><strong>Image:</strong> 
-                                                            {% if post.postImg %}
-                                                                <img src="{{ asset(post.postImg) }}" alt="Image du post" width="200">
-                                                            {% else %}
-                                                                Pas d'image
-                                                            {% endif %}
-                                                        </p>
-                                                        <p><strong>Date de création:</strong> {{ post.creationDate|date('d/m/Y H:i') }}</p>
-                                                        <p><strong>Likes:</strong> {{ post.likes is not null ? post.likes : 0 }}</p>
-                                                        <p><strong>Auteur:</strong> {{ post.user.firstName }} {{ post.user.lastName }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <!-- Delete Button -->
                                         <form method="post" action="{{ path('community_post_delete', {'postId': post.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce post ?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
-                                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</button>
                                         </form>
                                     </td>
                                 </tr>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="postModal{{ post.id }}" tabindex="-1" aria-labelledby="postModalLabel{{ post.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title" id="postModalLabel{{ post.id }}">📜 Détails du Post</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong> Contenu:</strong> <span class="modal-content-cell">{{ post.content }}</span></p>
+                                                <p><strong> Image:</strong> 
+                                                    {% if post.postImg %}
+                                                        <img src="{{ asset(post.postImg) }}" alt="Image du post" width="100%">
+                                                    {% else %}
+                                                        <span class="text-muted">Pas d'image</span>
+                                                    {% endif %}
+                                                </p>
+                                                <p><strong> Date de création:</strong> {{ post.creationDate|date('d/m/Y H:i') }}</p>
+                                                <p><strong> Likes:</strong> {{ post.likes is not null ? post.likes : 0 }}</p>
+                                                <p><strong> Auteur:</strong> {{ post.user.firstName }} {{ post.user.lastName }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-           
         </div>
+
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 {% endblock %}

@@ -40,4 +40,18 @@ class PostRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+
+public function findByCommunityName(string $communityName): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.community', 'c') // Include posts without a community
+            ->andWhere('c.name = :name')
+            ->setParameter('name', $communityName)
+            ->orderBy('p.creation_date', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
 }
