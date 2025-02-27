@@ -7,10 +7,11 @@ use App\Entity\CommunityMembers;
 use App\Entity\JoinRequest;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 final class JoinRequestController extends AbstractController
 {
     #[Route('backoffice/join_request', name: 'join_request_list')]
@@ -67,7 +68,7 @@ final class JoinRequestController extends AbstractController
     }
 
     #[Route('/respond/{id}/{decision}', name: 'join_request_respond', methods: ['POST'])]
-    public function respondToRequest(JoinRequest $joinRequest, string $decision, ManagerRegistry $doctrine): Response
+    public function respondToRequest(JoinRequest $joinRequest, string $decision, ManagerRegistry $doctrine, MailerInterface $mailer): Response
     {
         if (!in_array($decision, ['accepted', 'rejected'])) {
             throw $this->createNotFoundException('Décision invalide.');
@@ -76,24 +77,37 @@ final class JoinRequestController extends AbstractController
         $entityManager = $doctrine->getManager();
         $joinRequest->setStatus($decision);
     
-        // Si accepté, ajouter l'utilisateur à la communauté via CommunityMembers
+        $user = $joinRequest->getUser();
+        $community = $joinRequest->getCommunity();
+        
         if ($decision === 'accepted') {
-            $community = $joinRequest->getCommunity();
-            $user = $joinRequest->getUser();
-    
-            // Création explicite de CommunityMembers
             $communityMember = new CommunityMembers();
             $communityMember->setCommunity($community);
             $communityMember->setUser($user);
             $communityMember->setJoinedAt(new \DateTime());
-    
-            $entityManager->persist($communityMember); // 🔥 Nécessaire pour éviter l'erreur
+            $entityManager->persist($communityMember);
         }
     
         $entityManager->flush();
     
-        $this->addFlash('success', 'Demande mise à jour avec succès.');
+        // Envoi d'un email à l'utilisateur
+        try {
+            $email = (new Email())
+                ->from(new Address('no-reply@culturespace.com', 'CultureSpace'))
+                ->to($user->getEmail())
+                ->subject($decision === 'accepted' ? 'Votre adhésion a été acceptée' : 'Votre demande a été refusée')
+                ->html($this->renderView('emails/join_request_response.html.twig', [
+                    'user' => $user,
+                    'community' => $community,
+                    'decision' => $decision,
+                ]));
+
+            $mailer->send($email);
+            $this->addFlash('success', 'Demande mise à jour avec succès. Un email a été envoyé à lutilisateur.');
+        } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+            $this->addFlash('warning', 'Demande mise à jour, mais l email de notification n a pas pu être envoyé.');
+        }
     
         return $this->redirectToRoute('join_request_list');
     }
-    }
+ }

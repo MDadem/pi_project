@@ -155,23 +155,35 @@ final class GroupController extends AbstractController
     //////////////////////////----------  Supprimer member form grp -------------------- //////////////////
     #[Route('backoffice/group/{groupId}/remove-member/{memberId}', name: 'app_remove_member')]
     public function removeMember(int $groupId, int $memberId, ManagerRegistry $m): Response
-    {
-        $em = $m->getManager();
-        $community = $em->getRepository(Community::class)->find($groupId);
-        $member = $em->getRepository(CommunityMembers::class)->findOneBy([
-            'community' => $community,
-            'user' => $memberId
-        ]);
-    
-        if (!$community || !$member) {
-            throw $this->createNotFoundException("Membre ou communauté introuvable.");
-        }
-    
-        $em->remove($member);
-        $em->flush();
-    
-        return $this->redirectToRoute('app_modifier', ['id' => $groupId]);
+{
+    $em = $m->getManager();
+    $community = $em->getRepository(Community::class)->find($groupId);
+    $member = $em->getRepository(CommunityMembers::class)->findOneBy([
+        'community' => $community,
+        'user' => $memberId
+    ]);
+
+    if (!$community || !$member) {
+        throw $this->createNotFoundException("Membre ou communauté introuvable.");
     }
+
+    // Supprimer le membre de la communauté
+    $em->remove($member);
+
+    // Supprimer la demande d'adhésion associée si elle existe
+    $joinRequest = $em->getRepository(JoinRequest::class)->findOneBy([
+        'community' => $community,
+        'user' => $memberId
+    ]);
+
+    if ($joinRequest) {
+        $em->remove($joinRequest);
+    }
+
+    $em->flush();
+
+    return $this->redirectToRoute('app_modifier', ['id' => $groupId]);
+}
     
     
     /////////////////////////// ---------------- ajouter member to a grp ------------------ ///////////////////
