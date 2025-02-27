@@ -1,4 +1,4 @@
-
+#
 #security:
 #    password_hashers:
 #        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
@@ -15,23 +15,27 @@
 #            security: false
 #
 #        main:
+#
 #            lazy: true
 #            provider: app_user_provider
-#            entry_point: App\Security\LoginFormAuthenticator
+#            entry_point: App\Security\UserLoginFormAuthenticator
 #            custom_authenticators:
+#                - App\Security\UserLoginFormAuthenticator  # User authentication
 #                - App\Security\LoginFormAuthenticator
-#                - App\Security\UserLoginFormAuthenticator
 #            logout:
 #                path: app_logout
-#                target: app_dashboard_signin
-#
+#                target: app_home  # Redirect users to homepage after logout
+#            two_factor:
+#                auth_form_path: 2fa_login
+#                check_path: 2fa_login_check
+#                default_target_path: app_home
 #
 #    access_control:
 #        - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
 #        - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
-#
 #        - { path: ^/dashboard, roles: ROLE_ADMIN }
-
+#
+#
 
 
 
@@ -60,18 +64,16 @@ security:
             logout:
                 path: app_logout
                 target: app_home  # Redirect users to homepage after logout
-#
-#        admin:
-#            lazy: true
-#            provider: app_user_provider
-##            entry_point: App\Security\LoginFormAuthenticator
-#            custom_authenticators:
-#                - App\Security\LoginFormAuthenticator
-#            logout:
-#                path: app_logout
-#                target: app_dashboard_signin  # Redirect admins to dashboard login after logout
+            two_factor:
+                auth_form_path: 2fa_login          # Route to the 2FA form
+                check_path: 2fa_login_check        # Route to validate the 2FA code
+                default_target_path: app_home       # Route to redirect after successful 2FA
+#                always_use_default_target_path: true
 
     access_control:
+        - { path: ^/2fa/login, roles: PUBLIC_ACCESS }  # Allow access to the 2FA login form
+        - { path: ^/2fa, roles: PUBLIC_ACCESS }              # Allow access to the 2FA setup page for fully authenticated users
         - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
         - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
         - { path: ^/dashboard, roles: ROLE_ADMIN }
+    #                - { path: ^/, roles: IS_AUTHENTICATED_FULLY }                  # Require full authentication for all other routes

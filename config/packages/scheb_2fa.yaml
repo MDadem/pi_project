@@ -1,0 +1,18 @@
+# See the configuration reference at https://symfony.com/bundles/SchebTwoFactorBundle/6.x/configuration.html
+scheb_two_factor:
+    security_tokens:
+        - Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken
+        - Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken
+
+    google:
+        enabled: true
+        server_name: "Culture Space"
+        issuer: "Culture Space"
+
+#    email:
+#        enabled: false  # Disable email-based 2FA if not needed
+#
+#    trusted_device:
+#        enabled: true
+#        lifetime: 604800 # 7 days
+#        extend_lifetime: true

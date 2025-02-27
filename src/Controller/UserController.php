@@ -28,8 +28,19 @@ use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+//related to 2fa
+use Endroid\QrCode\Encoding\Encoding;
+use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
+use Endroid\QrCode\Builder\BuilderInterface;
+use Endroid\QrCode\Writer\Result\ResultInterface;
+use Endroid\QrCode\Builder\BuilderRegistry;
 
-final class UserController extends AbstractController {
+
+
+
+
+final class UserController extends AbstractController
+{
 
     #[Route('/dashboard/edit-profile/{id}', name: 'app_edit_profile')]
     public function edit(User $user, Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager): Response
@@ -258,7 +269,6 @@ final class UserController extends AbstractController {
     }
 
 
-
     #[Route('/dashboard/update-user', name: 'app_update_user', methods: ['POST'])]
     public function updateUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -299,7 +309,6 @@ final class UserController extends AbstractController {
             return new JsonResponse(['status' => 'error', 'message' => 'Database update failed'], 500);
         }
     }
-
 
 
     #[Route('/dashboard/admin/user-add', name: 'app_add_user', methods: ['POST'])]
@@ -344,13 +353,14 @@ final class UserController extends AbstractController {
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
     public function requestPasswordReset(
-        Request $request,
+        Request                $request,
         EntityManagerInterface $entityManager,
-        MailerInterface $mailer,
-        UrlGeneratorInterface $urlGenerator,
-        SessionInterface $session,
-        Environment $twig // Correctly inject Twig service
-    ) {
+        MailerInterface        $mailer,
+        UrlGeneratorInterface  $urlGenerator,
+        SessionInterface       $session,
+        Environment            $twig // Correctly inject Twig service
+    )
+    {
         if ($request->isMethod('POST')) {
             $email = $request->request->get('email');
             $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
@@ -430,7 +440,6 @@ final class UserController extends AbstractController {
     #[Route('/contact/submit', name: 'contact_submit', methods: ['POST'])]
     public function submitContactForm(Request $request, MailerInterface $mailer, Environment $twig): Response
     {
-    
 
 
         // Get form data
@@ -441,45 +450,132 @@ final class UserController extends AbstractController {
         $subject = $request->request->get('subject');
         $message = $request->request->get('message');
 
-      // Simple Validation
-    if (empty($name) || empty($email) || empty($subject) || empty($message)) {
-        $this->addFlash('error', 'All required fields must be filled.');
+        // Simple Validation
+        if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+            $this->addFlash('error', 'All required fields must be filled.');
+            return $this->redirectToRoute('app_contact');
+        }
+
+        // Email validation
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->addFlash('error', 'Invalid email format.');
+            return $this->redirectToRoute('app_contact');
+        }
+
+        // Simulate message processing (Save to DB or Send Email)
+        try {
+            // Render the email template
+            $emailContent = $twig->render('emails/contact-email.html.twig', [
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'project' => $project,
+                'subject' => $subject,
+                'message' => $message
+            ]);
+
+            // Create email
+            $email = (new Email())
+                ->from($email) // Sender's email
+                ->to('culturespaceTeam@gmail.com') // Recipient's email
+                ->subject('New Contact Form Submission: ' . $subject)
+                ->html($emailContent);
+
+            // Send email
+            $mailer->send($email);
+
+            $this->addFlash('success', 'Your message has been sent successfully!');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'There was an error sending your message: ' . $e->getMessage());
+        }
+
         return $this->redirectToRoute('app_contact');
     }
 
-    // Email validation
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $this->addFlash('error', 'Invalid email format.');
-        return $this->redirectToRoute('app_contact');
-    }
 
-    // Simulate message processing (Save to DB or Send Email)
-    try {
-        // Render the email template
-        $emailContent = $twig->render('emails/contact-email.html.twig', [
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-            'project' => $project,
-            'subject' => $subject,
-            'message' => $message
+
+    #[Route('/2fa', name: 'app_2fa')]
+    public function twoFactorAuthentication(
+        Request $request,
+        GoogleAuthenticatorInterface $googleAuthenticator,
+        EntityManagerInterface $entityManager,
+        BuilderRegistry $qrCodeBuilder // Inject BuilderRegistry
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('User not found.');
+        }
+
+        $is2FAEnabled = $user->getGoogleAuthenticatorSecret() !== null;
+
+        if ($request->isMethod('POST')) {
+            $code = $request->request->get('code');
+
+            if ($googleAuthenticator->checkCode($user, $code)) {
+                $user->setGoogleAuthenticatorSecret($googleAuthenticator->generateSecret());
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Two-Factor Authentication has been successfully enabled.');
+                return $this->redirectToRoute('app_home');
+            } else {
+                $this->addFlash('error', 'Invalid 2FA code. Please try again.');
+            }
+        }
+
+        if (!$is2FAEnabled) {
+            $secret = $googleAuthenticator->generateSecret();
+            $user->setGoogleAuthenticatorSecret($secret);
+            $entityManager->flush();
+        } else {
+            $secret = $user->getGoogleAuthenticatorSecret();
+        }
+
+        $qrCodeContent = $googleAuthenticator->getQRContent($user);
+
+        // Retrieve the correct QR code builder
+        $qrCode = $qrCodeBuilder->getBuilder()->data($qrCodeContent)->build();
+
+        return $this->render('2fa/enable.html.twig', [
+            'qrCode' => $qrCode->getDataUri(),
+            'is2FAEnabled' => $is2FAEnabled,
         ]);
-
-        // Create email
-        $email = (new Email())
-            ->from($email) // Sender's email
-            ->to('culturespaceTeam@gmail.com') // Recipient's email
-            ->subject('New Contact Form Submission: ' . $subject)
-            ->html($emailContent);
-
-        // Send email
-        $mailer->send($email);
-
-        $this->addFlash('success', 'Your message has been sent successfully!');
-    } catch (\Exception $e) {
-        $this->addFlash('error', 'There was an error sending your message: ' . $e->getMessage());
     }
 
-    return $this->redirectToRoute('app_contact');
-}
+
+
+    #[Route('/2fa/disable', name: 'app_2fa_disable')]
+    public function disableTwoFactorAuthentication(EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('User not found.');
+        }
+
+        if ($user->getGoogleAuthenticatorSecret() === null) {
+            $this->addFlash('warning', 'Two-Factor Authentication is not enabled.');
+            return $this->redirectToRoute('app_home');
+        }
+
+        $user->setGoogleAuthenticatorSecret(null);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Two-Factor Authentication has been disabled.');
+        return $this->redirectToRoute('app_home');
+    }
+
+//    #[Route('/2fa/login', name: '2fa_login')]
+//    public function twoFactorLogin(): Response
+//    {
+//        return $this->render('2fa/login.html.twig');
+//    }
+//
+//    #[Route('/2fa/login_check', name: '2fa_login_check')]
+//    public function twoFactorLoginCheck(): Response
+//    {
+//        // This route is handled by the scheb/2fa-bundle
+//        throw new \RuntimeException('You must configure the check path to be handled by the firewall.');
+//    }
+
 }
