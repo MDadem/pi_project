@@ -5,8 +5,12 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Service\AuthenticatorService;
 use Doctrine\ORM\EntityManagerInterface;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +18,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -29,11 +34,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 //related to 2fa
-use Endroid\QrCode\Encoding\Encoding;
-use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
-use Endroid\QrCode\Builder\BuilderInterface;
-use Endroid\QrCode\Writer\Result\ResultInterface;
-use Endroid\QrCode\Builder\BuilderRegistry;
+//use Endroid\QrCode\Encoding\Encoding;
+//use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
+//use Endroid\QrCode\Builder\BuilderInterface;
+//use Endroid\QrCode\Writer\Result\ResultInterface;
+//use Endroid\QrCode\Builder\BuilderRegistry;
 
 
 
@@ -492,90 +497,178 @@ final class UserController extends AbstractController
         return $this->redirectToRoute('app_contact');
     }
 
-
-
-    #[Route('/2fa', name: 'app_2fa')]
-    public function twoFactorAuthentication(
+    #[Route('/2fa/verify', name: 'app_2fa_verify')]
+    public function verify2fa(
         Request $request,
-        GoogleAuthenticatorInterface $googleAuthenticator,
+        MailerInterface $mailer,
+        SessionInterface $session,
         EntityManagerInterface $entityManager,
-        BuilderRegistry $qrCodeBuilder // Inject BuilderRegistry
+        Environment $twig
     ): Response {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('User not found.');
+            return $this->redirectToRoute('app_home_signin');
         }
 
-        $is2FAEnabled = $user->getGoogleAuthenticatorSecret() !== null;
+        // Check session data
+        $storedCode = $session->get('2fa_code');
+        $expiration = $session->get('2fa_expiration');
+        $storedUserId = $session->get('2fa_user_id');
 
-        if ($request->isMethod('POST')) {
-            $code = $request->request->get('code');
+        // Check for explicit resend request
+        $forceResend = $request->query->getBoolean('resend', false); // Use getBoolean for cleaner handling
 
-            if ($googleAuthenticator->checkCode($user, $code)) {
-                $user->setGoogleAuthenticatorSecret($googleAuthenticator->generateSecret());
-                $entityManager->flush();
+        // Generate new code if:
+        // - No code exists
+        // - Code expired
+        // - Explicit resend requested
+        // - User ID mismatch
+        if (!$storedCode || !$expiration || time() > $expiration || $forceResend || $storedUserId !== $user->getId()) {
+            $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-                $this->addFlash('success', 'Two-Factor Authentication has been successfully enabled.');
-                return $this->redirectToRoute('app_home');
-            } else {
-                $this->addFlash('error', 'Invalid 2FA code. Please try again.');
+            // Store code and expiration in session
+            $session->set('2fa_code', $verificationCode);
+            $session->set('2fa_expiration', (new \DateTime())->modify('+10 minutes')->getTimestamp());
+            $session->set('2fa_user_id', $user->getId());
+
+            // Send verification code via email
+            try {
+                $emailContent = $twig->render('emails/2fa_verification.html.twig', [
+                    'code' => $verificationCode,
+                    'user' => $user,
+                ]);
+
+                $email = (new Email())
+                    ->from('no-reply@yourdomain.com')
+                    ->to($user->getEmail())
+                    ->subject('Your Verification Code')
+                    ->html($emailContent);
+
+                $mailer->send($email);
+
+                if ($forceResend) {
+                    $this->addFlash('success', 'A new verification code has been sent to your email.');
+                } else {
+                    $this->addFlash('info', 'Please check your email for your verification code.');
+                }
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Failed to send verification code: ' . $e->getMessage());
+                // Log the error for debugging
+                // $this->logger->error('Email send failed: ' . $e->getMessage()); // Uncomment if you have a logger
             }
-        }
-
-        if (!$is2FAEnabled) {
-            $secret = $googleAuthenticator->generateSecret();
-            $user->setGoogleAuthenticatorSecret($secret);
-            $entityManager->flush();
         } else {
-            $secret = $user->getGoogleAuthenticatorSecret();
+            $this->addFlash('info', 'Please use the code already sent to your email.');
         }
 
-        $qrCodeContent = $googleAuthenticator->getQRContent($user);
-
-        // Retrieve the correct QR code builder
-        $qrCode = $qrCodeBuilder->getBuilder()->data($qrCodeContent)->build();
-
-        return $this->render('2fa/enable.html.twig', [
-            'qrCode' => $qrCode->getDataUri(),
-            'is2FAEnabled' => $is2FAEnabled,
+        return $this->render('security/2fa_verify.html.twig', [
+            'email' => $user->getEmail(),
         ]);
     }
 
 
-
-    #[Route('/2fa/disable', name: 'app_2fa_disable')]
-    public function disableTwoFactorAuthentication(EntityManagerInterface $entityManager): Response
-    {
+    #[Route('/2fa/resend', name: 'app_2fa_resend')]
+    public function resend2faCode(
+        MailerInterface $mailer,
+        SessionInterface $session,
+        EntityManagerInterface $entityManager,
+        Environment $twig
+    ): Response {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('User not found.');
+            return $this->redirectToRoute('app_home_signin');
         }
 
-        if ($user->getGoogleAuthenticatorSecret() === null) {
-            $this->addFlash('warning', 'Two-Factor Authentication is not enabled.');
-            return $this->redirectToRoute('app_home');
+        // Generate a new code
+        $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Update session with new code
+        $session->set('2fa_code', $verificationCode);
+        $session->set('2fa_expiration', (new \DateTime())->modify('+10 minutes')->getTimestamp());
+        $session->set('2fa_user_id', $user->getId());
+
+        // Send the new code via email
+        try {
+            $emailContent = $twig->render('emails/2fa_verification.html.twig', [
+                'code' => $verificationCode,
+                'user' => $user,
+            ]);
+
+            $email = (new Email())
+                ->from('no-reply@yourdomain.com')
+                ->to($user->getEmail())
+                ->subject('Your New Verification Code')
+                ->html($emailContent);
+
+            $mailer->send($email);
+
+            $this->addFlash('success', 'A new verification code has been sent to your email.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Failed to resend verification code: ' . $e->getMessage());
         }
 
-        $user->setGoogleAuthenticatorSecret(null);
-        $entityManager->flush();
+        // Redirect back to the verification page
+        return $this->redirectToRoute('app_2fa_verify');
+    }
+    /**
+     * Verify the 2FA code submitted by user
+     */
+    #[Route('/2fa/confirm', name: 'app_2fa_confirm', methods: ['POST'])]
+    public function confirm2fa(
+        Request $request,
+        SessionInterface $session,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
 
-        $this->addFlash('success', 'Two-Factor Authentication has been disabled.');
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        $submittedCode = $request->request->get('verification_code');
+        $storedCode = $session->get('2fa_code');
+        $expiration = $session->get('2fa_expiration');
+        $storedUserId = $session->get('2fa_user_id');
+
+        // Verify the code
+        if (!$storedCode || !$expiration || !$storedUserId || $storedUserId !== $user->getId()) {
+            $this->addFlash('error', 'Invalid verification session. Please try logging in again.');
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        if (time() > $expiration) {
+            $this->addFlash('error', 'Verification code has expired. Please request a new one.');
+            $this->clear2faSession($session);
+            return $this->redirectToRoute('app_2fa_verify');
+        }
+
+        if ($submittedCode !== $storedCode) {
+            $this->addFlash('error', 'Invalid verification code.');
+            return $this->redirectToRoute('app_2fa_verify'); // Don't generate new code here
+        }
+
+        // Code is valid, clear session and complete login
+        $this->clear2faSession($session);
+        $this->addFlash('success', 'Login successful!');
+
+        // Redirect based on user role
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return $this->redirectToRoute('app_dashboard_users');
+        }
         return $this->redirectToRoute('app_home');
     }
 
-//    #[Route('/2fa/login', name: '2fa_login')]
-//    public function twoFactorLogin(): Response
-//    {
-//        return $this->render('2fa/login.html.twig');
-//    }
-//
-//    #[Route('/2fa/login_check', name: '2fa_login_check')]
-//    public function twoFactorLoginCheck(): Response
-//    {
-//        // This route is handled by the scheb/2fa-bundle
-//        throw new \RuntimeException('You must configure the check path to be handled by the firewall.');
-//    }
+    /**
+     * Helper method to clear 2FA session data
+     */
+    private function clear2faSession(SessionInterface $session): void
+    {
+        $session->remove('2fa_code');
+        $session->remove('2fa_expiration');
+        $session->remove('2fa_user_id');
+    }
+
+
 
 }

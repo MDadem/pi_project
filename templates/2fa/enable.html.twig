@@ -1,22 +1,15 @@
-{#{% extends 'base.html.twig' %}#}
+{% extends 'base.html.twig' %}
 
 {% block body %}
-    <h1>Two-Factor Authentication</h1>
-
-    {% if is2FAEnabled %}
-        <div class="alert alert-warning">
-            You are reconfiguring your Two-Factor Authentication.
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2>Enable Two-Factor Authentication</h2>
+                <p>Scan the QR code below with your authenticator app:</p>
+                <img src="{{ qrCode }}" alt="QR Code">
+                <p>Or manually enter the secret: <strong>{{ secret }}</strong></p>
+                <p>Once you've scanned the QR code, click <a href="{{ path('app_home') }}">here</a> to return to your profile.</p>
+            </div>
         </div>
-    {% endif %}
-
-    <p>Scan the QR code below with Google Authenticator:</p>
-    <img src="{{ qrCode }}" alt="QR Code">
-
-    <form method="post">
-        <div class="form-group">
-            <label for="code">Enter the code from Google Authenticator:</label>
-            <input type="text" id="code" name="code" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Enable 2FA</button>
-    </form>
+    </div>
 {% endblock %}
