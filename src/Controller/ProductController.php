@@ -8,12 +8,12 @@ use App\Entity\User;
 use App\Form\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request; 
-use Symfony\Component\HttpFoundation\Response; 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
-        
+
 class ProductController extends AbstractController
 {
     #[Route('/product/new', name: 'product_new')]
@@ -38,7 +38,7 @@ class ProductController extends AbstractController
             if (null === $product->getCreatedAt()) {
                 $product->setCreatedAt(new \DateTime());
             }
-            
+
             // Set the owner 
             $product->setOwner($user);
 
@@ -73,13 +73,34 @@ class ProductController extends AbstractController
     }
 
     #[Route('/product/list', name: 'product_list')]
-    public function list(EntityManagerInterface $entityManager): Response
+    public function list(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $products = $entityManager->getRepository(Product::class)->findAll();
+        // Retrieve filter parameters from the query string
+        $name = $request->query->get('name');
+        $dateFrom = $request->query->get('date_from');
+        $dateTo = $request->query->get('date_to');
+        $category = $request->query->get('category');
+        $priceMin = $request->query->get('price_min');
+        $priceMax = $request->query->get('price_max');
+
+        // Convert price filters to float if provided, otherwise set to null
+        $priceMin = ($priceMin !== null && $priceMin !== '') ? (float)$priceMin : null;
+        $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
+
+        // Use a custom repository method to fetch filtered products
+        $products = $entityManager->getRepository(Product::class)
+            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax);
+
+        // Fetch all categories for the filter dropdown
+        $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
+
         return $this->render('frontend/product/list_product.html.twig', [
-            'products' => $products,
+            'products'   => $products,
+            'categories' => $categories,
         ]);
     }
+
+
 
     #[Route('/product/{id}/edit', name: 'product_edit')]
     public function edit(Request $request, Product $product, EntityManagerInterface $entityManager): Response

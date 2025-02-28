@@ -1,228 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		{# Stylesheets #}
-		<meta charset="utf-8">
-		<title>CultureSpace</title>
-		<meta content="width=device-width, initial-scale=1.0" name="viewport">
-		<meta content="" name="keywords">
-		<meta
-		content="" name="description">
+<head>
+    <meta charset="utf-8">
+    <title>CultureSpace</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
 
-		<!-- Google Web Fonts -->
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link
-		href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-		<!-- Icon Font Stylesheet -->
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
-		<link
-		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
-		<!-- Libraries Stylesheet -->
-		<link rel="stylesheet" href="{{ asset('lib/animate/animate.min.css') }}"/>
-		<link href="{{ asset('lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
-		<link
-		href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <!-- Libraries Stylesheet -->
+    <link rel="stylesheet" href="{{ asset('lib/animate/animate.min.css') }}"/>
+    <link href="{{ asset('lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
 
-		<!-- Customized Bootstrap Stylesheet -->
-		<link
-		href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 
-		<!-- Template Stylesheet -->
-		<link
-		href="{{ asset('css/style.css') }}" rel="stylesheet">
-	{# <link href="{{ asset('css/Product-style.css') }}" rel="stylesheet"> #}
-	</head>
-	{% block header%}
-		{% include 'frontend/topbar/topbar.html.twig' %}
-		<!-- Topbar End -->
-		<!-- Navbar & Hero Start -->
-	{% include 'frontend/navbar/navbar.html.twig' %}
-	{% endblock %}
-		<body>
+    <!-- Template Stylesheet -->
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 
-		{# ------------------- End Navbar & Carousel ------------------- #}
+    <!-- Enhanced Custom Styles -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
 
-		{# ----------------------- Main Content ----------------------- #}
-		{% block body %}
-			<section class="bg-gray py-5">
-				<div
-					class="container">
-					{# Flash messages block #}
-					{% for label, messages in app.flashes %}
-						{% for message in messages %}
-							<div class="alert alert-{{ label }} mt-3">
-								{{ message }}
-							</div>
-						{% endfor %}
-					{% endfor %}
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.15);
+            padding: 3rem;
+            margin: 3rem auto;
+            max-width: 900px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
 
-					{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        .form-container:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,123,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+            pointer-events: none;
+        }
 
-					<!-- Post Your Ad start -->
-					<fieldset class="border border-gray px-3 px-md-4 py-4 mb-5">
-						<div class="row">
-							<div class="col-lg-12">
-								<h3>Post Your ad</h3>
-							</div>
-							<div class="col-lg-6">
-								<h6 class="font-weight-bold pt-4 pb-1">Title Of Ad:</h6>
-								{{ form_widget(form.productName, {
-                  'attr': {
-                    'class': 'form-control bg-white',
-                    'placeholder': 'Ad title go There'
-                  }
-                }) }}
-								{% for error in form.productName.vars.errors %}
-									<div class="text-danger">{{ error.message }}</div>
-								{% endfor %}
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #dee2e6;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(2px);
+        }
 
-								<h6 class="font-weight-bold pt-4 pb-1">Description:</h6>
-								{{ form_widget(form.productDescription, {
-                  'attr': {
-                    'class': 'form-control bg-white',
-                    'rows': '7',
-                    'placeholder': 'Write details about your product'
-                  }
-                }) }}
-								{% for error in form.productDescription.vars.errors %}
-									<div class="text-danger">{{ error.message }}</div>
-								{% endfor %}
-							</div>
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 15px rgba(0,123,255,0.3);
+            background: white;
+        }
 
-							<div class="col-lg-6">
-								<h6 class="font-weight-bold pt-4 pb-1">Select Ad Category:</h6>
-								{{ form_widget(form.productCategory, {
-                  'attr': {
-                    'class': 'form-control bg-white'
-                  }
-                }) }}
-								{% for error in form.productCategory.vars.errors %}
-									<div class="text-danger">{{ error.message }}</div>
-								{% endfor %}
+        .form-control-file {
+            padding: 0.75rem;
+            border: 2px dashed #007bff;
+            border-radius: 12px;
+            background: rgba(0,123,255,0.05);
+            transition: all 0.3s ease;
+        }
 
-								<div class="price">
-									<h6 class="font-weight-bold pt-4 pb-1">Item Price ($ USD):</h6>
-									<div class="row px-3">
-										<div class="col-lg-4 rounded my-2 px-0">
-											{{ form_widget(form.productPrice, {
-                        'attr': {
-                          'class': 'form-control bg-white',
-                          'placeholder': 'Price',
-                          'id': 'price',
-                          'min': 0
-                        }
-                      }) }}
-											{% for error in form.productPrice.vars.errors %}
-												<div class="text-danger">{{ error.message }}</div>
-											{% endfor %}
-										</div>
-									</div>
-								</div>
+        .form-control-file:hover {
+            background: rgba(0,123,255,0.1);
+        }
 
-								<h6 class="font-weight-bold pt-4 pb-1">Stock Availability:</h6>
-								<div class="row px-3">
-									<div class="col-lg-4 rounded my-2 px-0">
-										{{ form_widget(form.productStock, {
-                      'attr': {
-                        'class': 'form-control bg-white',
-                        'placeholder': 'Stock',
-                        'id': 'stock',
-                        'min': 0
-                      }
-                    }) }}
-										{% for error in form.productStock.vars.errors %}
-											<div class="text-danger">{{ error.message }}</div>
-										{% endfor %}
-									</div>
-								</div>
+        h3 {
+            color: #2c3e50;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
 
-								<h6 class="font-weight-bold pt-4 pb-1">Upload Image:</h6>
-								{{ form_widget(form.image_url, {
-                  'attr': {
-                    'class': 'form-control-file'
-                  }
-                }) }}
-								{% for error in form.image_url.vars.errors %}
-									<div class="text-danger">{{ error.message }}</div>
-								{% endfor %}
-							</div>
-						</div>
-					</fieldset>
-					<!-- Post Your Ad end -->
+        h3:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #007bff, #00c4ff);
+            border-radius: 4px;
+        }
 
-					<div class="checkbox d-inline-flex">
-						<input type="checkbox" id="terms-&-condition" class="mt-1">
-						<label for="terms-&-condition" class="ml-2">
-							By clicking you must agree with our
-							<span>
-								<a class="text-success" href="#">Terms &amp; Conditions and Posting Rules.</a>
-							</span>
-						</label>
-					</div>
-					<button type="submit" class="btn btn-primary d-block mt-2">Post Your Ad</button>
-					{{ form_end(form) }}
-				</div>
-			</section>
-			<!-- JavaScript Libraries -->
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-			<script src="{{ asset('lib/wow/wow.min.js') }}"></script>
-			<script src="{{ asset('lib/easing/easing.min.js') }}"></script>
-			<script src="{{ asset('lib/waypoints/waypoints.min.js') }}"></script>
-			<script src="{{ asset('lib/counterup/counterup.min.js') }}"></script>
-			<script src="{{ asset('lib/lightbox/js/lightbox.min.js') }}"></script>
-			<script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
+        h6 {
+            color: #34495e;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+        }
 
-			<!-- Template Javascript -->
-			<script src="{{ asset('js/main.js') }}"></script>
-		{% endblock %}
-		{# --------------------- End Main Content --------------------- #}
+        .field-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
+        }
 
-		<!-- Back to Top -->
-		<a href="#" class="btn btn-primary btn-lg-square rounded-circle back-to-top">
-			<i class="fa fa-arrow-up"></i>
-		</a>
-		{% block footer%}
-		<!-- Footer Start -->
-		{% include 'frontend/footer/footer.html.twig' %}
-		<!-- Footer End -->
-		{% endblock%}
+        .field-wrapper i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #007bff;
+            font-size: 1.2rem;
+        }
 
-		{# ----------------------- Scripts ----------------------- #}
-		<script>
-			document.addEventListener("DOMContentLoaded", function () {
-const fileInput = document.getElementById('file-upload');
-const fileNameDisplay = document.getElementById('file-name');
-const selectFilesButton = document.querySelector('.select-files');
+        .btn-primary {
+            border-radius: 30px;
+            padding: 1rem 3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            border: none;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-// Open file input when clicking on the label
-selectFilesButton.addEventListener('click', function () {
-fileInput.click();
-});
+        .btn-primary:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
 
-// Detect and display selected file name
-fileInput.addEventListener('change', function () {
-if (fileInput.files.length > 0) {
-fileNameDisplay.textContent = fileInput.files[0].name;
-fileNameDisplay.classList.remove('text-muted');
-} else {
-fileNameDisplay.textContent = "No file selected";
-fileNameDisplay.classList.add('text-muted');
-}
-});
-});
-		</script>
-		{# <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
-				    <script src="{{ asset('plugins/bootstrap/popper.min.js') }}"></script>
-				    <script src="{{ asset('plugins/bootstrap/bootstrap.min.js') }}"></script>
-				    <script src="{{ asset('plugins/bootstrap/bootstrap-slider.js') }}"></script>
-				    <script src="{{ asset('plugins/tether/js/tether.min.js') }}"></script>
-				    <script src="{{ asset('plugins/raty/jquery.raty-fa.js') }}"></script>
-				    <script src="{{ asset('plugins/slick/slick.min.js') }}"></script>
-				    <script src="{{ asset('plugins/jquery-nice-select/js/jquery.nice-select.min.js') }}"></script>
-				    <script src="{{ asset('js/Product-script.js') }}"></script> #}
-	</body>
+        .btn-primary:hover:before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.4);
+        }
+
+        .checkbox {
+            padding: 1rem;
+            background: rgba(0,123,255,0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox:hover {
+            background: rgba(0,123,255,0.1);
+        }
+
+        .checkbox input {
+            width: 20px;
+            height: 20px;
+            accent-color: #007bff;
+        }
+
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: slideIn 0.5s ease;
+            border-left: 5px solid;
+        }
+
+        .alert-success { border-left-color: #28a745; }
+        .alert-danger { border-left-color: #dc3545; }
+        .alert-info { border-left-color: #17a2b8; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .back-to-top {
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+            transition: all 0.4s ease;
+        }
+
+        .back-to-top:hover {
+            transform: scale(1.15) rotate(360deg);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.5);
+        }
+    </style>
+</head>
+{% block header %}
+    {% include 'frontend/topbar/topbar.html.twig' %}
+    {% include 'frontend/navbar/navbar.html.twig' %}
+{% endblock %}
+<body>
+    {% block body %}
+        <section class="py-5">
+            <div class="container">
+                <div class="form-container wow fadeInUp" data-wow-delay="0.2s">
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label }} mt-3">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    <fieldset class="border-0">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h3>Post Your Ad</h3>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="field-wrapper">
+                                    <h6>Title Of Ad:</h6>
+                                    {{ form_widget(form.productName, {
+                                        'attr': {
+                                            'class': 'form-control bg-white',
+                                            'placeholder': 'Ad title go There'
+                                        }
+                                    }) }}
+                                    <i class="fas fa-heading"></i>
+                                    {% for error in form.productName.vars.errors %}
+                                        <div class="text-danger mt-1">{{ error.message }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="field-wrapper">
+                                    <h6>Description:</h6>
+                                    {{ form_widget(form.productDescription, {
+                                        'attr': {
+                                            'class': 'form-control bg-white',
+                                            'rows': '7',
+                                            'placeholder': 'Write details about your product'
+                                        }
+                                    }) }}
+                                    <i class="fas fa-align-left"></i>
+                                    {% for error in form.productDescription.vars.errors %}
+                                        <div class="text-danger mt-1">{{ error.message }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="field-wrapper">
+                                    <h6>Select Ad Category:</h6>
+                                    {{ form_widget(form.productCategory, {
+                                        'attr': {
+                                            'class': 'form-select bg-white'
+                                        }
+                                    }) }}
+                                    <i class="fas fa-list-ul"></i>
+                                    {% for error in form.productCategory.vars.errors %}
+                                        <div class="text-danger mt-1">{{ error.message }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="field-wrapper price">
+                                    <h6>Item Price ($ USD):</h6>
+                                    <div class="row px-3">
+                                        <div class="col-lg-4 px-0">
+                                            {{ form_widget(form.productPrice, {
+                                                'attr': {
+                                                    'class': 'form-control bg-white',
+                                                    'placeholder': 'Price',
+                                                    'id': 'price',
+                                                    'min': 0
+                                                }
+                                            }) }}
+                                            <i class="fas fa-dollar-sign"></i>
+                                            {% for error in form.productPrice.vars.errors %}
+                                                <div class="text-danger mt-1">{{ error.message }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field-wrapper">
+                                    <h6>Stock Availability:</h6>
+                                    <div class="row px-3">
+                                        <div class="col-lg-4 px-0">
+                                            {{ form_widget(form.productStock, {
+                                                'attr': {
+                                                    'class': 'form-control bg-white',
+                                                    'placeholder': 'Stock',
+                                                    'id': 'stock',
+                                                    'min': 0
+                                                }
+                                            }) }}
+                                            <i class="fas fa-boxes"></i>
+                                            {% for error in form.productStock.vars.errors %}
+                                                <div class="text-danger mt-1">{{ error.message }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field-wrapper">
+                                    <h6>Upload Image:</h6>
+                                    {{ form_widget(form.image_url, {
+                                        'attr': {
+                                            'class': 'form-control-file',
+                                            'id': 'file-upload'
+                                        }
+                                    }) }}
+                                    <small id="file-name" class="form-text text-muted mt-1">No file selected</small>
+                                    {% for error in form.image_url.vars.errors %}
+                                        <div class="text-danger mt-1">{{ error.message }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="checkbox d-inline-flex mt-4">
+                        <input type="checkbox" id="terms-&-condition" class="me-2">
+                        <label for="terms-&-condition">
+                            By clicking you must agree with our
+                            <span>
+                                <a class="text-success fw-bold" href="#">Terms & Conditions and Posting Rules.</a>
+                            </span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary d-block mt-4 mx-auto">Post Your Ad</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </section>
+
+        <!-- JavaScript Libraries -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ asset('lib/wow/wow.min.js') }}"></script>
+        <script src="{{ asset('lib/easing/easing.min.js') }}"></script>
+        <script src="{{ asset('lib/waypoints/waypoints.min.js') }}"></script>
+        <script src="{{ asset('lib/counterup/counterup.min.js') }}"></script>
+        <script src="{{ asset('lib/lightbox/js/lightbox.min.js') }}"></script>
+        <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
+
+        <!-- Template Javascript -->
+        <script src="{{ asset('js/main.js') }}"></script>
+    {% endblock %}
+
+    <a href="#" class="btn btn-primary btn-lg-square rounded-circle back-to-top">
+        <i class="fa fa-arrow-up"></i>
+    </a>
+
+    {% block footer %}
+        {% include 'frontend/footer/footer.html.twig' %}
+    {% endblock %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const fileInput = document.getElementById('file-upload');
+            const fileNameDisplay = document.getElementById('file-name');
+
+            if (fileInput && fileNameDisplay) {
+                fileInput.addEventListener('change', function () {
+                    if (fileInput.files.length > 0) {
+                        fileNameDisplay.textContent = fileInput.files[0].name;
+                        fileNameDisplay.classList.remove('text-muted');
+                        fileNameDisplay.classList.add('text-success');
+                    } else {
+                        fileNameDisplay.textContent = "No file selected";
+                        fileNameDisplay.classList.add('text-muted');
+                        fileNameDisplay.classList.remove('text-success');
+                    }
+                });
+            }
+
+            // Initialize WOW.js
+            new WOW().init();
+
+            // Add floating label effect
+            const inputs = document.querySelectorAll('.form-control, .form-select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                input.addEventListener('blur', function() {
+                    if (!this.value) {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+                if (input.value) {
+                    input.parentElement.classList.add('focused');
+                }
+            });
+        });
+    </script>
+</body>
 </html>
