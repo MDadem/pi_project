@@ -29,8 +29,10 @@ class ProductController extends AbstractController
         }
 
         $product = new Product();
+        // Explicitly require image upload for new products
         $form = $this->createForm(ProductType::class, $product, [
-            'attr' => ['enctype' => 'multipart/form-data']
+            'attr' => ['enctype' => 'multipart/form-data'],
+            'require_image' => true, // Added to make image requirement explicit
         ]);
         $form->handleRequest($request);
 
@@ -39,7 +41,6 @@ class ProductController extends AbstractController
                 $product->setCreatedAt(new \DateTime());
             }
 
-            // Set the owner 
             $product->setOwner($user);
 
             /** @var UploadedFile $imageFile */
@@ -52,10 +53,13 @@ class ProductController extends AbstractController
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension();
                 try {
                     $imageFile->move($uploadsDirectory, $newFilename);
+                    $product->setImageUrl('/uploads/products/' . $newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Image upload failed.');
+                    $this->addFlash('error', 'Image upload failed: ' . $e->getMessage());
+                    return $this->render('frontend/product/add_product.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
                 }
-                $product->setImageUrl('/uploads/products/' . $newFilename);
             }
 
             $entityManager->persist($product);
@@ -82,17 +86,33 @@ class ProductController extends AbstractController
         $category = $request->query->get('category');
         $priceMin = $request->query->get('price_min');
         $priceMax = $request->query->get('price_max');
+        $availability = $request->query->get('availability');
+        $discountFilter = $request->query->get('discount');
 
         // Convert price filters to float if provided, otherwise set to null
         $priceMin = ($priceMin !== null && $priceMin !== '') ? (float)$priceMin : null;
         $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
 
-        // Use a custom repository method to fetch filtered products
+        // Use custom repository method to fetch filtered products
         $products = $entityManager->getRepository(Product::class)
-            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax);
+            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
+
+        // Sort products by discount in descending order (null discounts last)
+        usort($products, function ($a, $b) {
+            $discountA = $a->getDiscount() ?? 0; // Treat null as 0
+            $discountB = $b->getDiscount() ?? 0; // Treat null as 0
+            return $discountB <=> $discountA; // Descending order
+        });
 
         // Fetch all categories for the filter dropdown
         $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('frontend/product/_list.html.twig', [
+                'products'   => $products,
+                'categories' => $categories,
+            ]);
+        }
 
         return $this->render('frontend/product/list_product.html.twig', [
             'products'   => $products,
@@ -100,14 +120,13 @@ class ProductController extends AbstractController
         ]);
     }
 
-
-
     #[Route('/product/{id}/edit', name: 'product_edit')]
     public function edit(Request $request, Product $product, EntityManagerInterface $entityManager): Response
     {
-        // No user restriction – anyone can edit
+        // Set require_image to false for editing, making image upload optional
         $form = $this->createForm(ProductType::class, $product, [
-            'attr' => ['enctype' => 'multipart/form-data']
+            'attr' => ['enctype' => 'multipart/form-data'],
+            'require_image' => false,
         ]);
         $form->handleRequest($request);
 
@@ -122,18 +141,25 @@ class ProductController extends AbstractController
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension();
                 try {
                     $imageFile->move($uploadsDirectory, $newFilename);
+                    $product->setImageUrl('/uploads/products/' . $newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Image upload failed.');
+                    $this->addFlash('error', 'Image upload failed: ' . $e->getMessage());
+                    return $this->render('frontend/product/edit_product.html.twig', [
+                        'form' => $form->createView(),
+                        'product' => $product,
+                    ]);
                 }
-                $product->setImageUrl('/uploads/products/' . $newFilename);
             }
+            // If no new image is uploaded, the existing imageUrl remains unchanged
             $entityManager->flush();
             $this->addFlash('success', 'Product updated successfully!');
             return $this->redirectToRoute('product_list');
+        } elseif ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'There was an error updating the product. Please check your form.');
         }
 
         return $this->render('frontend/product/edit_product.html.twig', [
-            'form'    => $form->createView(),
+            'form' => $form->createView(),
             'product' => $product,
         ]);
     }
@@ -141,7 +167,6 @@ class ProductController extends AbstractController
     #[Route('/product/{id}', name: 'product_delete', methods: ['POST'])]
     public function delete(Request $request, Product $product, EntityManagerInterface $entityManager): Response
     {
-        // No user restriction – anyone can delete
         if ($this->isCsrfTokenValid('delete' . $product->getId(), $request->request->get('_token'))) {
             $entityManager->remove($product);
             $entityManager->flush();

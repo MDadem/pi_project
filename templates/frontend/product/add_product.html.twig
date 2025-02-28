@@ -27,10 +27,10 @@
     <!-- Template Stylesheet -->
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 
-    <!-- Enhanced Custom Styles -->
+    <!-- Enhanced Custom Styles with Green Theme -->
     <style>
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             min-height: 100vh;
         }
 
@@ -44,6 +44,7 @@
             position: relative;
             overflow: hidden;
             transition: all 0.4s ease;
+            backdrop-filter: blur(5px);
         }
 
         .form-container:before {
@@ -53,9 +54,13 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(0,123,255,0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(122,196,0,0.1) 0%, transparent 70%);
             transform: rotate(30deg);
             pointer-events: none;
+        }
+
+        .form-container:hover {
+            box-shadow: 0 15px 60px rgba(0,0,0,0.2);
         }
 
         .form-control, .form-select {
@@ -68,21 +73,21 @@
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 15px rgba(0,123,255,0.3);
+            border-color: #7ac400;
+            box-shadow: 0 0 15px rgba(122,196,0,0.3);
             background: white;
         }
 
         .form-control-file {
             padding: 0.75rem;
-            border: 2px dashed #007bff;
+            border: 2px dashed #7ac400;
             border-radius: 12px;
-            background: rgba(0,123,255,0.05);
+            background: rgba(122,196,0,0.05);
             transition: all 0.3s ease;
         }
 
         .form-control-file:hover {
-            background: rgba(0,123,255,0.1);
+            background: rgba(122,196,0,0.1);
         }
 
         h3 {
@@ -101,7 +106,7 @@
             left: 0;
             width: 80px;
             height: 4px;
-            background: linear-gradient(to right, #007bff, #00c4ff);
+            background: linear-gradient(to right, #7ac400, #a3e635);
             border-radius: 4px;
         }
 
@@ -122,7 +127,7 @@
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #007bff;
+            color: #7ac400;
             font-size: 1.2rem;
         }
 
@@ -132,7 +137,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            background: linear-gradient(45deg, #007bff, #00c4ff);
+            background: linear-gradient(45deg, #7ac400, #a3e635);
             border: none;
             transition: all 0.4s ease;
             position: relative;
@@ -159,24 +164,24 @@
 
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,123,255,0.4);
+            box-shadow: 0 8px 25px rgba(122,196,0,0.4);
         }
 
         .checkbox {
             padding: 1rem;
-            background: rgba(0,123,255,0.05);
+            background: rgba(122,196,0,0.05);
             border-radius: 10px;
             transition: all 0.3s ease;
         }
 
         .checkbox:hover {
-            background: rgba(0,123,255,0.1);
+            background: rgba(122,196,0,0.1);
         }
 
         .checkbox input {
             width: 20px;
             height: 20px;
-            accent-color: #007bff;
+            accent-color: #7ac400;
         }
 
         .alert {
@@ -188,7 +193,7 @@
             border-left: 5px solid;
         }
 
-        .alert-success { border-left-color: #28a745; }
+        .alert-success { border-left-color: #7ac400; }
         .alert-danger { border-left-color: #dc3545; }
         .alert-info { border-left-color: #17a2b8; }
 
@@ -202,25 +207,28 @@
             right: 40px;
             width: 60px;
             height: 60px;
-            background: linear-gradient(45deg, #007bff, #00c4ff);
+            background: linear-gradient(45deg, #7ac400, #a3e635);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+            box-shadow: 0 5px 15px rgba(122,196,0,0.3);
             transition: all 0.4s ease;
         }
 
         .back-to-top:hover {
             transform: scale(1.15) rotate(360deg);
-            box-shadow: 0 8px 25px rgba(0,123,255,0.5);
+            box-shadow: 0 8px 25px rgba(122,196,0,0.5);
+        }
+
+        .text-danger {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
         }
     </style>
 </head>
-{% block header %}
-    {% include 'frontend/topbar/topbar.html.twig' %}
-    {% include 'frontend/navbar/navbar.html.twig' %}
-{% endblock %}
+{% include 'frontend/topbar/topbar.html.twig' %}
+{% include 'frontend/navbar/navbar.html.twig' %}
 <body>
     {% block body %}
         <section class="py-5">
@@ -305,6 +313,21 @@
                                     </div>
                                 </div>
 
+                                <!-- New Discount Field -->
+                                <div class="field-wrapper">
+                                    <h6>Discount (%):</h6>
+                                    {{ form_widget(form.discount, {
+                                        'attr': {
+                                            'class': 'form-control bg-white',
+                                            'placeholder': 'Enter discount percentage'
+                                        }
+                                    }) }}
+                                    <i class="fas fa-percentage"></i>
+                                    {% for error in form.discount.vars.errors %}
+                                        <div class="text-danger mt-1">{{ error.message }}</div>
+                                    {% endfor %}
+                                </div>
+
                                 <div class="field-wrapper">
                                     <h6>Stock Availability:</h6>
                                     <div class="row px-3">
@@ -375,9 +398,7 @@
         <i class="fa fa-arrow-up"></i>
     </a>
 
-    {% block footer %}
-        {% include 'frontend/footer/footer.html.twig' %}
-    {% endblock %}
+    {% include 'frontend/footer/footer.html.twig' %}
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

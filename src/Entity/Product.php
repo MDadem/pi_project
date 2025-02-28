@@ -54,18 +54,12 @@ class Product
     #[ORM\JoinColumn(nullable: false)]
     private ?ProductCategory $productCategory = null;
 
+    // New Discount Field (in percentage)
+    #[Assert\LessThanOrEqual(100, message: "Product discount cannot exceed 100%.")] 
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $discount = null;
+
     // Getter and Setter methods...
-
-    public function getProductCategory(): ?ProductCategory
-    {
-        return $this->productCategory;
-    }
-
-    public function setProductCategory(?ProductCategory $productCategory): self
-    {
-        $this->productCategory = $productCategory;
-        return $this;
-    }
 
     public function getId(): ?int
     {
@@ -157,6 +151,29 @@ class Product
     public function setOwner(User $owner): self
     {
         $this->owner = $owner;
+        return $this;
+    }
+
+    public function getProductCategory(): ?ProductCategory
+    {
+        return $this->productCategory;
+    }
+
+    public function setProductCategory(?ProductCategory $productCategory): self
+    {
+        $this->productCategory = $productCategory;
+        return $this;
+    }
+
+    // Discount Getter and Setter
+    public function getDiscount(): ?float
+    {
+        return $this->discount;
+    }
+
+    public function setDiscount(?float $discount): self
+    {
+        $this->discount = $discount;
         return $this;
     }
 }
