@@ -7,8 +7,6 @@ use App\Entity\User;
 use App\Form\UserType;
 use App\Service\AuthenticatorService;
 use Doctrine\ORM\EntityManagerInterface;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,11 +16,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use TCPDF;
 use Twig\Environment;
 
 
@@ -33,12 +31,6 @@ use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
-//related to 2fa
-//use Endroid\QrCode\Encoding\Encoding;
-//use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
-//use Endroid\QrCode\Builder\BuilderInterface;
-//use Endroid\QrCode\Writer\Result\ResultInterface;
-//use Endroid\QrCode\Builder\BuilderRegistry;
 
 
 
@@ -669,6 +661,142 @@ final class UserController extends AbstractController
         $session->remove('2fa_user_id');
     }
 
+    #[Route('/dashboard/users/export-pdf', name: 'app_export_users_pdf')]
+    public function exportUsersPdf(EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // Fetch all users
+        $users = $entityManager->getRepository(User::class)->findAll();
+
+        // Create new PDF document
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // Set document information
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor('Culture Space');
+        $pdf->SetTitle('User List Export');
+        $pdf->SetSubject('User Management Report');
+        $pdf->SetKeywords('Users, Report, Culture Space');
+
+        // Set header data
+        $pdf->SetHeaderData(
+            $logo = '', // Add logo path here if desired
+            $logo_width = 0,
+            $title = 'Culture Space User Report',
+            $string = "Generated on " . date('Y-m-d H:i:s')
+        );
+
+        // Set fonts
+        $pdf->setHeaderFont([PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN]);
+        $pdf->setFooterFont([PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA]);
+
+        // Set margins (adjusted for better fit)
+        $pdf->SetMargins(15, 25, 15); // Left, Top, Right
+        $pdf->SetHeaderMargin(10);
+        $pdf->SetFooterMargin(10);
+
+        // Set auto page breaks
+        $pdf->SetAutoPageBreak(TRUE, 15); // Reduced bottom margin for more content per page
+
+        // Set font
+        $pdf->SetFont('helvetica', '', 9); // Slightly smaller font for better fit
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Calculate page width (A4 width = 210mm - margins)
+        $pageWidth = 210 - 30; // 210mm - 15mm left - 15mm right = 180mm
+
+        // Define column widths (total should equal pageWidth)
+        $colWidths = [
+            'id' => 15,      // Reduced from 20
+            'firstName' => 35, // Reduced from 40
+            'lastName' => 35,  // Reduced from 40
+            'email' => 50,     // Kept at 50
+            'roles' => 30,     // Reduced from 40
+            'status' => 15     // Reduced from 30
+        ];
+        $totalWidth = array_sum($colWidths); // Should be 180
+
+        // Header
+        $pdf->SetFillColor(79, 129, 189); // Blue header
+        $pdf->SetTextColor(255, 255, 255); // White text
+        $pdf->Cell($colWidths['id'], 10, 'ID', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['firstName'], 10, 'First Name', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['lastName'], 10, 'Last Name', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['email'], 10, 'Email', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['roles'], 10, 'Roles', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['status'], 10, 'Status', 1, 1, 'C', 1);
+
+        // Body
+        $pdf->SetFillColor(245, 245, 245); // Light gray for alternating rows
+        $pdf->SetTextColor(0, 0, 0); // Black text
+        $fill = 0;
+
+        foreach ($users as $user) {
+            // Use MultiCell for wrapping long content
+            $pdf->MultiCell($colWidths['id'], 10, $user->getId(), 1, 'C', $fill, 0);
+            $pdf->MultiCell($colWidths['firstName'], 10, $user->getFirstName(), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['lastName'], 10, $user->getLastName(), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['email'], 10, $user->getEmail(), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['roles'], 10, implode(', ', $user->getRoles()), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['status'], 10, $user->isBlocked() ? 'Blocked' : 'Active', 1, 'C', $fill, 1);
+
+            $fill = !$fill; // Toggle fill for alternating rows
+        }
+
+        // Output the PDF as a streamed response
+        $pdfContent = $pdf->Output('users_export.pdf', 'S'); // 'S' returns the PDF as a string
+
+        $response = new StreamedResponse(function () use ($pdfContent) {
+            echo $pdfContent;
+        });
+
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', 'attachment;filename="users_export.pdf"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
+    }
 
 
+
+    #[Route('/dashboard/users/filter', name: 'app_filter_users', methods: ['GET'])]
+    public function filterUsers(EntityManagerInterface $entityManager, Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $filter = trim($request->query->get('filter', ''));
+
+        $queryBuilder = $entityManager->createQueryBuilder()
+            ->select('u')
+            ->from(User::class, 'u');
+
+        if (!empty($filter)) {
+            $filterParam = '%' . $filter . '%';
+            $queryBuilder
+                ->where('CONCAT(u.firstName, \' \', u.lastName) LIKE :filter')
+                ->orWhere('u.email LIKE :filter')
+                ->orWhere('u.roles LIKE :filter')
+                ->setParameter('filter', $filterParam);
+        }
+
+        $queryBuilder->orderBy('u.id', 'ASC');
+        $users = $queryBuilder->getQuery()->getResult();
+
+        $userData = array_map(function (User $user) {
+            return [
+                'id' => $user->getId(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles(), // Raw roles for JS to convert
+                'isBlocked' => $user->isBlocked(),
+                'profileIMG' => $user->getProfileIMG(),
+            ];
+        }, $users);
+
+        return new JsonResponse(['users' => $userData]);
+    }
 }

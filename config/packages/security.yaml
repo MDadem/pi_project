@@ -38,3 +38,7 @@ security:
         - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
         - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
         - { path: ^/dashboard, roles: ROLE_ADMIN }
+        #new changes
+        - { path: ^/2fa/verify, roles: IS_AUTHENTICATED }
+        - { path: ^/2fa/resend, roles: IS_AUTHENTICATED }
+        - { path: ^/2fa/confirm, roles: IS_AUTHENTICATED }
