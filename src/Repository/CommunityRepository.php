@@ -6,6 +6,8 @@ use App\Entity\Community;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\User;
+use App\Enums\CategoryGrp;
+
 
 
 /**
@@ -74,6 +76,34 @@ public function findByUserParticipation(User $user): array
         ->setParameter('user', $user)
         ->getQuery()
         ->getResult();
+}
+
+
+public function searchCommunities(?string $name, ?\DateTimeInterface $startDate, ?\DateTimeInterface $endDate, ?CategoryGrp $category): array
+{
+    $qb = $this->createQueryBuilder('c');
+
+    if (!empty($name)) {
+        $qb->andWhere('c.name LIKE :name')
+            ->setParameter('name', '%' . $name . '%');
+    }
+
+    if ($startDate instanceof \DateTimeInterface) {
+        $qb->andWhere('c.creationDate >= :startDate')
+            ->setParameter('startDate', $startDate->format('Y-m-d'));
+    }
+
+    if ($endDate instanceof \DateTimeInterface) {
+        $qb->andWhere('c.creationDate <= :endDate')
+            ->setParameter('endDate', $endDate->format('Y-m-d'));
+    }
+
+    if ($category instanceof CategoryGrp) {
+        $qb->andWhere('c.category = :category')
+           ->setParameter('category', $category);
+    }
+
+    return $qb->getQuery()->getResult();
 }
 
 }

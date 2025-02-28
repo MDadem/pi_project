@@ -7,9 +7,11 @@ use App\Entity\CommunityMembers;
 use App\Entity\JoinRequest;
 use App\Entity\User;
 use App\Enums\CategoryGrp;
+use App\Form\CommunitySearchType;
 use App\Form\GroupType;
 use App\Repository\CommunityRepository;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\Expr\Value;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -114,43 +116,7 @@ final class GroupController extends AbstractController
     
         return $this->redirectToRoute('app_group');
     }
-    // #[Route('/test-add-user', name: 'test_add_user')]
-    // public function testAddUserToCommunity(ManagerRegistry $m): Response
-    // {
-    //     $em = $m->getManager();
-    //     // Création de données statiques
-    //     $user = new User();
-    //     $user->setFirstName('John');
-    //     $user->setLastName('Doe');
-    //     $user->setEmail('johndoe@example.com');
-    //     $user->setPwd('password123'); // Idéalement, hachez le mot de passe
-    //     $user->setProfileImg('default.jpg');
-    
-    //     $community = new Community();
-    //     $community->setName('Symfony Devs');
-    //     $community->setDescription('Une communauté pour les développeurs Symfony');
-    //     $community->setBanner('banner.jpg');
-    //     $community->setCreationDate(new \DateTime());
-    //     $community->setCategory(CategoryGrp::ART); // Remplacez par une valeur valide de votre Enum
-    
-    //     $em->persist($user);
-    //     $em->persist($community);
-    //     $em->flush();
-    
-    //     // Création d'une instance CommunityMembers avec une date statique
-    //     $communityMember = new CommunityMembers();
-    //     $communityMember->setUser($user);
-    //     $communityMember->setCommunity($community);
-    
-    //     // Définir une date statique (exemple : 15/02/2025)
-    //     $dateStatic = \DateTime::createFromFormat('d/m/Y', '15/02/2025');
-    //     $communityMember->setJoinedAt($dateStatic);
-    
-    //     $em->persist($communityMember);
-    //     $em->flush();
-    
-    //     return new Response('Utilisateur ajouté avec succès à la communauté.');
-    // }
+   
     
     //////////////////////////----------  Supprimer member form grp -------------------- //////////////////
     #[Route('backoffice/group/{groupId}/remove-member/{memberId}', name: 'app_remove_member')]
@@ -231,14 +197,39 @@ final class GroupController extends AbstractController
 
 
     #[Route('/accueil/group-list', name: 'app_groupList')]
-    public function GrpList(CommunityRepository $communityRepository): Response
-    {
+public function GrpList(Request $request, CommunityRepository $communityRepository): Response
+{
+    // Création du formulaire de recherche
+    $form = $this->createForm(CommunitySearchType::class);
+    $form->handleRequest($request);
+
+    $groups = [];
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $data = $form->getData();
+            
+            $category = $data['category'] instanceof CategoryGrp ? $data['category'] : CategoryGrp::tryFrom($data['category']);
+        
+        $groups = $communityRepository->searchCommunities(
+            $data['community'] ? $data['community']->getName() : null,
+            $data['startDate'] ?? null,
+            $data['endDate'] ?? null,
+            category: $category
+        );
+      
+       
+        
+    } else {
         $groups = $communityRepository->findAll();
-    
-        return $this->render('accueil/index.html.twig', [
-            'groups' => $groups,
-        ]);
+        
     }
+
+    return $this->render('accueil/index.html.twig', [
+        'groups' => $groups,
+        'form' => $form->createView(), // Envoi du formulaire à la vue
+    ]);
+}
+
     
     // ------------------- send request ------------------------------
     #[Route('/community/join/{id}', name: 'join_community', methods: ['POST'])]
@@ -290,6 +281,10 @@ final class GroupController extends AbstractController
             'communities' => $communities,
         ]);
     }
+
+
+
+
     
     }
     
