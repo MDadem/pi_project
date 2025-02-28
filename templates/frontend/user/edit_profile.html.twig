@@ -1,4 +1,3 @@
-
 {% block stylesheets %}
     <link href="{{ asset('img/favicon.ico') }}" rel="icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,7 +9,98 @@
     <link href="{{ asset('lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .profile-card {
+            background: #f8fafc; /* Light grayish-blue */
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+        .profile-card h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .form-control {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: #fff;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            outline: none;
+        }
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        .form-control.is-invalid + .invalid-feedback {
+            display: block;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .profile-image-card {
+            text-align: center;
+        }
+        .profile-image-card img {
+            border: 3px solid #007bff;
+            padding: 5px;
+            background: #fff;
+        }
+    </style>
 {% endblock %}
+
 <!-- Spinner Start -->
 <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
     <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
@@ -18,116 +108,114 @@
     </div>
 </div>
 <!-- Spinner End -->
+
 <!-- Topbar Start -->
-{% block header%}{% include 'frontend/topbar/topbar.html.twig' %}
+{% block header %}
+    {% include 'frontend/topbar/topbar.html.twig' %}
     <!-- Topbar End -->
-<!-- Navbar & Hero Start -->
-    {% include 'frontend/navbar/navbar.html.twig' %}{% endblock %}
+    <!-- Navbar & Hero Start -->
+    {% include 'frontend/navbar/navbar.html.twig' %}
+{% endblock %}
+
 {% block body %}
     <div class="container">
-{#        {% include 'backend/sidebar/sidebar.html.twig' %}#}
         <div class="content">
-{#            {% include 'backend/navbar/navbar.html.twig' %}#}
-            <div class="container">
-                <div class="row flex-lg-nowrap">
-                    <div class="col">
-                        <div class="row">
-                            <div class="col mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="e-profile">
-                                            <div class="row">
-                                                <div class="col-12 col-sm-auto mb-3">
-                                                    <div class="mx-auto" style="width: 140px;">
-                                                        <img src="{{ user.profileIMG ? asset(user.profileIMG) : asset('img/team-3.jpg') }}"
-                                                             class="rounded-circle img-thumbnail" width="140" height="140">
-                                                    </div>
-                                                </div>
-                                                <div class="col d-flex flex-column flex-sm-row justify-content-between mb-3">
-                                                    <div class="text-center text-sm-left mb-2 mb-sm-0">
-                                                        <h4 class="pt-sm-2 pb-1 mb-0 text-nowrap">{{ user.firstName }} {{ user.lastName }}</h4>
-                                                        <p class="mb-0">{{ user.email }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+            <div class="profile-container">
+                <!-- Profile Image Card -->
+                <div class="profile-card profile-image-card">
+                    <div class="mx-auto" style="width: 150px;">
+                        <img src="{{ user.profileIMG ? asset(user.profileIMG) : asset('img/team-3.jpg') }}"
+                             class="rounded-circle img-thumbnail" width="150" height="150">
+                    </div>
+                    <h4 class="mt-3">{{ user.firstName }} {{ user.lastName }}</h4>
+                    <p class="text-muted">{{ user.email }}</p>
+                </div>
 
-                                            <ul class="nav nav-tabs">
-                                                <li class="nav-item"><a href="" class="active nav-link">Settings</a></li>
-                                            </ul>
+                <!-- Settings Card -->
+                <div class="profile-card">
+                    <h5>Profile Settings</h5>
+                    <ul class="nav nav-tabs mb-4">
+                        <li class="nav-item"><a href="#" class="active nav-link">Settings</a></li>
+                    </ul>
 
-                                            <div class="tab-content pt-3">
-                                                <div class="tab-pane active">
-                                                    {% for message in app.flashes('success') %}
-                                                        <div class="alert alert-success">{{ message }}</div>
-                                                    {% endfor %}
+                    <div class="tab-content">
+                        <div class="tab-pane active">
+                            {% for message in app.flashes('success') %}
+                                <div class="alert alert-success">{{ message }}</div>
+                            {% endfor %}
 
-                                                    {{ form_start(form) }}
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                {{ form_label(form.firstName) }}
-                                                                {{ form_widget(form.firstName) }}
-                                                            </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                {{ form_label(form.lastName) }}
-                                                                {{ form_widget(form.lastName) }}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                {{ form_label(form.email) }}
-                                                                {{ form_widget(form.email, {'attr': {'class': 'form-control medium-size'}})  }}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                {{ form_label(form.profileIMG) }}
-                                                                {{ form_widget(form.profileIMG) }}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                {{ form_label(form.password) }}
-                                                                {{ form_widget(form.password, {'attr': {'class': 'form-control medium-size'}}) }}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col d-flex justify-content-end">
-                                                            <button class="btn btn-primary" type="submit">Save Changes</button>
-                                                        </div>
-                                                    </div>
-                                                    {{ form_end(form) }}
-                                                </div>
-                                            </div>
-                                        </div>
+                            {{ form_start(form, {'attr': {'id': 'editProfileForm'}}) }}
+                            <!-- Name Fields Card -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form_label(form.firstName, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+                                        <div class="invalid-feedback">First name cannot be empty.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form_label(form.lastName, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
+                                        <div class="invalid-feedback">Last name cannot be empty.</div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Email Field Card -->
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                                        <div class="invalid-feedback">Email cannot be empty.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Profile Image Field Card -->
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ form_label(form.profileIMG, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.profileIMG, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Password Field Card -->
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        {{ form_label(form.password, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.password, {'attr': {'class': 'form-control'}}) }}
+                                        <div class="invalid-feedback">Password must contain at least one uppercase letter, one digit, and one special character, and be at least 8 characters long.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="row">
+                                <div class="col d-flex justify-content-end">
+                                    <button class="btn btn-primary" type="submit">Save Changes</button>
+                                </div>
+                            </div>
+                            {{ form_end(form) }}
                         </div>
                     </div>
                 </div>
-                     </div>
+            </div>
         </div>
-    </div>+
+    </div>
 {% endblock %}
-     {% block footer%}
-         <!-- Footer Start -->
-         {% include 'frontend/footer/footer.html.twig' %}
-         <!-- Footer End -->
-     {% endblock%}
+
+{% block footer %}
+    <!-- Footer Start -->
+    {% include 'frontend/footer/footer.html.twig' %}
+    <!-- Footer End -->
+{% endblock %}
+
 {% block javascripts %}
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -139,4 +227,72 @@
     <script src="{{ asset('lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
     <script src="{{ asset('lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
     <script src="{{ asset('js/backoffice-main.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#editProfileForm').on('submit', function(e) {
+                var isValid = true;
+
+                // Validate First Name
+                var firstName = $('#user_firstName').val().trim();
+                if (!firstName) {
+                    $('#user_firstName').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#user_firstName').removeClass('is-invalid');
+                }
+
+                // Validate Last Name
+                var lastName = $('#user_lastName').val().trim();
+                if (!lastName) {
+                    $('#user_lastName').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#user_lastName').removeClass('is-invalid');
+                }
+
+                // Validate Email
+                var email = $('#user_email').val().trim();
+                if (!email) {
+                    $('#user_email').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#user_email').removeClass('is-invalid');
+                }
+
+                // Validate Password (if provided)
+                var password = $('#user_password').val().trim();
+                var passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/;
+                if (password && !passwordPattern.test(password)) {
+                    $('#user_password').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#user_password').removeClass('is-invalid');
+                }
+
+                if (!isValid) {
+                    e.preventDefault(); // Prevent form submission if validation fails
+                    alert('Please correct the errors in the form.');
+                }
+            });
+
+            // Real-time validation feedback
+            $('#user_firstName, #user_lastName, #user_email').on('input', function() {
+                if ($(this).val().trim() === '') {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            $('#user_password').on('input', function() {
+                var value = $(this).val().trim();
+                var pattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/;
+                if (value && !pattern.test(value)) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+        });
+    </script>
 {% endblock %}
