@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		{# Stylesheets #}
+		<meta charset="utf-8">
+		<title>CultureSpace</title>
+		<meta content="width=device-width, initial-scale=1.0" name="viewport">
+		<meta content="" name="keywords">
+		<meta
+		content="" name="description">
+
+		<!-- Google Web Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+		<!-- Icon Font Stylesheet -->
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+		<link
+		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+		<!-- Libraries Stylesheet -->
+		<link rel="stylesheet" href="{{ asset('lib/animate/animate.min.css') }}"/>
+		<link href="{{ asset('lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+		<link
+		href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+
+		<!-- Customized Bootstrap Stylesheet -->
+		<link
+		href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+
+		<!-- Template Stylesheet -->
+		<link
+		href="{{ asset('css/style.css') }}" rel="stylesheet">
+	{# <link href="{{ asset('css/Product-style.css') }}" rel="stylesheet"> #}
+	</head>
+	{% block header%}
+		{% include 'frontend/topbar/topbar.html.twig' %}
+		<!-- Topbar End -->
+		<!-- Navbar & Hero Start -->
+	{% include 'frontend/navbar/navbar.html.twig' %}
+	{% endblock %}
+		<body>
+
+		{# ------------------- End Navbar & Carousel ------------------- #}
+
+		{# ----------------------- Main Content ----------------------- #}
+		{% block body %}
+			<section class="bg-gray py-5">
+				<div
+					class="container">
+					{# Flash messages block #}
+					{% for label, messages in app.flashes %}
+						{% for message in messages %}
+							<div class="alert alert-{{ label }} mt-3">
+								{{ message }}
+							</div>
+						{% endfor %}
+					{% endfor %}
+
+					{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+					<!-- Post Your Ad start -->
+					<fieldset class="border border-gray px-3 px-md-4 py-4 mb-5">
+						<div class="row">
+							<div class="col-lg-12">
+								<h3>Post Your ad</h3>
+							</div>
+							<div class="col-lg-6">
+								<h6 class="font-weight-bold pt-4 pb-1">Title Of Ad:</h6>
+								{{ form_widget(form.productName, {
+                  'attr': {
+                    'class': 'form-control bg-white',
+                    'placeholder': 'Ad title go There'
+                  }
+                }) }}
+								{% for error in form.productName.vars.errors %}
+									<div class="text-danger">{{ error.message }}</div>
+								{% endfor %}
+
+								<h6 class="font-weight-bold pt-4 pb-1">Description:</h6>
+								{{ form_widget(form.productDescription, {
+                  'attr': {
+                    'class': 'form-control bg-white',
+                    'rows': '7',
+                    'placeholder': 'Write details about your product'
+                  }
+                }) }}
+								{% for error in form.productDescription.vars.errors %}
+									<div class="text-danger">{{ error.message }}</div>
+								{% endfor %}
+							</div>
+
+							<div class="col-lg-6">
+								<h6 class="font-weight-bold pt-4 pb-1">Select Ad Category:</h6>
+								{{ form_widget(form.productCategory, {
+                  'attr': {
+                    'class': 'form-control bg-white'
+                  }
+                }) }}
+								{% for error in form.productCategory.vars.errors %}
+									<div class="text-danger">{{ error.message }}</div>
+								{% endfor %}
+
+								<div class="price">
+									<h6 class="font-weight-bold pt-4 pb-1">Item Price ($ USD):</h6>
+									<div class="row px-3">
+										<div class="col-lg-4 rounded my-2 px-0">
+											{{ form_widget(form.productPrice, {
+                        'attr': {
+                          'class': 'form-control bg-white',
+                          'placeholder': 'Price',
+                          'id': 'price',
+                          'min': 0
+                        }
+                      }) }}
+											{% for error in form.productPrice.vars.errors %}
+												<div class="text-danger">{{ error.message }}</div>
+											{% endfor %}
+										</div>
+									</div>
+								</div>
+
+								<h6 class="font-weight-bold pt-4 pb-1">Stock Availability:</h6>
+								<div class="row px-3">
+									<div class="col-lg-4 rounded my-2 px-0">
+										{{ form_widget(form.productStock, {
+                      'attr': {
+                        'class': 'form-control bg-white',
+                        'placeholder': 'Stock',
+                        'id': 'stock',
+                        'min': 0
+                      }
+                    }) }}
+										{% for error in form.productStock.vars.errors %}
+											<div class="text-danger">{{ error.message }}</div>
+										{% endfor %}
+									</div>
+								</div>
+
+								<h6 class="font-weight-bold pt-4 pb-1">Upload Image:</h6>
+								{{ form_widget(form.image_url, {
+                  'attr': {
+                    'class': 'form-control-file'
+                  }
+                }) }}
+								{% for error in form.image_url.vars.errors %}
+									<div class="text-danger">{{ error.message }}</div>
+								{% endfor %}
+							</div>
+						</div>
+					</fieldset>
+					<!-- Post Your Ad end -->
+
+					<div class="checkbox d-inline-flex">
+						<input type="checkbox" id="terms-&-condition" class="mt-1">
+						<label for="terms-&-condition" class="ml-2">
+							By clicking you must agree with our
+							<span>
+								<a class="text-success" href="#">Terms &amp; Conditions and Posting Rules.</a>
+							</span>
+						</label>
+					</div>
+					<button type="submit" class="btn btn-primary d-block mt-2">Post Your Ad</button>
+					{{ form_end(form) }}
+				</div>
+			</section>
+			<!-- JavaScript Libraries -->
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+			<script src="{{ asset('lib/wow/wow.min.js') }}"></script>
+			<script src="{{ asset('lib/easing/easing.min.js') }}"></script>
+			<script src="{{ asset('lib/waypoints/waypoints.min.js') }}"></script>
+			<script src="{{ asset('lib/counterup/counterup.min.js') }}"></script>
+			<script src="{{ asset('lib/lightbox/js/lightbox.min.js') }}"></script>
+			<script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
+
+			<!-- Template Javascript -->
+			<script src="{{ asset('js/main.js') }}"></script>
+		{% endblock %}
+		{# --------------------- End Main Content --------------------- #}
+
+		<!-- Back to Top -->
+		<a href="#" class="btn btn-primary btn-lg-square rounded-circle back-to-top">
+			<i class="fa fa-arrow-up"></i>
+		</a>
+		{% block footer%}
+		<!-- Footer Start -->
+		{% include 'frontend/footer/footer.html.twig' %}
+		<!-- Footer End -->
+		{% endblock%}
+
+		{# ----------------------- Scripts ----------------------- #}
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+const fileInput = document.getElementById('file-upload');
+const fileNameDisplay = document.getElementById('file-name');
+const selectFilesButton = document.querySelector('.select-files');
+
+// Open file input when clicking on the label
+selectFilesButton.addEventListener('click', function () {
+fileInput.click();
+});
+
+// Detect and display selected file name
+fileInput.addEventListener('change', function () {
+if (fileInput.files.length > 0) {
+fileNameDisplay.textContent = fileInput.files[0].name;
+fileNameDisplay.classList.remove('text-muted');
+} else {
+fileNameDisplay.textContent = "No file selected";
+fileNameDisplay.classList.add('text-muted');
+}
+});
+});
+		</script>
+		{# <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
+				    <script src="{{ asset('plugins/bootstrap/popper.min.js') }}"></script>
+				    <script src="{{ asset('plugins/bootstrap/bootstrap.min.js') }}"></script>
+				    <script src="{{ asset('plugins/bootstrap/bootstrap-slider.js') }}"></script>
+				    <script src="{{ asset('plugins/tether/js/tether.min.js') }}"></script>
+				    <script src="{{ asset('plugins/raty/jquery.raty-fa.js') }}"></script>
+				    <script src="{{ asset('plugins/slick/slick.min.js') }}"></script>
+				    <script src="{{ asset('plugins/jquery-nice-select/js/jquery.nice-select.min.js') }}"></script>
+				    <script src="{{ asset('js/Product-script.js') }}"></script> #}
+	</body>
+</html>

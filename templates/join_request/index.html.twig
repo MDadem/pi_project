@@ -49,7 +49,7 @@
                                 <tbody>
                                     {% for request in requests %}
                                         <tr>
-                                            <td>{{ request.user.username }}</td>
+                                            <td>{{ request.user.firstName }}</td>
                                             <td>{{ request.community.name }}</td>
                                             <td>{{ request.joinDate|date('d/m/Y H:i') }}</td>
                                             <td>

@@ -1,0 +1,103 @@
+{# templates/frontend/product/edit_product.html.twig #}
+<head>
+		{# Stylesheets #}
+		<meta charset="utf-8">
+		<title>CultureSpace</title>
+		<meta content="width=device-width, initial-scale=1.0" name="viewport">
+		<meta content="" name="keywords">
+		<meta
+		content="" name="description">
+
+		<!-- Google Web Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+		<!-- Icon Font Stylesheet -->
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+		<link
+		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+		<!-- Libraries Stylesheet -->
+		<link rel="stylesheet" href="{{ asset('lib/animate/animate.min.css') }}"/>
+		<link href="{{ asset('lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+		<link
+		href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+
+		<!-- Customized Bootstrap Stylesheet -->
+		<link
+		href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+
+		<!-- Template Stylesheet -->
+		<link
+		href="{{ asset('css/style.css') }}" rel="stylesheet">
+	{# <link href="{{ asset('css/Product-style.css') }}" rel="stylesheet"> #}
+	</head>
+	{% block header%}
+		{% include 'frontend/topbar/topbar.html.twig' %}
+		<!-- Topbar End -->
+		<!-- Navbar & Hero Start -->
+	{% include 'frontend/navbar/navbar.html.twig' %}
+	{% endblock %}
+
+{% block body %}
+<h2 class="text-center mb-5">Edit Product</h2>
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="form-group">
+            {{ form_label(form.productName) }}
+            {{ form_widget(form.productName, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.productName) }}
+          </div>
+          <div class="form-group">
+            {{ form_label(form.productDescription) }}
+            {{ form_widget(form.productDescription, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.productDescription) }}
+          </div>
+          <div class="row">
+            <div class="col-md-6 form-group">
+              {{ form_label(form.productPrice) }}
+              {{ form_widget(form.productPrice, {'attr': {'class': 'form-control'}}) }}
+              {{ form_errors(form.productPrice) }}
+            </div>
+            <div class="col-md-6 form-group">
+              {{ form_label(form.productStock) }}
+              {{ form_widget(form.productStock, {'attr': {'class': 'form-control'}}) }}
+              {{ form_errors(form.productStock) }}
+            </div>
+          </div>
+          <div class="form-group">
+            {{ form_label(form.productCategory) }}
+           <h6 class="font-weight-bold pt-4 pb-1">Select Ad Category:</h6>
+									{{ form_widget(form.productCategory, {
+											'attr': {
+												'class': 'form-control bg-white', 
+											}
+										}) }}
+            {{ form_errors(form.productCategory) }}
+          </div>
+          <div class="form-group">
+            {{ form_label(form.image_url) }}<br>
+            {% if product.imageUrl %} 
+              <img src="{{ product.imageUrl }}" alt="{{ product.productName }}" class="img-thumbnail mb-2" style="max-height: 150px;">
+            {% endif %}
+            {{ form_widget(form.image_url, {'attr': {'class': 'form-control-file'}}) }}
+            {{ form_errors(form.image_url) }}
+          </div>
+          <button type="submit" class="btn btn-primary">Update Product</button>
+        </div>
+      </div>
+    {{ form_end(form) }}
+  </div>
+</div>
+{% block footer%}
+		<!-- Footer Start -->
+		{% include 'frontend/footer/footer.html.twig' %}
+		<!-- Footer End -->
+		{% endblock%}
+{% endblock %}
+
