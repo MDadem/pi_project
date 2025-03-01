@@ -83,6 +83,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->communityMembers = new ArrayCollection();
         $this->joinRequests = new ArrayCollection();
         $this->posts = new ArrayCollection();
+        $this->postComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -154,6 +155,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'json')]
     private array $roles = [];
+
+    /**
+     * @var Collection<int, PostComment>
+     */
+    #[ORM\OneToMany(targetEntity: PostComment::class, mappedBy: 'user')]
+    private Collection $postComments;
 
 
     public function getRoles(): array
@@ -292,6 +299,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+
+    /**
+     * @return Collection<int, PostComment>
+     */
+    public function getPostComments(): Collection
+    {
+        return $this->postComments;
+    }
+
+    public function addPostComment(PostComment $postComment): static
+    {
+        if (!$this->postComments->contains($postComment)) {
+            $this->postComments->add($postComment);
+            $postComment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostComment(PostComment $postComment): static
+    {
+        if ($this->postComments->removeElement($postComment)) {
+            // set the owning side to null (unless already changed)
+            if ($postComment->getUser() === $this) {
+                $postComment->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+    
 
 
 }
