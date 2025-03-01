@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Cart;
 use App\Enum\Role;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -72,6 +73,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'user')]
     private Collection $posts;
+
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+private ?Cart $cart = null;
 
     public function __construct()
     {
@@ -287,6 +291,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
     
+
+
+    public function getCart(): ?Cart
+{
+    return $this->cart;
+}
+
+public function setCart(?Cart $cart): static
+{
+    if ($cart === null && $this->cart !== null) {
+        $this->cart->setUser(null);
+    }
+
+    if ($cart !== null && $cart->getUser() !== $this) {
+        $cart->setUser($this);
+    }
+
+    $this->cart = $cart;
+
+    return $this; 
+}
+
 
 
 }

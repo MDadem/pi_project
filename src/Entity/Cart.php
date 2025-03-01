@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CartRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: CartRepository::class)]
 class Cart
@@ -22,8 +23,12 @@ class Cart
     #[ORM\Column]
     private ?int $product_quantity = null;
 
-    #[ORM\OneToOne(mappedBy: 'cart', cascade: ['persist', 'remove'])]
-    private ?User $user = null;
+   // #[ORM\OneToOne(inversedBy: 'cart', cascade: ['persist', 'remove'])]
+//#[ORM\JoinColumn(nullable: false)]
+//private ?User $user = null;
+#[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'carts')]
+#[ORM\JoinColumn(nullable: true)] // ✅ Permettre que le panier n'ait pas d'utilisateur
+private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'carts')]
     private ?Product $product = null;

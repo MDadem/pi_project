@@ -10,7 +10,7 @@
     <p><strong>Statut :</strong> {{ order.status }}</p>
     <p><strong>Utilisateur :</strong> 
         {% if order.user %}
-            {{ order.user.username }}
+            {{ order.user.getFirstName() }}
         {% else %}
             Non défini
         {% endif %}
@@ -31,7 +31,7 @@
     <tbody>
         {% for item in order.orderItems %}  {# Vérifie que la relation utilisée est correcte #}
     <tr>
-        <td>{{ item.product.nom }}</td>
+        <td>{{ item.product.getProductName() }}</td>
         <td>{{ item.price }} TND</td>
         <td>{{ item.quantity }}</td>
         <td>{{ item.total }} TND</td>

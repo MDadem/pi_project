@@ -26,8 +26,10 @@ class Order
     #[ORM\Column(length: 50)]
     private ?string $status = 'En cours';
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
-    private ?User $user = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+#[ORM\JoinColumn(nullable: true)] // ✅ Permettre un panier sans utilisateur
+private ?User $user = null;
+
 
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'])]
     private Collection $orderItems;

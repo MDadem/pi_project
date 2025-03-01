@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Cart;
 use App\Entity\Product;
 use App\Entity\Order;
-use App\Entity\OrderItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -51,8 +50,8 @@ class PanierController extends AbstractController
             $cartItem = new Cart();
             $cartItem->setProduct($product);
             $cartItem->setProductQuantity($quantity);
-            $cartItem->setTotal($product->getPrix() * $quantity);
-            $cartItem->setPrice($product->getPrix());
+            $cartItem->setTotal($product->getProductPrice() * $quantity);
+            $cartItem->setPrice($product->getProductPrice());
             $em->persist($cartItem);
         }
 
@@ -68,7 +67,7 @@ class PanierController extends AbstractController
         $newQuantity = $request->query->getInt('quantity');
         if ($newQuantity > 0) {
             $cartItem->setProductQuantity($newQuantity);
-            $cartItem->setTotal($cartItem->getProduct()->getPrix() * $newQuantity);
+            $cartItem->setTotal($cartItem->getProduct()->getProductPrice() * $newQuantity);
             $em->flush();
             $this->addFlash('success', 'Quantité mise à jour.');
         } else {
@@ -105,51 +104,54 @@ class PanierController extends AbstractController
     }
 
     #[Route('/order/validate', name: 'order_validate')]
-public function validateOrder(Request $request, EntityManagerInterface $em): Response
-{
-    $cartItems = $em->getRepository(Cart::class)->findAll();
+    public function validateOrder(Request $request, EntityManagerInterface $em): Response
+    {
+        $cartItems = $em->getRepository(Cart::class)->findAll();
 
-    if (empty($cartItems)) {
-        $this->addFlash('error', 'Votre panier est vide.');
-        return $this->redirectToRoute('panier_index');
+        if (empty($cartItems)) {
+            $this->addFlash('error', 'Votre panier est vide.');
+            return $this->redirectToRoute('panier_index');
+        }
+
+        $totalGeneral = array_reduce($cartItems, function ($total, $item) {
+            return $total + $item->getTotal();
+        }, 0);
+
+        // Création de la commande
+        $order = new Order();
+        $order->setCreationDate(new \DateTime());
+        $order->setStatus('En cours');
+        $order->setTotalPrice($totalGeneral);
+        $order->setUser($this->getUser());
+
+        $session = $request->getSession();
+        $sessionCartItems = [];
+
+        // Associer chaque article du panier à la commande
+        foreach ($cartItems as $cartItem) {
+            $cartItem->setOrder($order);
+            $sessionCartItems[] = [
+                'product_name' => $cartItem->getProduct()->getProductName(),
+                'quantity' => $cartItem->getProductQuantity(),
+                'price' => $cartItem->getPrice(),
+                'total' => $cartItem->getTotal(),
+            ];
+        }
+
+        $em->persist($order);
+        $em->flush();
+
+        // Supprimer tous les articles du panier
+        foreach ($cartItems as $cartItem) {
+            $em->remove($cartItem);
+        }
+        $em->flush();
+
+        $session->set('validated_cart', $sessionCartItems);
+
+        $this->addFlash('success', 'Votre commande a été validée avec succès.');
+        return $this->redirectToRoute('order_confirmation');
     }
-
-    $totalGeneral = array_reduce($cartItems, function ($total, $item) {
-        return $total + $item->getTotal();
-    }, 0);
-
-    // Création de la commande
-    $order = new Order();
-    $order->setCreationDate(new \DateTime());
-    $order->setStatus('En cours');
-    $order->setTotalPrice($totalGeneral);
-    $order->setUser($this->getUser());
-
-    // Copier les articles du panier dans la commande avant suppression
-    foreach ($cartItems as $cartItem) {
-        $orderItem = new OrderItem(); // Crée une nouvelle entité OrderItem (si elle existe)
-        $orderItem->setOrder($order);
-        $orderItem->setProduct($cartItem->getProduct());
-        $orderItem->setPrice($cartItem->getPrice());
-        $orderItem->setQuantity($cartItem->getProductQuantity());
-        $orderItem->setTotal($cartItem->getTotal());
-
-        $em->persist($orderItem);
-    }
-
-    $em->persist($order);
-    $em->flush();
-
-    // Supprimer les articles du panier après copie
-    foreach ($cartItems as $cartItem) {
-        $em->remove($cartItem);
-    }
-    $em->flush();
-
-    $this->addFlash('success', 'Votre commande a été validée avec succès.');
-    return $this->redirectToRoute('order_confirmation');
-}
-
 
     #[Route('/order/confirmation', name: 'order_confirmation')]
     public function confirmation(Request $request): Response
@@ -164,4 +166,5 @@ public function validateOrder(Request $request, EntityManagerInterface $em): Res
             'validatedCart' => $validatedCart,
         ]);
     }
+    
 }

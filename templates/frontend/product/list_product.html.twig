@@ -41,9 +41,9 @@
 	{% include 'frontend/navbar/navbar.html.twig' %}
 	{% endblock %}
 {% block stylesheets %}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Open+Sans">
+    {# <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Open+Sans">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> #}
     <style>
         body {
             background: #e2eaef;
@@ -245,27 +245,38 @@
                                                 <img src="{{ product.imageUrl }}" class="img-fluid" alt="{{ product.productName }}">
                                             </div>
                                             <div class="thumb-content">
-                                                <h4>{{ product.productName }}</h4>
-                                                <p>{{ product.productDescription }}</p>
-												<p>{{ product.productCategory.name }} </p>
-                                                <div class="star-rating">
-                                                    <ul class="list-inline">
-                                                        <li class="list-inline-item"><i class="fa fa-star"></i></li>
-                                                        <li class="list-inline-item"><i class="fa fa-star"></i></li>
-                                                        <li class="list-inline-item"><i class="fa fa-star"></i></li>
-                                                        <li class="list-inline-item"><i class="fa fa-star"></i></li>
-                                                        <li class="list-inline-item"><i class="fa fa-star-o"></i></li>
-                                                    </ul>
-                                                </div>
-                                                <p class="item-price"><b>\${{ product.productPrice }}</b></p>
-                                                <!-- Always show functional Edit and Delete buttons -->
-                                                <a href="{{ path('product_edit', {id: product.id}) }}" class="btn btn-warning">Edit</a>
-                                                <form action="{{ path('product_delete', {id: product.id}) }}" method="post" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this product?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
-                                                    <button class="btn btn-danger">Delete</button>
-                                                </form>
-                                                <a href="#" class="btn btn-primary">Add to Cart</a>
-                                            </div>
+                                             <h4>{{ product.productName }}</h4>
+                                             <p>{{ product.productDescription }}</p>
+                                             <p>{{ product.productCategory.name }}</p>
+
+                                             <div class="star-rating">
+                                                 <ul class="list-inline">
+                                                     <li class="list-inline-item"><i class="fa fa-star"></i></li>
+                                                     <li class="list-inline-item"><i class="fa fa-star"></i></li>
+                                                     <li class="list-inline-item"><i class="fa fa-star"></i></li>
+                                                     <li class="list-inline-item"><i class="fa fa-star"></i></li>
+                                                     <li class="list-inline-item"><i class="fa fa-star-o"></i></li>
+                                                 </ul>
+                                             </div>
+
+                                             <p class="item-price"><b>\${{ product.productPrice }}</b></p>
+
+                                             <a href="{{ path('product_edit', {id: product.id}) }}" class="btn btn-warning">Edit</a>
+                                             <form action="{{ path('product_delete', {id: product.id}) }}" method="post" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                                                 <button class="btn btn-danger">Delete</button>
+                                             </form>
+
+                                             <!-- Vérification du stock  -->
+                                             {% if product.getProductstock > 0 %}
+                                             <form action="{{ path('panier_add', {'id': product.id}) }}" method="GET" style="display:inline-block;">
+                                                 <input type="number" name="quantity" value="1" min="1" max="{{ product.getProductstock }}" class="form-control mb-2" style="width: 70px; display:inline-block;">
+                                                 <button type="submit" class="btn btn-primary">Add to Cart</button>
+                                             </form>
+                                             {% else %}
+                                             <button class="btn btn-danger disabled">RUPTURE DE STOCK</button>
+                                             {% endif %}
+                                             </div>
                                         </div>
                                     </div>
                                 {% endfor %}
