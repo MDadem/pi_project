@@ -46,14 +46,9 @@ class UserLoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
-        }
-//        dd($targetPath); exit;
-        // For example:
-        return new RedirectResponse($this->urlGenerator->generate('app_home'));
+        // Instead of redirecting to dashboard or target path, always redirect to 2FA verification
+        return new RedirectResponse($this->urlGenerator->generate('app_2fa_verify'));
     }
-
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);

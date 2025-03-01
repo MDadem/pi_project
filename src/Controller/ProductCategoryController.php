@@ -21,8 +21,8 @@ class ProductCategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'product_category_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/product-category/new', name: 'product_category_new', methods: ['GET', 'POST'])]
+    public function new_product_category(Request $request, EntityManagerInterface $entityManager): Response
     {
         $productCategory = new ProductCategory();
         $form = $this->createForm(ProductCategoryType::class, $productCategory);

@@ -9,6 +9,7 @@ parameters:
     profile_images_directory: '%kernel.project_dir%/public/uploads/profile_images'
     post_images_directory: '%kernel.project_dir%/public/uploads/post_images'
     group_images_directory: '%kernel.project_dir%/public/uploads/group_images'
+    app.issuer: 'CultureSpace'
 
 
 services:
