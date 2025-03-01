@@ -53,5 +53,15 @@ public function findByCommunityName(string $communityName): array
             ->getResult();
     }
 
+    public function getUserPostStatistics(): array
+{
+    return $this->createQueryBuilder('p')
+        ->select('u.id, u.firstName, u.lastName, COUNT(p.id) AS post_count')
+        ->join('p.user', 'u')
+        ->groupBy('u.id')
+        ->orderBy('post_count', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
 
 }

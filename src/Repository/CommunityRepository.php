@@ -106,4 +106,15 @@ public function searchCommunities(?string $name, ?\DateTimeInterface $startDate,
     return $qb->getQuery()->getResult();
 }
 
+public function findAllCommunityPostCounts(): array
+{
+    return $this->createQueryBuilder('c')
+        ->select('c.id, c.name, c.description, COUNT(p.id) as postCount')
+        ->leftJoin('c.posts', 'p')
+        ->groupBy('c.id')
+        ->orderBy('postCount', 'DESC')
+        ->getQuery()
+        ->getResult(); // Get an array of results instead of a single result
+}
+
 }
