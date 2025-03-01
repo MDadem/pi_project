@@ -7,11 +7,13 @@ use App\Entity\ProductCategory;
 use App\Entity\User;
 use App\Form\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ProductController extends AbstractController
@@ -29,10 +31,9 @@ class ProductController extends AbstractController
         }
 
         $product = new Product();
-        // Explicitly require image upload for new products
         $form = $this->createForm(ProductType::class, $product, [
             'attr' => ['enctype' => 'multipart/form-data'],
-            'require_image' => true, // Added to make image requirement explicit
+            'require_image' => true,
         ]);
         $form->handleRequest($request);
 
@@ -79,7 +80,6 @@ class ProductController extends AbstractController
     #[Route('/product/list', name: 'product_list')]
     public function list(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // Retrieve filter parameters from the query string
         $name = $request->query->get('name');
         $dateFrom = $request->query->get('date_from');
         $dateTo = $request->query->get('date_to');
@@ -89,33 +89,29 @@ class ProductController extends AbstractController
         $availability = $request->query->get('availability');
         $discountFilter = $request->query->get('discount');
 
-        // Convert price filters to float if provided, otherwise set to null
         $priceMin = ($priceMin !== null && $priceMin !== '') ? (float)$priceMin : null;
         $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
 
-        // Use custom repository method to fetch filtered products
         $products = $entityManager->getRepository(Product::class)
             ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
 
-        // Sort products by discount in descending order (null discounts last)
         usort($products, function ($a, $b) {
-            $discountA = $a->getDiscount() ?? 0; // Treat null as 0
-            $discountB = $b->getDiscount() ?? 0; // Treat null as 0
-            return $discountB <=> $discountA; // Descending order
+            $discountA = $a->getDiscount() ?? 0;
+            $discountB = $b->getDiscount() ?? 0;
+            return $discountB <=> $discountA;
         });
 
-        // Fetch all categories for the filter dropdown
         $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
 
         if ($request->isXmlHttpRequest()) {
             return $this->render('frontend/product/_list.html.twig', [
-                'products'   => $products,
+                'products' => $products,
                 'categories' => $categories,
             ]);
         }
 
         return $this->render('frontend/product/list_product.html.twig', [
-            'products'   => $products,
+            'products' => $products,
             'categories' => $categories,
         ]);
     }
@@ -123,7 +119,6 @@ class ProductController extends AbstractController
     #[Route('/product/{id}/edit', name: 'product_edit')]
     public function edit(Request $request, Product $product, EntityManagerInterface $entityManager): Response
     {
-        // Set require_image to false for editing, making image upload optional
         $form = $this->createForm(ProductType::class, $product, [
             'attr' => ['enctype' => 'multipart/form-data'],
             'require_image' => false,
@@ -150,7 +145,6 @@ class ProductController extends AbstractController
                     ]);
                 }
             }
-            // If no new image is uploaded, the existing imageUrl remains unchanged
             $entityManager->flush();
             $this->addFlash('success', 'Product updated successfully!');
             return $this->redirectToRoute('product_list');
@@ -173,5 +167,59 @@ class ProductController extends AbstractController
             $this->addFlash('success', 'Product deleted successfully!');
         }
         return $this->redirectToRoute('product_list');
+    }
+
+    #[Route('/product/list/pdf', name: 'product_list_pdf')]
+    public function generateProductListPdf(Request $request, EntityManagerInterface $entityManager, Pdf $snappy): Response
+    {
+        // Set a timeout to handle potential delays (optional, adjust as needed)
+        $snappy->setTimeout(300); // Increased to 300 seconds; adjust based on your needs
+
+        // Retrieve filter parameters
+        $name = $request->query->get('name');
+        $dateFrom = $request->query->get('date_from');
+        $dateTo = $request->query->get('date_to');
+        $category = $request->query->get('category');
+        $priceMin = $request->query->get('price_min');
+        $priceMax = $request->query->get('price_max');
+        $availability = $request->query->get('availability');
+        $discountFilter = $request->query->get('discount');
+
+        // Convert price filters to float if provided, otherwise set to null
+        $priceMin = ($priceMin !== null && $priceMin !== '') ? (float)$priceMin : null;
+        $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
+
+        // Fetch filtered products
+        $products = $entityManager->getRepository(Product::class)
+            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
+
+        // Sort products by discount in descending order (null discounts last)
+        usort($products, function ($a, $b) {
+            $discountA = $a->getDiscount() ?? 0;
+            $discountB = $b->getDiscount() ?? 0;
+            return $discountB <=> $discountA;
+        });
+
+        $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
+
+        // Render the simplified PDF-specific template
+        $html = $this->renderView('frontend/product/pdf_product_list.html.twig', [
+            'products' => $products,
+            'categories' => $categories,
+        ]);
+
+        // Generate PDF
+        $pdf = $snappy->getOutputFromHtml($html);
+
+        // Create response
+        $response = new Response($pdf);
+        $disposition = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'product_list.pdf'
+        );
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
     }
 }
