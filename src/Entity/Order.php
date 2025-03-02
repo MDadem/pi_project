@@ -27,16 +27,15 @@ class Order
     private ?string $status = 'En cours';
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-#[ORM\JoinColumn(nullable: true)] // ✅ Permettre un panier sans utilisateur
-private ?User $user = null;
+    #[ORM\JoinColumn(nullable: true)] 
+    private ?User $user = null;
 
-
-    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'])]
-    private Collection $orderItems;
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Cart::class, cascade: ['persist', 'remove'])]
+    private Collection $cartItems;
 
     public function __construct()
     {
-        $this->orderItems = new ArrayCollection();
+        $this->cartItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -89,27 +88,27 @@ private ?User $user = null;
     }
 
     /**
-     * @return Collection<int, OrderItem>
+     * @return Collection<int, Cart>
      */
-    public function getOrderItems(): Collection
+    public function getCartItems(): Collection
     {
-        return $this->orderItems;
+        return $this->cartItems;
     }
 
-    public function addOrderItem(OrderItem $orderItem): self
+    public function addCart(Cart $cart): self
     {
-        if (!$this->orderItems->contains($orderItem)) {
-            $this->orderItems[] = $orderItem;
-            $orderItem->setOrder($this);
+        if (!$this->cartItems->contains($cart)) {
+            $this->cartItems[] = $cart;
+            $cart->setOrder($this);
         }
         return $this;
     }
 
-    public function removeOrderItem(OrderItem $orderItem): self
+    public function removeCart(Cart $cart): self
     {
-        if ($this->orderItems->removeElement($orderItem)) {
-            if ($orderItem->getOrder() === $this) {
-                $orderItem->setOrder(null);
+        if ($this->cartItems->removeElement($cart)) {
+            if ($cart->getOrder() === $this) {
+                $cart->setOrder(null);
             }
         }
         return $this;

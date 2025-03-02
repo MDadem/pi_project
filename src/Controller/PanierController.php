@@ -45,7 +45,7 @@ class PanierController extends AbstractController
 
         if ($existingCartItem) {
             $existingCartItem->setProductQuantity($existingCartItem->getProductQuantity() + $quantity);
-            $existingCartItem->setTotal($existingCartItem->getProduct()->getPrix() * $existingCartItem->getProductQuantity());
+            $existingCartItem->setTotal($existingCartItem->getProduct()->getProductPrice() * $existingCartItem->getProductQuantity());
         } else {
             $cartItem = new Cart();
             $cartItem->setProduct($product);
@@ -57,7 +57,6 @@ class PanierController extends AbstractController
 
         $em->flush();
 
-        $this->addFlash('success', 'Le produit a été ajouté au panier.');
         return $this->redirectToRoute('panier_index');
     }
 
@@ -102,34 +101,33 @@ class PanierController extends AbstractController
         $this->addFlash('success', 'Le produit a été supprimé du panier.');
         return $this->redirectToRoute('panier_index');
     }
-
     #[Route('/order/validate', name: 'order_validate')]
     public function validateOrder(Request $request, EntityManagerInterface $em): Response
     {
         $cartItems = $em->getRepository(Cart::class)->findAll();
-
+    
         if (empty($cartItems)) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('panier_index');
         }
-
+    
         $totalGeneral = array_reduce($cartItems, function ($total, $item) {
             return $total + $item->getTotal();
         }, 0);
-
+    
         // Création de la commande
         $order = new Order();
         $order->setCreationDate(new \DateTime());
         $order->setStatus('En cours');
         $order->setTotalPrice($totalGeneral);
         $order->setUser($this->getUser());
-
+    
         $session = $request->getSession();
         $sessionCartItems = [];
-
-        // Associer chaque article du panier à la commande
+    
         foreach ($cartItems as $cartItem) {
-            $cartItem->setOrder($order);
+            $cartItem->setOrder($order);  // Associer chaque produit à la commande
+            $order->addCart($cartItem);  // Ajouter chaque Cart à l'entité Order
             $sessionCartItems[] = [
                 'product_name' => $cartItem->getProduct()->getProductName(),
                 'quantity' => $cartItem->getProductQuantity(),
@@ -137,21 +135,17 @@ class PanierController extends AbstractController
                 'total' => $cartItem->getTotal(),
             ];
         }
-
+    
         $em->persist($order);
-        $em->flush();
-
-        // Supprimer tous les articles du panier
-        foreach ($cartItems as $cartItem) {
-            $em->remove($cartItem);
-        }
-        $em->flush();
-
+        $em->flush();  // Toutes les modifications sont appliquées en une seule fois
+    
         $session->set('validated_cart', $sessionCartItems);
-
-        $this->addFlash('success', 'Votre commande a été validée avec succès.');
+    
         return $this->redirectToRoute('order_confirmation');
     }
+    
+    
+
 
     #[Route('/order/confirmation', name: 'order_confirmation')]
     public function confirmation(Request $request): Response
@@ -166,5 +160,4 @@ class PanierController extends AbstractController
             'validatedCart' => $validatedCart,
         ]);
     }
-    
 }

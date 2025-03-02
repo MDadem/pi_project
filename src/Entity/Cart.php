@@ -23,12 +23,9 @@ class Cart
     #[ORM\Column]
     private ?int $product_quantity = null;
 
-   // #[ORM\OneToOne(inversedBy: 'cart', cascade: ['persist', 'remove'])]
-//#[ORM\JoinColumn(nullable: false)]
-//private ?User $user = null;
-#[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'carts')]
-#[ORM\JoinColumn(nullable: true)] // ✅ Permettre que le panier n'ait pas d'utilisateur
-private ?User $user = null;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'carts')]
+    #[ORM\JoinColumn(nullable: true)] 
+    private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'carts')]
     private ?Product $product = null;
@@ -37,7 +34,6 @@ private ?User $user = null;
     #[ORM\JoinColumn(nullable: true)]
     private ?Order $order = null;
     
-
     public function getId(): ?int
     {
         return $this->id;
@@ -83,14 +79,6 @@ private ?User $user = null;
 
     public function setUser(?User $user): static
     {
-        if ($user === null && $this->user !== null) {
-            $this->user->setCart(null);
-        }
-
-        if ($user !== null && $user->getCart() !== $this) {
-            $user->setCart($this);
-        }
-
         $this->user = $user;
         return $this;
     }

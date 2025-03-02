@@ -21,14 +21,14 @@ class OrderItem
     #[ORM\JoinColumn(nullable: false)]
     private ?Product $product = null;
 
-    #[ORM\Column(type: 'integer')]
-    private int $quantity;
+    #[ORM\Column]
+    private ?int $quantity = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $price;
+    #[ORM\Column]
+    private ?float $price = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $total;
+    #[ORM\Column]
+    private ?float $total = null;
 
     public function getId(): ?int
     {
@@ -57,7 +57,7 @@ class OrderItem
         return $this;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): ?int
     {
         return $this->quantity;
     }
@@ -68,7 +68,7 @@ class OrderItem
         return $this;
     }
 
-    public function getPrice(): float
+    public function getPrice(): ?float
     {
         return $this->price;
     }
@@ -79,7 +79,7 @@ class OrderItem
         return $this;
     }
 
-    public function getTotal(): float
+    public function getTotal(): ?float
     {
         return $this->total;
     }

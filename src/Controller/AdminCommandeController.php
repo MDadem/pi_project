@@ -53,5 +53,3 @@ class AdminCommandeController extends AbstractController
         ]);
     }
 }
-
-
