@@ -16,6 +16,14 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    public function findAllOrderedByVoteScore()
+    {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.voteScore', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function searchProducts(
         ?string $name,
         ?string $dateFrom,
@@ -24,10 +32,12 @@ class ProductRepository extends ServiceEntityRepository
         ?float $priceMin,
         ?float $priceMax,
         ?string $availability,
-        ?string $discountFilter
+        ?string $discountFilter,
+        ?string $sortField = 'voteScore',
+        ?string $sortDirection = 'DESC'
     ) {
         $qb = $this->createQueryBuilder('p');
-    
+
         if ($name) {
             $qb->andWhere('p.productName LIKE :name')
                ->setParameter('name', '%' . $name . '%');
@@ -62,7 +72,6 @@ class ProductRepository extends ServiceEntityRepository
                    ->setParameter('status', false);
             }
         }
-        // New discount filter logic
         if ($discountFilter && $discountFilter !== 'all') {
             if ($discountFilter === 'discounted') {
                 $qb->andWhere('p.discount > 0');
@@ -70,10 +79,13 @@ class ProductRepository extends ServiceEntityRepository
                 $qb->andWhere('p.discount IS NULL OR p.discount = 0');
             }
         }
-    
-        // Add sorting by discount in descending order, treating null as 0
-        $qb->addSelect('COALESCE(p.discount, 0) AS HIDDEN discount_order')
-           ->orderBy('discount_order', 'DESC');
-    
+
+        if ($sortField) {
+            $qb->orderBy('p.' . $sortField, $sortDirection);
+        } else {
+            $qb->orderBy('p.voteScore', 'DESC');
+        }
+
         return $qb->getQuery()->getResult();
-    }}
+    }
+}

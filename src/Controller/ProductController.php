@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Entity\ProductCategory;
 use App\Entity\User;
+use App\Entity\Vote;
 use App\Form\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
@@ -21,7 +22,6 @@ class ProductController extends AbstractController
     private function applyDynamicPricing(array $products): array
     {
         foreach ($products as $product) {
-            // Set a default base price if productPrice is null and dynamic pricing is used
             $basePrice = $product->getProductPrice() ?? ($product->getUseDynamicPricing() ? 10.0 : 0.0);
 
             if ($product->getUseDynamicPricing()) {
@@ -32,32 +32,46 @@ class ProductController extends AbstractController
 
                 $adjustedPrice = $basePrice;
 
-                // Stock-based adjustment
-                if ($stock > 50) {
-                    $adjustedPrice *= 0.90; // -10%
-                } elseif ($stock < 10) {
-                    $adjustedPrice *= 1.15; // +15%
+                $idealStock = 30;
+                $stockDelta = $stock - $idealStock;
+                if ($stockDelta > 0) {
+                    $stockMultiplier = 1 - ($stockDelta / 10) * 0.01;
+                } else {
+                    $stockMultiplier = 1 + (-$stockDelta / 5) * 0.02;
+                }
+                $adjustedPrice *= max(0.5, min(1.5, $stockMultiplier));
+
+                if ($discount > 30) {
+                    $adjustedPrice *= 0.90;
+                } elseif ($discount > 20) {
+                    $adjustedPrice *= 0.95;
+                } elseif ($discount > 10) {
+                    $adjustedPrice *= 0.98;
                 }
 
-                // Discount-based adjustment
-                if ($discount > 20) {
-                    $adjustedPrice *= 0.95; // Additional 5% off
-                }
-
-                // Age-based adjustment
                 $ageInDays = (new \DateTime())->diff($createdAt)->days;
                 if ($ageInDays > 30) {
-                    $adjustedPrice *= 0.85; // -15% for old products
+                    $daysOver = $ageInDays - 30;
+                    $ageDiscount = min(0.5, $daysOver * 0.005);
+                    $adjustedPrice *= (1 - $ageDiscount);
                 }
 
-                // Category-based adjustment
-                if ($category === 'Premium') {
-                    $adjustedPrice *= 1.10; // +10% for premium
+                $categoryMultipliers = [
+                    'Premium' => 1.10,
+                    'Budget' => 0.95,
+                    'Seasonal' => (date('m') >= 6 && date('m') <= 8) ? 1.05 : 0.95,
+                ];
+                if (isset($categoryMultipliers[$category])) {
+                    $adjustedPrice *= $categoryMultipliers[$category];
                 }
+
+                $minPrice = $basePrice * 0.5;
+                $maxPrice = $basePrice * 1.5;
+                $adjustedPrice = max($minPrice, min($maxPrice, $adjustedPrice));
 
                 $product->setDynamicPrice($adjustedPrice);
             } else {
-                $product->setDynamicPrice($basePrice); // Use base price or 0.0 if null
+                $product->setDynamicPrice($basePrice);
             }
         }
 
@@ -137,16 +151,52 @@ class ProductController extends AbstractController
         $priceMin = ($priceMin !== null && $priceMin !== '') ? (float)$priceMin : null;
         $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
 
+        // Fetch products without initial sorting
         $products = $entityManager->getRepository(Product::class)
             ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
 
-        usort($products, function ($a, $b) {
-            $discountA = $a->getDiscount() ?? 0;
-            $discountB = $b->getDiscount() ?? 0;
-            return $discountB <=> $discountA;
-        });
-
         $products = $this->applyDynamicPricing($products);
+
+        // Custom sorting: Upvotes first (by voteScore DESC), then discounts (by discount DESC), then the rest
+        usort($products, function ($a, $b) {
+            $aVotes = $a->getVoteScore();
+            $bVotes = $b->getVoteScore();
+            $aDiscount = $a->getDiscount() ?? 0;
+            $bDiscount = $b->getDiscount() ?? 0;
+
+            // Both have votes: sort by voteScore DESC
+            if ($aVotes > 0 && $bVotes > 0) {
+                return $bVotes <=> $aVotes;
+            }
+
+            // A has votes, B doesn’t: A comes first
+            if ($aVotes > 0 && $bVotes == 0) {
+                return -1;
+            }
+
+            // B has votes, A doesn’t: B comes first
+            if ($bVotes > 0 && $aVotes == 0) {
+                return 1;
+            }
+
+            // Neither has votes, both have discounts: sort by discount DESC
+            if ($aVotes == 0 && $bVotes == 0 && $aDiscount > 0 && $bDiscount > 0) {
+                return $bDiscount <=> $aDiscount;
+            }
+
+            // A has discount, B doesn’t: A comes first
+            if ($aVotes == 0 && $bVotes == 0 && $aDiscount > 0 && $bDiscount == 0) {
+                return -1;
+            }
+
+            // B has discount, A doesn’t: B comes first
+            if ($aVotes == 0 && $bVotes == 0 && $bDiscount > 0 && $aDiscount == 0) {
+                return 1;
+            }
+
+            // Neither has votes nor discounts: maintain original order
+            return 0;
+        });
 
         $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
 
@@ -219,8 +269,6 @@ class ProductController extends AbstractController
     #[Route('/product/list/pdf', name: 'product_list_pdf')]
     public function generateProductListPdf(Request $request, EntityManagerInterface $entityManager, Pdf $snappy): Response
     {
-        $snappy->setTimeout(300);
-
         $name = $request->query->get('name');
         $dateFrom = $request->query->get('date_from');
         $dateTo = $request->query->get('date_to');
@@ -234,13 +282,7 @@ class ProductController extends AbstractController
         $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
 
         $products = $entityManager->getRepository(Product::class)
-            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
-
-        usort($products, function ($a, $b) {
-            $discountA = $a->getDiscount() ?? 0;
-            $discountB = $b->getDiscount() ?? 0;
-            return $discountB <=> $discountA;
-        });
+            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter, 'voteScore', 'DESC');
 
         $products = $this->applyDynamicPricing($products);
 
@@ -262,5 +304,45 @@ class ProductController extends AbstractController
         $response->headers->set('Content-Disposition', $disposition);
 
         return $response;
+    }
+
+    #[Route('/product/{id}/vote/{type}', name: 'product_vote', methods: ['POST'])]
+    public function vote(Request $request, Product $product, EntityManagerInterface $entityManager, string $type): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            $user = $entityManager->getRepository(User::class)->find(1);
+            if (!$user) {
+                throw new \Exception("Test user not found. Please insert a test user.");
+            }
+        }
+
+        $voteValue = ($type === 'up') ? 1 : -1;
+
+        $existingVote = $entityManager->getRepository(Vote::class)->findOneBy([
+            'user' => $user,
+            'product' => $product,
+        ]);
+
+        if ($existingVote) {
+            if ($existingVote->getValue() !== $voteValue) {
+                $oldValue = $existingVote->getValue();
+                $existingVote->setValue($voteValue);
+                $newScore = $product->getVoteScore() + $voteValue - $oldValue;
+                $product->setVoteScore(max(0, $newScore));
+            }
+        } else {
+            $vote = new Vote();
+            $vote->setUser($user);
+            $vote->setProduct($product);
+            $vote->setValue($voteValue);
+            $entityManager->persist($vote);
+            $newScore = $product->getVoteScore() + $voteValue;
+            $product->setVoteScore(max(0, $newScore));
+        }
+
+        $entityManager->flush();
+
+        return $this->redirectToRoute('product_list');
     }
 }

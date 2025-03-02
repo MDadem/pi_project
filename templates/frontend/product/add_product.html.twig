@@ -78,6 +78,12 @@
             background: white;
         }
 
+        .form-control:disabled {
+            background: #e9ecef;
+            border-color: #ced4da;
+            cursor: not-allowed;
+        }
+
         .form-control-file {
             padding: 0.75rem;
             border: 2px dashed #7ac400;
@@ -313,11 +319,12 @@
                                     </div>
                                 </div>
 
-                                <!-- Moved Use Dynamic Pricing here -->
+                                <!-- Use Dynamic Pricing -->
                                 <div class="field-wrapper checkbox">
                                     {{ form_widget(form.useDynamicPricing, {
                                         'attr': {
-                                            'class': 'me-2'
+                                            'class': 'me-2',
+                                            'id': 'product_useDynamicPricing'
                                         }
                                     }) }}
                                     <label for="{{ form.useDynamicPricing.vars.id }}" class="mb-0">
@@ -328,13 +335,14 @@
                                     {% endfor %}
                                 </div>
 
-                                <!-- New Discount Field -->
+                                <!-- Discount Field -->
                                 <div class="field-wrapper">
                                     <h6>Discount (%):</h6>
                                     {{ form_widget(form.discount, {
                                         'attr': {
                                             'class': 'form-control bg-white',
-                                            'placeholder': 'Enter discount percentage'
+                                            'placeholder': 'Enter discount percentage',
+                                            'id': 'product_discount'
                                         }
                                     }) }}
                                     <i class="fas fa-percentage"></i>
@@ -407,6 +415,66 @@
 
         <!-- Template Javascript -->
         <script src="{{ asset('js/main.js') }}"></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const fileInput = document.getElementById('file-upload');
+                const fileNameDisplay = document.getElementById('file-name');
+                const dynamicPricingCheckbox = document.getElementById('product_useDynamicPricing');
+                const discountField = document.getElementById('product_discount');
+
+                // File upload feedback
+                if (fileInput && fileNameDisplay) {
+                    fileInput.addEventListener('change', function () {
+                        if (fileInput.files.length > 0) {
+                            fileNameDisplay.textContent = fileInput.files[0].name;
+                            fileNameDisplay.classList.remove('text-muted');
+                            fileNameDisplay.classList.add('text-success');
+                        } else {
+                            fileNameDisplay.textContent = "No file selected";
+                            fileNameDisplay.classList.add('text-muted');
+                            fileNameDisplay.classList.remove('text-success');
+                        }
+                    });
+                }
+
+                // Toggle discount field based on dynamic pricing
+                if (dynamicPricingCheckbox && discountField) {
+                    function toggleDiscountField() {
+                        if (dynamicPricingCheckbox.checked) {
+                            discountField.disabled = true;
+                            discountField.value = '';
+                            discountField.placeholder = 'Disabled with Dynamic Pricing';
+                        } else {
+                            discountField.disabled = false;
+                            discountField.placeholder = 'Enter discount percentage';
+                        }
+                    }
+
+                    dynamicPricingCheckbox.addEventListener('change', toggleDiscountField);
+                    toggleDiscountField(); // Set initial state
+                }
+
+                // Initialize WOW.js
+                new WOW().init();
+
+                // Add floating label effect
+                const inputs = document.querySelectorAll('.form-control, .form-select');
+                inputs.forEach(input => {
+                    input.addEventListener('focus', function() {
+                        this.parentElement.classList.add('focused');
+                    });
+                    input.addEventListener('blur', function() {
+                        if (!this.value) {
+                            this.parentElement.classList.remove('focused');
+                        }
+                    });
+                    if (input.value) {
+                        input.parentElement.classList.add('focused');
+                    }
+                });
+            });
+        </script>
     {% endblock %}
 
     <a href="#" class="btn btn-primary btn-lg-square rounded-circle back-to-top">
@@ -414,45 +482,5 @@
     </a>
 
     {% include 'frontend/footer/footer.html.twig' %}
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const fileInput = document.getElementById('file-upload');
-            const fileNameDisplay = document.getElementById('file-name');
-
-            if (fileInput && fileNameDisplay) {
-                fileInput.addEventListener('change', function () {
-                    if (fileInput.files.length > 0) {
-                        fileNameDisplay.textContent = fileInput.files[0].name;
-                        fileNameDisplay.classList.remove('text-muted');
-                        fileNameDisplay.classList.add('text-success');
-                    } else {
-                        fileNameDisplay.textContent = "No file selected";
-                        fileNameDisplay.classList.add('text-muted');
-                        fileNameDisplay.classList.remove('text-success');
-                    }
-                });
-            }
-
-            // Initialize WOW.js
-            new WOW().init();
-
-            // Add floating label effect
-            const inputs = document.querySelectorAll('.form-control, .form-select');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentElement.classList.add('focused');
-                });
-                input.addEventListener('blur', function() {
-                    if (!this.value) {
-                        this.parentElement.classList.remove('focused');
-                    }
-                });
-                if (input.value) {
-                    input.parentElement.classList.add('focused');
-                }
-            });
-        });
-    </script>
 </body>
 </html>

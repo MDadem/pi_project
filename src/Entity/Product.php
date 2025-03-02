@@ -62,6 +62,9 @@ class Product
 
     private ?float $dynamicPrice = null;
 
+    #[ORM\Column(type: 'integer')]
+    private int $voteScore = 0;
+
     // Getter and Setter methods...
 
     public function getId(): ?int
@@ -198,6 +201,17 @@ class Product
     public function setDynamicPrice(?float $dynamicPrice): self
     {
         $this->dynamicPrice = $dynamicPrice;
+        return $this;
+    }
+
+    public function getVoteScore(): int
+    {
+        return $this->voteScore;
+    }
+
+    public function setVoteScore(int $voteScore): self
+    {
+        $this->voteScore = $voteScore;
         return $this;
     }
 }
