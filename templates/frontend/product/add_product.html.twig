@@ -300,7 +300,7 @@
                                             {{ form_widget(form.productPrice, {
                                                 'attr': {
                                                     'class': 'form-control bg-white',
-                                                    'placeholder': 'Price',
+                                                    'placeholder': 'Price (optional if dynamic)',
                                                     'id': 'price',
                                                     'min': 0
                                                 }
@@ -311,6 +311,21 @@
                                             {% endfor %}
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- Moved Use Dynamic Pricing here -->
+                                <div class="field-wrapper checkbox">
+                                    {{ form_widget(form.useDynamicPricing, {
+                                        'attr': {
+                                            'class': 'me-2'
+                                        }
+                                    }) }}
+                                    <label for="{{ form.useDynamicPricing.vars.id }}" class="mb-0">
+                                        Use Dynamic Pricing (AI adjusts price based on stock)
+                                    </label>
+                                    {% for error in form.useDynamicPricing.vars.errors %}
+                                        <div class="text-danger mt-1">{{ error.message }}</div>
+                                    {% endfor %}
                                 </div>
 
                                 <!-- New Discount Field -->

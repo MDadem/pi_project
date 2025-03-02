@@ -18,10 +18,55 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProductController extends AbstractController
 {
+    private function applyDynamicPricing(array $products): array
+    {
+        foreach ($products as $product) {
+            // Set a default base price if productPrice is null and dynamic pricing is used
+            $basePrice = $product->getProductPrice() ?? ($product->getUseDynamicPricing() ? 10.0 : 0.0);
+
+            if ($product->getUseDynamicPricing()) {
+                $stock = $product->getProductStock();
+                $discount = $product->getDiscount() ?? 0;
+                $createdAt = $product->getCreatedAt();
+                $category = $product->getProductCategory()->getName();
+
+                $adjustedPrice = $basePrice;
+
+                // Stock-based adjustment
+                if ($stock > 50) {
+                    $adjustedPrice *= 0.90; // -10%
+                } elseif ($stock < 10) {
+                    $adjustedPrice *= 1.15; // +15%
+                }
+
+                // Discount-based adjustment
+                if ($discount > 20) {
+                    $adjustedPrice *= 0.95; // Additional 5% off
+                }
+
+                // Age-based adjustment
+                $ageInDays = (new \DateTime())->diff($createdAt)->days;
+                if ($ageInDays > 30) {
+                    $adjustedPrice *= 0.85; // -15% for old products
+                }
+
+                // Category-based adjustment
+                if ($category === 'Premium') {
+                    $adjustedPrice *= 1.10; // +10% for premium
+                }
+
+                $product->setDynamicPrice($adjustedPrice);
+            } else {
+                $product->setDynamicPrice($basePrice); // Use base price or 0.0 if null
+            }
+        }
+
+        return $products;
+    }
+
     #[Route('/product/new', name: 'product_new')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // For testing: if no real user is logged in, fetch a test user
         $user = $this->getUser();
         if (!$user) {
             $user = $entityManager->getRepository(User::class)->find(1);
@@ -101,6 +146,8 @@ class ProductController extends AbstractController
             return $discountB <=> $discountA;
         });
 
+        $products = $this->applyDynamicPricing($products);
+
         $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
 
         if ($request->isXmlHttpRequest()) {
@@ -172,10 +219,8 @@ class ProductController extends AbstractController
     #[Route('/product/list/pdf', name: 'product_list_pdf')]
     public function generateProductListPdf(Request $request, EntityManagerInterface $entityManager, Pdf $snappy): Response
     {
-        // Set a timeout to handle potential delays (optional, adjust as needed)
-        $snappy->setTimeout(300); // Increased to 300 seconds; adjust based on your needs
+        $snappy->setTimeout(300);
 
-        // Retrieve filter parameters
         $name = $request->query->get('name');
         $dateFrom = $request->query->get('date_from');
         $dateTo = $request->query->get('date_to');
@@ -185,33 +230,29 @@ class ProductController extends AbstractController
         $availability = $request->query->get('availability');
         $discountFilter = $request->query->get('discount');
 
-        // Convert price filters to float if provided, otherwise set to null
         $priceMin = ($priceMin !== null && $priceMin !== '') ? (float)$priceMin : null;
         $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
 
-        // Fetch filtered products
         $products = $entityManager->getRepository(Product::class)
             ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
 
-        // Sort products by discount in descending order (null discounts last)
         usort($products, function ($a, $b) {
             $discountA = $a->getDiscount() ?? 0;
             $discountB = $b->getDiscount() ?? 0;
             return $discountB <=> $discountA;
         });
 
+        $products = $this->applyDynamicPricing($products);
+
         $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
 
-        // Render the simplified PDF-specific template
         $html = $this->renderView('frontend/product/pdf_product_list.html.twig', [
             'products' => $products,
             'categories' => $categories,
         ]);
 
-        // Generate PDF
         $pdf = $snappy->getOutputFromHtml($html);
 
-        // Create response
         $response = new Response($pdf);
         $disposition = $response->headers->makeDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,

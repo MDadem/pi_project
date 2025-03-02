@@ -26,8 +26,7 @@ class Product
     #[Assert\Length(min: 20, minMessage: "Product description must be at least 20 characters long.")]
     private ?string $productDescription = null;
 
-    #[ORM\Column]
-    #[Assert\NotBlank(message: "Product price cannot be blank.")]
+    #[ORM\Column(nullable: true)]
     #[Assert\GreaterThan(0, message: "Product price must be positive.")]
     private ?float $productPrice = null;
 
@@ -54,10 +53,14 @@ class Product
     #[ORM\JoinColumn(nullable: false)]
     private ?ProductCategory $productCategory = null;
 
-    // New Discount Field (in percentage)
-    #[Assert\LessThanOrEqual(100, message: "Product discount cannot exceed 100%.")] 
+    #[Assert\LessThanOrEqual(100, message: "Product discount cannot exceed 100%.")]
     #[ORM\Column(type: "float", nullable: true)]
     private ?float $discount = null;
+
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    private bool $useDynamicPricing = false;
+
+    private ?float $dynamicPrice = null;
 
     // Getter and Setter methods...
 
@@ -93,7 +96,7 @@ class Product
         return $this->productPrice;
     }
 
-    public function setProductPrice(float $productPrice): static
+    public function setProductPrice(?float $productPrice): static
     {
         $this->productPrice = $productPrice;
         return $this;
@@ -148,7 +151,7 @@ class Product
         return $this->owner;
     }
 
-    public function setOwner(User $owner): self
+    public function setOwner(?User $owner): self
     {
         $this->owner = $owner;
         return $this;
@@ -165,7 +168,6 @@ class Product
         return $this;
     }
 
-    // Discount Getter and Setter
     public function getDiscount(): ?float
     {
         return $this->discount;
@@ -174,6 +176,28 @@ class Product
     public function setDiscount(?float $discount): self
     {
         $this->discount = $discount;
+        return $this;
+    }
+
+    public function getUseDynamicPricing(): bool
+    {
+        return $this->useDynamicPricing;
+    }
+
+    public function setUseDynamicPricing(bool $useDynamicPricing): self
+    {
+        $this->useDynamicPricing = $useDynamicPricing;
+        return $this;
+    }
+
+    public function getDynamicPrice(): ?float
+    {
+        return $this->dynamicPrice ?? $this->productPrice ?? 0.0; // Default to 0.0 if both are null
+    }
+
+    public function setDynamicPrice(?float $dynamicPrice): self
+    {
+        $this->dynamicPrice = $dynamicPrice;
         return $this;
     }
 }

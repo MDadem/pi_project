@@ -51,9 +51,9 @@
             <p>Category: {{ product.productCategory.name }}</p>
             <p>Stock: {{ product.productStock > 0 ? 'In Stock' : 'Out of Stock' }}</p>
             {% if product.discount %}
-                <p>Price: <span style="text-decoration: line-through;">${{ product.productPrice }}</span> ${{ (product.productPrice * (1 - product.discount / 100))|number_format(2) }}</p>
+                <p>Price: <span style="text-decoration: line-through;">${{ product.productPrice }}</span> ${{ (product.dynamicPrice * (1 - product.discount / 100))|number_format(2) }}</p>
             {% else %}
-                <p>Price: ${{ product.productPrice }}</p>
+                <p>Price: ${{ product.dynamicPrice|number_format(2) }}</p>
             {% endif %}
         </div>
     {% endfor %}

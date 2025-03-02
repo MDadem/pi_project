@@ -173,6 +173,18 @@
             font-size: 0.9rem;
             margin-top: 0.5rem;
         }
+
+        .checkbox-group {
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+        }
+
+        .checkbox-group input {
+            width: 20px;
+            height: 20px;
+            accent-color: #7ac400;
+            margin-right: 10px;
+        }
     </style>
 </head>
 {% include 'frontend/topbar/topbar.html.twig' %}
@@ -204,6 +216,17 @@
                                 {{ form_widget(form.productPrice, {'attr': {'class': 'form-control'}}) }}
                                 {{ form_errors(form.productPrice) }}
                             </div>
+                            <!-- Added Use Dynamic Pricing here -->
+                            <div class="col-md-6 checkbox-group">
+                                {{ form_widget(form.useDynamicPricing, {'attr': {'class': ''}}) }}
+                                {{ form_label(form.useDynamicPricing) }}
+                                {{ form_errors(form.useDynamicPricing) }}
+                            </div>
+                            <div class="col-md-6 form-group">
+                                {{ form_label(form.discount) }}
+                                {{ form_widget(form.discount, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.discount) }}
+                            </div>
                             <div class="col-md-6 form-group">
                                 {{ form_label(form.productStock) }}
                                 {{ form_widget(form.productStock, {'attr': {'class': 'form-control'}}) }}
@@ -212,7 +235,7 @@
                         </div>
                         <div class="form-group">
                             {{ form_label(form.productCategory) }}
-                            {{ form_widget(form.productCategory, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_widget(form.productCategory, {'attr': {'class': 'form-select'}}) }}
                             {{ form_errors(form.productCategory) }}
                         </div>
                         <div class="form-group">

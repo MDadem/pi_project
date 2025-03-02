@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Product;
 use App\Entity\ProductCategory;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -16,15 +17,15 @@ use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ProductType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        // Capture the require_image option
         $requireImage = $options['require_image'];
 
-        // Define constraints for the image_url field
         $imageConstraints = [
             new File([
                 'maxSize' => '500k',
@@ -38,72 +39,72 @@ class ProductType extends AbstractType
 
         $builder
             ->add('productName', TextType::class, [
-                'label'    => 'Title Of Ad',
+                'label' => 'Title Of Ad',
                 'required' => true,
-                'attr'     => [
-                    'placeholder' => 'Ad title goes here',
-                    'class'       => 'form-control bg-white'
-                ],
+                'attr' => ['placeholder' => 'Ad title goes here', 'class' => 'form-control bg-white'],
             ])
             ->add('productDescription', TextareaType::class, [
-                'label'    => 'Description',
+                'label' => 'Description',
                 'required' => true,
-                'attr'     => [
-                    'placeholder' => 'Write details about your product',
-                    'rows'        => 7,
-                    'class'       => 'form-control bg-white'
-                ],
+                'attr' => ['placeholder' => 'Write details about your product', 'rows' => 7, 'class' => 'form-control bg-white'],
             ])
             ->add('productPrice', NumberType::class, [
-                'label'    => 'Item Price ($ USD)',
-                'required' => true,
-                'scale'    => 2,
-                'attr'     => [
-                    'placeholder' => 'Price',
-                    'class'       => 'form-control bg-white',
-                    'id'          => 'price'
-                ],
+                'label' => 'Item Price ($ USD)',
+                'required' => false, // Changed to false
+                'scale' => 2,
+                'attr' => ['placeholder' => 'Price (optional if using dynamic pricing)', 'class' => 'form-control bg-white', 'id' => 'price'],
                 'constraints' => [
                     new GreaterThan(['value' => 0, 'message' => 'The price must be positive.']),
-                ]
-            ])
-            ->add('discount', NumberType::class, [
-                'label'    => 'Discount (%)',
-                'required' => false,
-                'scale'    => 2,
-                'attr'     => [
-                    'placeholder' => 'Enter discount percentage (e.g. 10 for 10%)',
-                    'class'       => 'form-control bg-white'
                 ],
             ])
+            ->add('discount', NumberType::class, [
+                'label' => 'Discount (%)',
+                'required' => false,
+                'scale' => 2,
+                'attr' => ['placeholder' => 'Enter discount percentage (e.g. 10 for 10%)', 'class' => 'form-control bg-white'],
+            ])
             ->add('image_url', FileType::class, [
-                'label'    => 'Upload Image',
-                'mapped'   => false,
+                'label' => 'Upload Image',
+                'mapped' => false,
                 'required' => $requireImage,
                 'constraints' => $imageConstraints,
             ])
             ->add('productStock', IntegerType::class, [
-                'label'    => 'Product Stock',
+                'label' => 'Product Stock',
                 'required' => true,
-                'constraints' => [
-                    new GreaterThan(['value' => 0, 'message' => 'Stock quantity must be positive.']),
-                ],
+                'constraints' => [new GreaterThan(['value' => 0, 'message' => 'Stock quantity must be positive.'])],
             ])
             ->add('productCategory', EntityType::class, [
                 'class' => ProductCategory::class,
                 'choice_label' => 'name',
                 'label' => 'Select Ad Category',
-                'attr' => [
-                    'class' => 'form-control bg-white',
-                ],
+                'attr' => ['class' => 'form-control bg-white'],
+            ])
+            ->add('useDynamicPricing', CheckboxType::class, [
+                'label' => 'Use Dynamic Pricing (AI adjusts price based on stock)',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
             ]);
+
+        // Custom validation for price vs dynamic pricing
+        $builder->addEventListener(
+            \Symfony\Component\Form\FormEvents::POST_SUBMIT,
+            function (\Symfony\Component\Form\FormEvent $event) {
+                $form = $event->getForm();
+                $product = $form->getData();
+
+                if (!$product->getUseDynamicPricing() && $product->getProductPrice() === null) {
+                    $form->get('productPrice')->addError(new \Symfony\Component\Form\FormError('Product price is required unless dynamic pricing is enabled.'));
+                }
+            }
+        );
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
             'data_class' => Product::class,
-            'require_image' => true, // Default to true for new products
+            'require_image' => true,
         ]);
     }
 }
