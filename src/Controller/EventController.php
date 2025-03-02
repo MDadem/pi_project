@@ -107,25 +107,25 @@ class EventController extends AbstractController
         $entityManager->flush();
         return $this->json(['success' => true]);
     }
-
-    // #[Route('/category/{id}/delete', name: 'app_dashboard_category_delete', methods: ['POST'])]
-    // public function deleteCategory(Request $request, Category $category, EntityManagerInterface $entityManager): Response
-    // {
-    //     if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
-    //         // Check if category is being used by any events
-    //         $events = $entityManager->getRepository(Event::class)->findBy(['category' => $category]);
-    //         if (count($events) > 0) {
-    //             $this->addFlash('error', 'Cannot delete category that is being used by events');
-    //             return $this->redirectToRoute('app_dashboard_blank');
-    //         }
-
-    //         $entityManager->remove($category);
-    //         $entityManager->flush();
-    //         $this->addFlash('success', 'Category deleted successfully');
-    //     }
-
-    //     return $this->redirectToRoute('app_dashboard_blank');
-    // }
+//
+//     #[Route('/category/{id}/delete', name: 'app_dashboard_category_delete', methods: ['POST'])]
+//     public function deleteCategory(Request $request, Category $category, EntityManagerInterface $entityManager): Response
+//     {
+//         if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
+//             // Check if category is being used by any events
+//             $events = $entityManager->getRepository(Event::class)->findBy(['category' => $category]);
+//             if (count($events) > 0) {
+//                 $this->addFlash('error', 'Cannot delete category that is being used by events');
+//                 return $this->redirectToRoute('app_dashboard_blank');
+//             }
+//
+//             $entityManager->remove($category);
+//             $entityManager->flush();
+//             $this->addFlash('success', 'Category deleted successfully');
+//         }
+//
+//         return $this->redirectToRoute('app_dashboard_blank');
+//     }
 
     #[Route('/new', name: 'app_dashboard_event_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
@@ -165,69 +165,69 @@ class EventController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
-    #[Route('/{id}/edit', name: 'app_dashboard_event_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Event $event, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
-    {
-        $form = $this->createForm(EventType::class, $event);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Handle file upload
-            $imageFile = $form->get('imageFile')->getData();
-            if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
-                try {
-                    // Delete old image if exists
-                    if ($event->getImageFilename()) {
-                        $oldImagePath = $this->getParameter('event_images_directory').'/'.$event->getImageFilename();
-                        if (file_exists($oldImagePath)) {
-                            unlink($oldImagePath);
-                        }
-                    }
-
-                    $imageFile->move(
-                        $this->getParameter('event_images_directory'),
-                        $newFilename
-                    );
-                    $event->setImageFilename($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'There was an error uploading the image');
-                }
-            }
-
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Event updated successfully');
-            return $this->redirectToRoute('app_dashboard_blank');
-        }
-
-        return $this->render('backend/event/edit.html.twig', [
-            'event' => $event,
-            'form' => $form->createView(),
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_dashboard_event_delete', methods: ['POST'])]
-    public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->request->get('_token'))) {
-            // Delete image file if exists
-            if ($event->getImageFilename()) {
-                $imagePath = $this->getParameter('event_images_directory').'/'.$event->getImageFilename();
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
-            }
-
-            $entityManager->remove($event);
-            $entityManager->flush();
-            $this->addFlash('success', 'Event deleted successfully');
-        }
-
-        return $this->redirectToRoute('app_dashboard_blank');
-    }
+//
+//    #[Route('/{id}/edit', name: 'app_dashboard_event_edit', methods: ['GET', 'POST'])]
+//    public function edit(Request $request, Event $event, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+//    {
+//        $form = $this->createForm(EventType::class, $event);
+//        $form->handleRequest($request);
+//
+//        if ($form->isSubmitted() && $form->isValid()) {
+//            // Handle file upload
+//            $imageFile = $form->get('imageFile')->getData();
+//            if ($imageFile) {
+//                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+//                $safeFilename = $slugger->slug($originalFilename);
+//                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+//
+//                try {
+//                    // Delete old image if exists
+//                    if ($event->getImageFilename()) {
+//                        $oldImagePath = $this->getParameter('event_images_directory').'/'.$event->getImageFilename();
+//                        if (file_exists($oldImagePath)) {
+//                            unlink($oldImagePath);
+//                        }
+//                    }
+//
+//                    $imageFile->move(
+//                        $this->getParameter('event_images_directory'),
+//                        $newFilename
+//                    );
+//                    $event->setImageFilename($newFilename);
+//                } catch (FileException $e) {
+//                    $this->addFlash('error', 'There was an error uploading the image');
+//                }
+//            }
+//
+//            $entityManager->flush();
+//
+//            $this->addFlash('success', 'Event updated successfully');
+//            return $this->redirectToRoute('app_dashboard_blank');
+//        }
+//
+//        return $this->render('backend/event/edit.html.twig', [
+//            'event' => $event,
+//            'form' => $form->createView(),
+//        ]);
+//    }
+//
+//    #[Route('/{id}', name: 'app_dashboard_event_delete', methods: ['POST'])]
+//    public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
+//    {
+//        if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->request->get('_token'))) {
+//            // Delete image file if exists
+//            if ($event->getImageFilename()) {
+//                $imagePath = $this->getParameter('event_images_directory').'/'.$event->getImageFilename();
+//                if (file_exists($imagePath)) {
+//                    unlink($imagePath);
+//                }
+//            }
+//
+//            $entityManager->remove($event);
+//            $entityManager->flush();
+//            $this->addFlash('success', 'Event deleted successfully');
+//        }
+//
+//        return $this->redirectToRoute('app_dashboard_blank');
+//    }
 }

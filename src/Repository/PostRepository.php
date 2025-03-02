@@ -40,4 +40,28 @@ class PostRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+
+public function findByCommunityName(string $communityName): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.community', 'c') // Include posts without a community
+            ->andWhere('c.name = :name')
+            ->setParameter('name', $communityName)
+            ->orderBy('p.creation_date', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getUserPostStatistics(): array
+{
+    return $this->createQueryBuilder('p')
+        ->select('u.id, u.firstName, u.lastName, COUNT(p.id) AS post_count')
+        ->join('p.user', 'u')
+        ->groupBy('u.id')
+        ->orderBy('post_count', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
+
 }

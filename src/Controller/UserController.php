@@ -5,8 +5,10 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Service\AuthenticatorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +20,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use TCPDF;
 use Twig\Environment;
 
 
@@ -29,7 +32,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 
-final class UserController extends AbstractController {
+
+
+
+
+final class UserController extends AbstractController
+{
 
     #[Route('/dashboard/edit-profile/{id}', name: 'app_edit_profile')]
     public function edit(User $user, Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager): Response
@@ -258,7 +266,6 @@ final class UserController extends AbstractController {
     }
 
 
-
     #[Route('/dashboard/update-user', name: 'app_update_user', methods: ['POST'])]
     public function updateUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -299,7 +306,6 @@ final class UserController extends AbstractController {
             return new JsonResponse(['status' => 'error', 'message' => 'Database update failed'], 500);
         }
     }
-
 
 
     #[Route('/dashboard/admin/user-add', name: 'app_add_user', methods: ['POST'])]
@@ -344,13 +350,14 @@ final class UserController extends AbstractController {
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
     public function requestPasswordReset(
-        Request $request,
+        Request                $request,
         EntityManagerInterface $entityManager,
-        MailerInterface $mailer,
-        UrlGeneratorInterface $urlGenerator,
-        SessionInterface $session,
-        Environment $twig // Correctly inject Twig service
-    ) {
+        MailerInterface        $mailer,
+        UrlGeneratorInterface  $urlGenerator,
+        SessionInterface       $session,
+        Environment            $twig // Correctly inject Twig service
+    )
+    {
         if ($request->isMethod('POST')) {
             $email = $request->request->get('email');
             $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
@@ -430,7 +437,6 @@ final class UserController extends AbstractController {
     #[Route('/contact/submit', name: 'contact_submit', methods: ['POST'])]
     public function submitContactForm(Request $request, MailerInterface $mailer, Environment $twig): Response
     {
-    
 
 
         // Get form data
@@ -441,45 +447,356 @@ final class UserController extends AbstractController {
         $subject = $request->request->get('subject');
         $message = $request->request->get('message');
 
-      // Simple Validation
-    if (empty($name) || empty($email) || empty($subject) || empty($message)) {
-        $this->addFlash('error', 'All required fields must be filled.');
+        // Simple Validation
+        if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+            $this->addFlash('error', 'All required fields must be filled.');
+            return $this->redirectToRoute('app_contact');
+        }
+
+        // Email validation
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->addFlash('error', 'Invalid email format.');
+            return $this->redirectToRoute('app_contact');
+        }
+
+        // Simulate message processing (Save to DB or Send Email)
+        try {
+            // Render the email template
+            $emailContent = $twig->render('emails/contact-email.html.twig', [
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'project' => $project,
+                'subject' => $subject,
+                'message' => $message
+            ]);
+
+            // Create email
+            $email = (new Email())
+                ->from($email) // Sender's email
+                ->to('culturespaceTeam@gmail.com') // Recipient's email
+                ->subject('New Contact Form Submission: ' . $subject)
+                ->html($emailContent);
+
+            // Send email
+            $mailer->send($email);
+
+            $this->addFlash('success', 'Your message has been sent successfully!');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'There was an error sending your message: ' . $e->getMessage());
+        }
+
         return $this->redirectToRoute('app_contact');
     }
 
-    // Email validation
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $this->addFlash('error', 'Invalid email format.');
-        return $this->redirectToRoute('app_contact');
-    }
+    #[Route('/2fa/verify', name: 'app_2fa_verify')]
+    public function verify2fa(
+        Request $request,
+        MailerInterface $mailer,
+        SessionInterface $session,
+        EntityManagerInterface $entityManager,
+        Environment $twig
+    ): Response {
+        $user = $this->getUser();
 
-    // Simulate message processing (Save to DB or Send Email)
-    try {
-        // Render the email template
-        $emailContent = $twig->render('emails/contact-email.html.twig', [
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-            'project' => $project,
-            'subject' => $subject,
-            'message' => $message
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        // Check session data
+        $storedCode = $session->get('2fa_code');
+        $expiration = $session->get('2fa_expiration');
+        $storedUserId = $session->get('2fa_user_id');
+
+        // Check for explicit resend request
+        $forceResend = $request->query->getBoolean('resend', false); // Use getBoolean for cleaner handling
+
+        // Generate new code if:
+        // - No code exists
+        // - Code expired
+        // - Explicit resend requested
+        // - User ID mismatch
+        if (!$storedCode || !$expiration || time() > $expiration || $forceResend || $storedUserId !== $user->getId()) {
+            $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+            // Store code and expiration in session
+            $session->set('2fa_code', $verificationCode);
+            $session->set('2fa_expiration', (new \DateTime())->modify('+10 minutes')->getTimestamp());
+            $session->set('2fa_user_id', $user->getId());
+
+            // Send verification code via email
+            try {
+                $emailContent = $twig->render('emails/2fa_verification.html.twig', [
+                    'code' => $verificationCode,
+                    'user' => $user,
+                ]);
+
+                $email = (new Email())
+                    ->from('no-reply@yourdomain.com')
+                    ->to($user->getEmail())
+                    ->subject('Your Verification Code')
+                    ->html($emailContent);
+
+                $mailer->send($email);
+
+                if ($forceResend) {
+                    $this->addFlash('success', 'A new verification code has been sent to your email.');
+                } else {
+                    $this->addFlash('info', 'Please check your email for your verification code.');
+                }
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Failed to send verification code: ' . $e->getMessage());
+                // Log the error for debugging
+                // $this->logger->error('Email send failed: ' . $e->getMessage()); // Uncomment if you have a logger
+            }
+        } else {
+            $this->addFlash('info', 'Please use the code already sent to your email.');
+        }
+
+        return $this->render('security/2fa_verify.html.twig', [
+            'email' => $user->getEmail(),
         ]);
-
-        // Create email
-        $email = (new Email())
-            ->from($email) // Sender's email
-            ->to('culturespaceTeam@gmail.com') // Recipient's email
-            ->subject('New Contact Form Submission: ' . $subject)
-            ->html($emailContent);
-
-        // Send email
-        $mailer->send($email);
-
-        $this->addFlash('success', 'Your message has been sent successfully!');
-    } catch (\Exception $e) {
-        $this->addFlash('error', 'There was an error sending your message: ' . $e->getMessage());
     }
 
-    return $this->redirectToRoute('app_contact');
-}
+
+    #[Route('/2fa/resend', name: 'app_2fa_resend')]
+    public function resend2faCode(
+        MailerInterface $mailer,
+        SessionInterface $session,
+        EntityManagerInterface $entityManager,
+        Environment $twig
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        // Generate a new code
+        $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Update session with new code
+        $session->set('2fa_code', $verificationCode);
+        $session->set('2fa_expiration', (new \DateTime())->modify('+10 minutes')->getTimestamp());
+        $session->set('2fa_user_id', $user->getId());
+
+        // Send the new code via email
+        try {
+            $emailContent = $twig->render('emails/2fa_verification.html.twig', [
+                'code' => $verificationCode,
+                'user' => $user,
+            ]);
+
+            $email = (new Email())
+                ->from('no-reply@yourdomain.com')
+                ->to($user->getEmail())
+                ->subject('Your New Verification Code')
+                ->html($emailContent);
+
+            $mailer->send($email);
+
+            $this->addFlash('success', 'A new verification code has been sent to your email.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Failed to resend verification code: ' . $e->getMessage());
+        }
+
+        // Redirect back to the verification page
+        return $this->redirectToRoute('app_2fa_verify');
+    }
+    /**
+     * Verify the 2FA code submitted by user
+     */
+    #[Route('/2fa/confirm', name: 'app_2fa_confirm', methods: ['POST'])]
+    public function confirm2fa(
+        Request $request,
+        SessionInterface $session,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        $submittedCode = $request->request->get('verification_code');
+        $storedCode = $session->get('2fa_code');
+        $expiration = $session->get('2fa_expiration');
+        $storedUserId = $session->get('2fa_user_id');
+
+        // Verify the code
+        if (!$storedCode || !$expiration || !$storedUserId || $storedUserId !== $user->getId()) {
+            $this->addFlash('error', 'Invalid verification session. Please try logging in again.');
+            return $this->redirectToRoute('app_home_signin');
+        }
+
+        if (time() > $expiration) {
+            $this->addFlash('error', 'Verification code has expired. Please request a new one.');
+            $this->clear2faSession($session);
+            return $this->redirectToRoute('app_2fa_verify');
+        }
+
+        if ($submittedCode !== $storedCode) {
+            $this->addFlash('error', 'Invalid verification code.');
+            return $this->redirectToRoute('app_2fa_verify'); // Don't generate new code here
+        }
+
+        // Code is valid, clear session and complete login
+        $this->clear2faSession($session);
+        $this->addFlash('success', 'Login successful!');
+
+        // Redirect based on user role
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return $this->redirectToRoute('app_dashboard_users');
+        }
+        return $this->redirectToRoute('app_home');
+    }
+
+    /**
+     * Helper method to clear 2FA session data
+     */
+    private function clear2faSession(SessionInterface $session): void
+    {
+        $session->remove('2fa_code');
+        $session->remove('2fa_expiration');
+        $session->remove('2fa_user_id');
+    }
+
+    #[Route('/dashboard/users/export-pdf', name: 'app_export_users_pdf')]
+    public function exportUsersPdf(EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // Fetch all users
+        $users = $entityManager->getRepository(User::class)->findAll();
+
+        // Create new PDF document
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // Set document information
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor('Culture Space');
+        $pdf->SetTitle('User List Export');
+        $pdf->SetSubject('User Management Report');
+        $pdf->SetKeywords('Users, Report, Culture Space');
+
+        // Set header data
+        $pdf->SetHeaderData(
+            $logo = '', // Add logo path here if desired
+            $logo_width = 0,
+            $title = 'Culture Space User Report',
+            $string = "Generated on " . date('Y-m-d H:i:s')
+        );
+
+        // Set fonts
+        $pdf->setHeaderFont([PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN]);
+        $pdf->setFooterFont([PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA]);
+
+        // Set margins (adjusted for better fit)
+        $pdf->SetMargins(15, 25, 15); // Left, Top, Right
+        $pdf->SetHeaderMargin(10);
+        $pdf->SetFooterMargin(10);
+
+        // Set auto page breaks
+        $pdf->SetAutoPageBreak(TRUE, 15); // Reduced bottom margin for more content per page
+
+        // Set font
+        $pdf->SetFont('helvetica', '', 9); // Slightly smaller font for better fit
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Calculate page width (A4 width = 210mm - margins)
+        $pageWidth = 210 - 30; // 210mm - 15mm left - 15mm right = 180mm
+
+        // Define column widths (total should equal pageWidth)
+        $colWidths = [
+            'id' => 15,      // Reduced from 20
+            'firstName' => 35, // Reduced from 40
+            'lastName' => 35,  // Reduced from 40
+            'email' => 50,     // Kept at 50
+            'roles' => 30,     // Reduced from 40
+            'status' => 15     // Reduced from 30
+        ];
+        $totalWidth = array_sum($colWidths); // Should be 180
+
+        // Header
+        $pdf->SetFillColor(79, 129, 189); // Blue header
+        $pdf->SetTextColor(255, 255, 255); // White text
+        $pdf->Cell($colWidths['id'], 10, 'ID', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['firstName'], 10, 'First Name', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['lastName'], 10, 'Last Name', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['email'], 10, 'Email', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['roles'], 10, 'Roles', 1, 0, 'C', 1);
+        $pdf->Cell($colWidths['status'], 10, 'Status', 1, 1, 'C', 1);
+
+        // Body
+        $pdf->SetFillColor(245, 245, 245); // Light gray for alternating rows
+        $pdf->SetTextColor(0, 0, 0); // Black text
+        $fill = 0;
+
+        foreach ($users as $user) {
+            // Use MultiCell for wrapping long content
+            $pdf->MultiCell($colWidths['id'], 10, $user->getId(), 1, 'C', $fill, 0);
+            $pdf->MultiCell($colWidths['firstName'], 10, $user->getFirstName(), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['lastName'], 10, $user->getLastName(), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['email'], 10, $user->getEmail(), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['roles'], 10, implode(', ', $user->getRoles()), 1, 'L', $fill, 0);
+            $pdf->MultiCell($colWidths['status'], 10, $user->isBlocked() ? 'Blocked' : 'Active', 1, 'C', $fill, 1);
+
+            $fill = !$fill; // Toggle fill for alternating rows
+        }
+
+        // Output the PDF as a streamed response
+        $pdfContent = $pdf->Output('users_export.pdf', 'S'); // 'S' returns the PDF as a string
+
+        $response = new StreamedResponse(function () use ($pdfContent) {
+            echo $pdfContent;
+        });
+
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', 'attachment;filename="users_export.pdf"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
+    }
+
+
+
+    #[Route('/dashboard/users/filter', name: 'app_filter_users', methods: ['GET'])]
+    public function filterUsers(EntityManagerInterface $entityManager, Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $filter = trim($request->query->get('filter', ''));
+
+        $queryBuilder = $entityManager->createQueryBuilder()
+            ->select('u')
+            ->from(User::class, 'u');
+
+        if (!empty($filter)) {
+            $filterParam = '%' . $filter . '%';
+            $queryBuilder
+                ->where('CONCAT(u.firstName, \' \', u.lastName) LIKE :filter')
+                ->orWhere('u.email LIKE :filter')
+                ->orWhere('u.roles LIKE :filter')
+                ->setParameter('filter', $filterParam);
+        }
+
+        $queryBuilder->orderBy('u.id', 'ASC');
+        $users = $queryBuilder->getQuery()->getResult();
+
+        $userData = array_map(function (User $user) {
+            return [
+                'id' => $user->getId(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles(), // Raw roles for JS to convert
+                'isBlocked' => $user->isBlocked(),
+                'profileIMG' => $user->getProfileIMG(),
+            ];
+        }, $users);
+
+        return new JsonResponse(['users' => $userData]);
+    }
 }

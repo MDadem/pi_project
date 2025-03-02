@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+    {# Stylesheets #}
     <meta charset="utf-8">
     <title>Category Details | CultureSpace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -133,9 +135,15 @@
             margin-top: 1rem;
         }
     </style>
+
 </head>
-<body>
+{% block header%}
+    {% include 'frontend/topbar/topbar.html.twig' %}
+    <!-- Topbar End -->
+    <!-- Navbar & Hero Start -->
     {% include 'frontend/navbar/navbar.html.twig' %}
+{% endblock %}
+<body>
 
     {% block body %}
         <div class="container">
@@ -180,5 +188,7 @@
     {% endblock %}
 
     {% include 'frontend/footer/footer.html.twig' %}
+    <!-- Footer End -->
+{% endblock%}
 </body>
 </html>

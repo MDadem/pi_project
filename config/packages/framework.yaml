@@ -4,7 +4,7 @@ framework:
     annotations: false
     http_method_override: false
     handle_all_throwables: true
-    # error_controller: 'App\Controller\ErrorController::notFound'  # Your custom error controller
+#    error_controller: 'App\Controller\ErrorController::notFound'  # Your custom error controller
 
 
     # Enables session support. Note that the session will ONLY be started if you read or write from it.

@@ -20,11 +20,12 @@ class PostComment
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $creationDate = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $modificationDate = null;
+    #[ORM\ManyToOne(inversedBy: 'postComments')]
+#[ORM\JoinColumn(nullable: false)]
+private ?User $user = null;
 
-    #[ORM\Column]
-    private ?bool $status = null;
+    #[ORM\ManyToOne(inversedBy: 'postComments')]
+    private ?Post $post = null;
 
     public function getId(): ?int
     {
@@ -55,26 +56,26 @@ class PostComment
         return $this;
     }
 
-    public function getModificationDate(): ?\DateTimeInterface
+    public function getUser(): ?User
     {
-        return $this->modificationDate;
+        return $this->user;
     }
 
-    public function setModificationDate(\DateTimeInterface $modificationDate): static
+    public function setUser(?User $user): static
     {
-        $this->modificationDate = $modificationDate;
+        $this->user = $user;
 
         return $this;
     }
 
-    public function isStatus(): ?bool
+    public function getPost(): ?Post
     {
-        return $this->status;
+        return $this->post;
     }
 
-    public function setStatus(bool $status): static
+    public function setPost(?Post $post): static
     {
-        $this->status = $status;
+        $this->post = $post;
 
         return $this;
     }

@@ -8,7 +8,9 @@
 		<meta content="" name="keywords">
 		<meta
 		content="" name="description">
-
+    <!-- Favicon -->
+    <link
+            rel="icon" type="image/png" href="{{ asset('img/logo3.png') }}"/>
 		<!-- Google Web Fonts -->
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -368,6 +370,7 @@
 		{% include 'frontend/topbar/topbar.html.twig' %}
 		{% include 'frontend/navbar/navbar.html.twig' %}
 
+
 		{% block body %}
 			<div
 				class="container-xl mt-4">
@@ -576,3 +579,4 @@ new WOW().init();
 		{% include 'frontend/footer/footer.html.twig' %}
 	</body>
 </html>
+

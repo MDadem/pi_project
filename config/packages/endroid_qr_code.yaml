@@ -1,0 +1,27 @@
+endroid_qr_code:
+  default:
+#    writer: 'png' # Set the writer type
+    size: 300
+    margin: 10
+    error_correction_level: 'high'
+    round_block_size_mode: 'margin'
+#    label:
+#      text: 'Scan this QR code with Google Authenticator'
+#      font:
+#        name: 'NotoSans'
+#        size: 12
+#      alignment: 'center'
+
+
+#second try
+#endroid_qr_code:
+#  default:
+#    size: 300
+#    margin: 10
+#    error_correction_level: high
+#    round_block_size_mode: margin
+#    label_text: 'Scan this QR code with Google Authenticator'
+#    label_font:
+#      name: NotoSans
+#      size: 12
+#    label_alignment: center
