@@ -3,13 +3,13 @@
 
 <head>
     <meta charset="utf-8">
-    <title>DASHMIN - Bootstrap Admin Template</title>
+    <title>CultureSpace</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('img/favicon.ico') }}">
+    <link rel="icon" href="{{ asset('img/logo4.png') }}">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,10 +20,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
-    <!-- Libraries Stylesheet -->
-    <link rel="stylesheet" href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}">
-
     <!-- Customized Bootstrap Stylesheet -->
     <link rel="stylesheet" href="{{ asset('css/bootstrap-backoffice.min.css') }}">
 
@@ -33,67 +29,83 @@
 
 <body>
 <div class="container-fluid position-relative bg-white d-flex p-0">
-    <!-- Spinner Start -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-    <!-- Spinner End -->
 
-    <!-- Sign Up Start -->
     <div class="container-fluid">
         <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
             <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
                 <div class="bg-light rounded p-4 p-sm-5 my-4 mx-3">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <a href="{{ path('app_home') }}" class="">
-                            <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
+                            <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>ADMIN</h3>
                         </a>
                         <h3>Sign Up</h3>
                     </div>
-                    <form method="POST" action="{{ path('app_dashboard_sign_up') }}">
-                        <div class="form-floating mb-3">
-                            <input type="text" name="username" class="form-control" id="floatingText" placeholder="jhondoe" required>
-                            <label for="floatingText">Username</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@example.com" required>
-                            <label for="floatingInput">Email address</label>
-                        </div>
-                        <div class="form-floating mb-4">
-                            <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password" required>
-                            <label for="floatingPassword">Password</label>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                                <label class="form-check-label" for="exampleCheck1">Check me out</label>
-                            </div>
-                            <a href="{{ path('app_dashboard_sign_up') }}">Forgot Password</a>
-                        </div>
-                        <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign Up</button>
-                    </form>
-                    <p class="text-center mb-0">Already have an Account? <a href="{{ path('app_dashboard_sign_in') }}">Sign In</a></p>
+
+                    {# Display flash messages #}
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-dismissible alert-danger">{{ message }}</div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-dismissible alert-success">{{ message }}</div>
+                    {% endfor %}
+
+                    {# Start the form with novalidate #}
+                    {{ form_start(registrationForm, {'attr': {'class': 'form', 'novalidate': 'novalidate'}}) }}
+
+                    {# First Name Field #}
+                    <div class="form-floating mb-3">
+                        {{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control', 'placeholder': 'First Name', 'required': false}}) }}
+                        <label>First Name</label>
+                        {{ form_errors(registrationForm.firstName) }}
+                    </div>
+
+                    {# Last Name Field #}
+                    <div class="form-floating mb-3">
+                        {{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control', 'placeholder': 'Last Name', 'required': false}}) }}
+                        <label>Last Name</label>
+                        {{ form_errors(registrationForm.lastName) }}
+                    </div>
+
+                    {# Email Field #}
+                    <div class="form-floating mb-3">
+                        {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Email', 'required': false}}) }}
+                        <label>Email address</label>
+                        {{ form_errors(registrationForm.email) }}
+                    </div>
+
+                    {# Password Field #}
+                    <div class="form-floating mb-4">
+                        {{ form_widget(registrationForm.password, {'attr': {'class': 'form-control', 'placeholder': 'Password', 'required': false}}) }}
+                        <label>Password</label>
+                        {{ form_errors(registrationForm.password) }}
+                    </div>
+
+                    {# Agree Terms Field #}
+                    <div class="form-check mb-4">
+                        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                        <label class="form-check-label">I agree to the terms</label>
+                        {{ form_errors(registrationForm.agreeTerms) }}
+                    </div>
+
+                    {# Submit Button #}
+                    <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign Up</button>
+
+                    {# End the form #}
+                    {{ form_end(registrationForm) }}
+
+                    <p class="text-center mb-0">Already have an Account? <a href="{{ path('app_dashboard_signin') }}">Sign In</a></p>
+
                 </div>
             </div>
         </div>
     </div>
-    <!-- Sign Up End -->
+
 </div>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" defer></script>
-<script src="{{ asset('lib/chart/chart.min.js') }}" defer></script>
-<script src="{{ asset('lib/easing/easing.min.js') }}" defer></script>
-<script src="{{ asset('lib/waypoints/waypoints.min.js') }}" defer></script>
-<script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}" defer></script>
-<script src="{{ asset('lib/tempusdominus/js/moment.min.js') }}" defer></script>
-<script src="{{ asset('lib/tempusdominus/js/moment-timezone.min.js') }}" defer></script>
-<script src="{{ asset('lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}" defer></script>
-
-<!-- Template Javascript -->
 <script src="{{ asset('js/main.js') }}" defer></script>
 </body>
 

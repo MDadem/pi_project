@@ -11,13 +11,27 @@
             <div class="navbar-nav ms-auto py-0">
                 <a href="{{ path('app_home') }}" class="nav-item nav-link text-light {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Home</a>
 
-                {# <a href="{{ path('app_events') }}" class="nav-item nav-link text-light {% if app.request.get('_route') starts with 'app_event' %}active{% endif %}">Events</a>                <div class="nav-item dropdown"> #}
-                  
+                <a href="{{ path('app_events') }}" class="nav-item nav-link text-light {% if app.request.get('_route') starts with 'app_event' %}active{% endif %}">Events</a>                <div class="nav-item dropdown">
+                    {# <a href="#" class="nav-link text-light" data-bs-toggle="dropdown">
+                        <span class="dropdown-toggle">Pages</span>
+                    </a>
+                    <div class="dropdown-menu m-0">
+                        <a href="{{ path('app_feature') }}" class="dropdown-item">Our Features</a>
+                        <a href="{{ path('app_team') }}" class="dropdown-item">Our team</a>
+                        <a href="{{ path('app_testimonial') }}" class="dropdown-item">Testimonial</a>
+                        <a href="{{ path('app_offer') }}" class="dropdown-item">Our offer</a>
+                        <a href="{{ path('app_faq') }}" class="dropdown-item">FAQs</a>
+                       
+                    </div> #}
                 </div>
-                {# <a href="{{ path('app_contact') }}" class="nav-item nav-link text-light {% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact Us</a> #}
+                <a href="{{ path('app_contact') }}" class="nav-item nav-link text-light {% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact Us</a>
             </div>
             <a href="#" class="btn btn-primary rounded-pill py-2 px-4 my-3 my-lg-0 flex-shrink-0">Get Started</a>
         </div>
     </nav>
 
+
+    {# {% if app.request.get('_route') != 'app_events' and app.request.get('_route') != 'app_event_details' and app.request.get('_route') != 'app_event_register' %}
+        {% include 'frontend/home/carousel.html.twig' %}
+    {% endif %} #}
 </div>

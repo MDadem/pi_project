@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Sign Up</title>
+		<meta charset="UTF-8">
+		<meta
+		name="viewport" content="width=device-width, initial-scale=1">
+
+		<!-- Favicon -->
+		<link
+		rel="icon" type="image/png" href="{{ asset('img/logo3.png') }}"/>
+
+
+		<!-- Stylesheets -->
+		<link rel="stylesheet" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}">
+		<link rel="stylesheet" href="{{ asset('fonts/font-awesome-4.7.0/css/font-awesome.min.css') }}">
+		<link rel="stylesheet" href="{{ asset('fonts/Linearicons-Free-v1.0.0/icon-font.min.css') }}">
+		<link rel="stylesheet" href="{{ asset('vendor/animate/animate.css') }}">
+		<link rel="stylesheet" href="{{ asset('vendor/css-hamburgers/hamburgers.min.css') }}">
+		<link rel="stylesheet" href="{{ asset('vendor/animsition/css/animsition.min.css') }}">
+		<link rel="stylesheet" href="{{ asset('vendor/select2/select2.min.css') }}">
+		<link rel="stylesheet" href="{{ asset('vendor/daterangepicker/daterangepicker.css') }}">
+		<link rel="stylesheet" href="{{ asset('css/form-util.css') }}">
+		<link rel="stylesheet" href="{{ asset('css/form-main.css') }}">
+	</head>
+	<body>
+		<div class="limiter">
+			<div class="container-login100">
+				<div class="wrap-login100">
+					<div class="login100-form-title" style="background-image: url({{ asset('img/bg-01.jpg') }});">
+						<span class="login100-form-title-1">Sign Up</span>
+					</div>
+
+{{ form_start(registrationForm, {'attr': {'class': 'login100-form validate-form', 'novalidate': 'novalidate' }}) }}
+<div class="wrap-input100 validate-input m-b-26">
+    {{ form_label(registrationForm.firstName, 'First Name', {'label_attr': {'class': 'label-input100'}}) }}
+    {{ form_widget(registrationForm.firstName, {'attr': {'class': 'input100', 'placeholder': 'Enter your first name', 'required': false}}) }}
+    {{ form_errors(registrationForm.firstName) }}
+</div>
+
+<div class="wrap-input100 validate-input m-b-26">
+    {{ form_label(registrationForm.lastName, 'Last Name', {'label_attr': {'class': 'label-input100'}}) }}
+    {{ form_widget(registrationForm.lastName, {'attr': {'class': 'input100', 'placeholder': 'Enter your last name', 'required': false}}) }}
+    {{ form_errors(registrationForm.lastName) }}
+</div>
+
+<div class="wrap-input100 validate-input m-b-26">
+    {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'label-input100'}}) }}
+    {{ form_widget(registrationForm.email, {'attr': {'class': 'input100', 'placeholder': 'Enter your email address', 'required': false}}) }}
+    {{ form_errors(registrationForm.email) }}
+</div>
+
+<div class="wrap-input100 validate-input m-b-18">
+    {{ form_label(registrationForm.password, 'Password', {'label_attr': {'class': 'label-input100'}}) }}
+    {{ form_widget(registrationForm.password, {'attr': {'class': 'input100', 'placeholder': 'Enter password', 'required': false}}) }}
+    {{ form_errors(registrationForm.password) }}
+</div>
+
+<div class="flex-sb-m w-full p-b-30">
+    <div class="contact100-form-checkbox">
+        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'input-checkbox100'}}) }}
+        {{ form_label(registrationForm.agreeTerms, 'I agree to the terms and conditions', {'label_attr': {'class': 'label-checkbox100'}}) }}
+        {{ form_errors(registrationForm.agreeTerms) }}
+    </div>
+</div>
+
+<div class="container-login100-form-btn">
+    <button type="submit" class="login100-form-btn">Register</button>
+</div>
+
+<div class="text-center p-t-15">
+    <a href="{{ path('app_home_signin') }}" class="txt1">
+        Already registered?
+    </a>
+</div>
+{{ form_end(registrationForm) }}
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Scripts -->
+		<script src="{{ asset('vendor/jquery/jquery-3.2.1.min.js') }}"></script>
+		<script src="{{ asset('vendor/animsition/js/animsition.min.js') }}"></script>
+		<script src="{{ asset('vendor/bootstrap/js/popper.js') }}"></script>
+		<script src="{{ asset('vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+		<script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
+		<script src="{{ asset('vendor/daterangepicker/moment.min.js') }}"></script>
+		<script src="{{ asset('vendor/daterangepicker/daterangepicker.js') }}"></script>
+		<script src="{{ asset('vendor/countdowntime/countdowntime.js') }}"></script>
+		<script src="{{ asset('js/main.js') }}"></script>
+	</body>
+</html>

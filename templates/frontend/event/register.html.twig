@@ -1,0 +1,29 @@
+{% extends 'frontend/base.html.twig' %}
+
+{% block title %}Register for {{ event.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="bg-light rounded p-4 p-sm-5">
+                    <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                        <h1 class="display-5 mb-5">Register for Event</h1>
+                    </div>
+                    <!-- TODO: Add registration form here -->
+                    <div class="alert alert-info">
+                        <h4>{{ event.title }}</h4>
+                        <p class="mb-0">Registration form coming soon!</p>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{{ path('app_event_details', {'id': event.id}) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Event Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'frontend/base.html.twig' %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="mb-5">
+                    {% if event.imageFilename %}
+                        <img src="{{ asset('uploads/events/' ~ event.imageFilename) }}" class="img-fluid rounded w-100" alt="{{ event.title }}">
+                    {% else %}
+                        <img src="{{ asset('img/event-default.jpg') }}" class="img-fluid rounded w-100" alt="Default Event Image">
+                    {% endif %}
+                </div>
+                <div class="mb-5">
+                    <h1 class="mb-4">{{ event.title }}</h1>
+                    <p>{{ event.eventDescription }}</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="bg-light rounded p-4 mb-5">
+                    <h3 class="mb-4">Event Details</h3>
+                    <div class="mb-3">
+                        <i class="far fa-calendar-alt text-primary me-2"></i>
+                        <strong>Date:</strong> {{ event.eventDate|date('d M Y H:i') }}
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        <strong>Location:</strong> {{ event.eventLocation }}
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-tag text-primary me-2"></i>
+                        <strong>Category:</strong> {{ event.category.name }}
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-users text-primary me-2"></i>
+                        <strong>Available Places:</strong> {{ event.numberOfPlaces }}
+                    </div>
+                    <div class="d-grid mt-4">
+                        <a href="{{ path('app_event_register', {'id': event.id}) }}" class="btn btn-primary py-3">
+                            <i class="fas fa-user-plus me-2"></i>Register for Event
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

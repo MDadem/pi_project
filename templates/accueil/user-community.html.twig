@@ -1,0 +1,34 @@
+{% extends 'accueil/base.html.twig' %}
+
+{% block title %}Mes Communautés{% endblock %}
+
+{% block content %}
+    <h1 class="text-center my-4">Mes Communautés</h1>
+
+    <div class="container">
+        <div class="row">
+            {% if communities is empty %}
+                <p class="text-center">Vous n'êtes membre d'aucune communauté pour le moment.</p>
+            {% else %}
+                {% for community in communities %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm">
+                            {% if community.banner %}
+                                <img src="{{ asset(community.banner) }}" class="card-img-top" alt="Bannière de {{ community.name }}">
+                            {% else %}
+                                <img src="{{ asset('img/default-banner.jpg') }}" class="card-img-top" alt="Bannière par défaut">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ community.name }}</h5>
+                                <p class="card-text">{{ community.description }}</p>
+                                <a href="{{ path('community_show', { id: community.id }) }}" class="btn btn-primary">
+                                    Voir les publications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,27 @@
+/* Style for error messages */
+.form-error-message {
+    color: #ff4d4d !important; /* Red color for errors */
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Style for success messages */
+.form-success-message {
+    color: #28a745 !important; /* Green color for success */
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Customize input fields with errors */
+.is-invalid {
+    border: 2px solid #ff4d4d !important; /* Red border for invalid input */
+    background-color: #ffe6e6 !important; /* Light red background */
+}
+
+/* Customize input fields with success */
+.is-valid {
+    border: 2px solid #28a745 !important; /* Green border for valid input */
+    background-color: #e6ffe6 !important; /* Light green background */
+}

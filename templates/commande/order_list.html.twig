@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Commandes{% endblock %}
+
+{% block body %}
+<h1 class="my-4">Liste des Commandes</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date de Création</th>
+            <th>Statut</th>
+            <th>Total Prix (TND)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for commande in commandes %}
+            <tr>
+                <td>{{ commande.id }}</td>
+                <td>{{ commande.creationDate|date('d/m/Y H:i') }}</td>
+                <td>
+                    <form method="POST" action="{{ path('admin_commande_change_status', {'id': commande.id}) }}">
+                        <select name="status" class="form-select">
+                            <option value="En cours" {% if commande.status == 'En cours' %}selected{% endif %}>En cours</option>
+                            <option value="Livrée" {% if commande.status == 'Livrée' %}selected{% endif %}>Livrée</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm mt-2">Modifier</button>
+                    </form>
+                </td>
+                
+                <td>{{ commande.totalPrice|number_format(2, '.', ',') }} TND</td>
+                <td>
+                    <a href="{{ path('admin_commande_delete', {'id': commande.id}) }}" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?');">Supprimer</a>
+                </td>
+                <td>
+    <a href="{{ path('admin_commande_detail', {'id': commande.id}) }}" class="btn btn-info btn-sm">Voir détails</a>
+</td>
+
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Aucune commande trouvée.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
