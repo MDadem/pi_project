@@ -50,19 +50,23 @@ class EventType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('imageFile', FileType::class, [
-                'required' => false,
+                'label' => 'Event Image',
                 'mapped' => false,
+                'required' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '1024k',
+                        'maxSize' => '2048k',
                         'mimeTypes' => [
                             'image/jpeg',
                             'image/png',
                         ],
-                        'mimeTypesMessage' => 'Please upload a valid image file',
+                        'mimeTypesMessage' => 'Please upload a valid image file (JPEG or PNG)',
                     ])
                 ],
-                'attr' => ['class' => 'form-control']
+                'attr' => [
+                    'class' => 'form-control',
+                    'accept' => 'image/*'
+                ]
             ])
         ;
     }

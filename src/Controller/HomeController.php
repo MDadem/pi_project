@@ -7,6 +7,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Event;
+use App\Entity\EventRegistration;
+use App\Repository\EventRegistrationRepository;
+use App\Service\TicketService;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\File\File;
 
 final class HomeController extends AbstractController{
 
@@ -73,29 +79,108 @@ final class HomeController extends AbstractController{
         ]);
     }
 
-    #[Route('/event/{id}', name: 'app_event_details')]
+    #[Route('/event/{id}', name: 'app_event_details', methods: ['GET'])]
     public function eventDetails(Event $event): Response
     {
-        if ($event->getStatus() !== 'active') {
-            throw $this->createNotFoundException('Event not found');
-        }
-
-        return $this->render('frontend/event/details.html.twig', [
+        return $this->render('frontend/event/show.html.twig', [
             'event' => $event
         ]);
     }
 
-    #[Route('/event/{id}/register', name: 'app_event_register')]
-    public function eventRegister(Event $event): Response
-    {
-        if ($event->getStatus() !== 'active') {
-            throw $this->createNotFoundException('Event not found');
+    #[Route('/event/{id}/register', name: 'app_event_register', methods: ['POST'])]
+    public function registerForEvent(
+        Event $event,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        EventRegistrationRepository $registrationRepository,
+        TicketService $ticketService
+    ): JsonResponse {
+        // Validate CSRF token
+        if (!$this->isCsrfTokenValid('register', $request->headers->get('X-CSRF-Token'))) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Invalid CSRF token'
+            ], 403);
         }
 
-        // TODO: Implement registration logic
-        return $this->render('frontend/event/register.html.twig', [
-            'event' => $event
-        ]);
+        // Check if user is logged in
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json([
+                'success' => false,
+                'message' => 'You must be logged in to register for events.',
+                'redirect' => $this->generateUrl('app_login')
+            ]);
+        }
+
+        try {
+            // Check if user is already registered
+            $existingRegistration = $registrationRepository->findOneBy([
+                'user' => $user,
+                'event' => $event
+            ]);
+
+            if ($existingRegistration) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'You are already registered for this event.'
+                ]);
+            }
+
+            // Check if event has available places
+            if ($event->getNumberOfPlaces() <= 0) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Sorry, this event is fully booked.'
+                ]);
+            }
+
+            // Create registration
+            $registration = new EventRegistration();
+            $registration->setUser($user);
+            $registration->setEvent($event);
+            $registration->setRegistrationDate(new \DateTime());
+
+            // Generate QR code
+            $qrCodePath = $ticketService->generateQrCode($registration);
+            $registration->setQrCode($qrCodePath);
+
+            // Decrease available places
+            $event->setNumberOfPlaces($event->getNumberOfPlaces() - 1);
+
+            // Save registration
+            $entityManager->persist($registration);
+            $entityManager->persist($event);
+            $entityManager->flush();
+
+            // Generate ticket PDF
+            $pdfPath = $ticketService->generateTicketPdf($registration);
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Successfully registered for the event!',
+                'ticketUrl' => $this->generateUrl('app_download_ticket', ['id' => $registration->getId()])
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'An error occurred while processing your registration: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    #[Route('/ticket/{id}/download', name: 'app_download_ticket')]
+    public function downloadTicket(EventRegistration $registration): Response
+    {
+        // Security check
+        if ($registration->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('You cannot access this ticket.');
+        }
+
+        $pdfPath = 'uploads/tickets/' . $registration->getTicketNumber() . '.pdf';
+        
+        return $this->file($pdfPath, 'ticket.pdf');
     }
 
     #[Route('/about', name: 'app_about')]

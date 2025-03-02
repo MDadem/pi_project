@@ -1,43 +1,10 @@
-
-#security:
-#    password_hashers:
-#        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-#
-#    providers:
-#        app_user_provider:
-#            entity:
-#                class: App\Entity\User
-#                property: email
-#
-#    firewalls:
-#        dev:
-#            pattern: ^/(_(profiler|wdt)|css|images|js)/
-#            security: false
-#
-#        main:
-#            lazy: true
-#            provider: app_user_provider
-#            entry_point: App\Security\LoginFormAuthenticator
-#            custom_authenticators:
-#                - App\Security\LoginFormAuthenticator
-#                - App\Security\UserLoginFormAuthenticator
-#            logout:
-#                path: app_logout
-#                target: app_dashboard_signin
-#
-#
-#    access_control:
-#        - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
-#        - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
-#
-#        - { path: ^/dashboard, roles: ROLE_ADMIN }
-
-
-
-
 security:
+    enable_authenticator_manager: true
+    
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto
 
     providers:
         app_user_provider:
@@ -50,28 +17,45 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+        admin:
+            pattern: ^/dashboard
+            lazy: true
+            provider: app_user_provider
+            entry_point: App\Security\LoginFormAuthenticator
+            custom_authenticators:
+                - App\Security\LoginFormAuthenticator
+            logout:
+                path: app_logout
+                target: app_dashboard_signin
+
         main:
+            pattern: ^/
             lazy: true
             provider: app_user_provider
             entry_point: App\Security\UserLoginFormAuthenticator
             custom_authenticators:
-                - App\Security\UserLoginFormAuthenticator  # User authentication
-                - App\Security\LoginFormAuthenticator
+                - App\Security\UserLoginFormAuthenticator
             logout:
                 path: app_logout
-                target: app_home  # Redirect users to homepage after logout
-#
-#        admin:
-#            lazy: true
-#            provider: app_user_provider
-##            entry_point: App\Security\LoginFormAuthenticator
-#            custom_authenticators:
-#                - App\Security\LoginFormAuthenticator
-#            logout:
-#                path: app_logout
-#                target: app_dashboard_signin  # Redirect admins to dashboard login after logout
+                target: app_home
 
     access_control:
-        - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
-        - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
+        # Public routes
+        - { path: ^/home/signin$, roles: PUBLIC_ACCESS }
+        - { path: ^/home/signup$, roles: PUBLIC_ACCESS }
+        - { path: ^/dashboard/signin$, roles: PUBLIC_ACCESS }
+        - { path: ^/dashboard/signup$, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        
+        # Protected routes
         - { path: ^/dashboard, roles: ROLE_ADMIN }
+        - { path: ^/profile, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

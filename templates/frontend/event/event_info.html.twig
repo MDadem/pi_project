@@ -1,0 +1,61 @@
+{% extends 'frontend/base.html.twig' %}
+
+{% block title %}Event Information{% endblock %}
+
+{% block body %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">{{ event.title }}</h1>
+                    <div class="text-center mb-4">
+                        <img src="{{ event.imageFilename ? asset('uploads/events/' ~ event.imageFilename) : asset('img/event-default.jpg') }}" 
+                             class="img-fluid rounded" alt="{{ event.title }}" style="max-height: 300px;">
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="text-primary">Description</h5>
+                        <p>{{ event.eventDescription }}</p>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Date & Time</h5>
+                            <p><i class="far fa-calendar-alt me-2"></i>{{ event.eventDate|date('F d, Y H:i') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Location</h5>
+                            <p><i class="fas fa-map-marker-alt me-2"></i>{{ event.eventLocation }}</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="text-primary mb-1">Available Places</h6>
+                            <small>{{ event.numberOfPlaces }} seats remaining</small>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ path('app_event_list') }}" class="btn btn-secondary me-2">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Events
+                        </a>
+                        {% if event.numberOfPlaces > 0 %}
+                            <form action="{{ path('app_event_register', {'id': event.id}) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-primary w-100 py-3" {{ app.user ? '' : 'disabled' }} 
+                                        title="{{ app.user ? '' : 'Please login to register' }}">
+                                    <i class="fas fa-ticket-alt me-2"></i>Register for Event
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-secondary w-100 py-3" disabled>
+                                <i class="fas fa-ban me-2"></i>Event Sold Out
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

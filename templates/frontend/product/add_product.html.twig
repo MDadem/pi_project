@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		{# Stylesheets #}
+		<link href="{{ asset('plugins/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{ asset('plugins/bootstrap/bootstrap-slider.css') }}" rel="stylesheet">
+		<link href="{{ asset('plugins/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
+		<link href="{{ asset('plugins/slick/slick.css') }}" rel="stylesheet">
+		<link href="{{ asset('plugins/slick/slick-theme.css') }}" rel="stylesheet">
+		<link href="{{ asset('plugins/jquery-nice-select/css/nice-select.css') }}" rel="stylesheet">
+		<link href="{{ asset('css/Product-style.css') }}" rel="stylesheet">
+		{% block title %}Post Your Ad
+		{% endblock %}
+	</head>
+	<body>
+		{% block body %}
+			<section class="bg-gray py-5">
+				<div
+					class="container">
+					{# Flash messages block #}
+					{% for label, messages in app.flashes %}
+						{% for message in messages %}
+							<div class="alert alert-{{ label }} mt-3">
+								{{ message }}
+							</div>
+						{% endfor %}
+					{% endfor %}
+
+					{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+					<!-- Post Your Ad start -->
+					<fieldset class="border border-gray px-3 px-md-4 py-4 mb-5">
+						<div class="row">
+							<div class="col-lg-12">
+								<h3>Post Your ad</h3>
+							</div>
+							<div class="col-lg-6">
+								<h6 class="font-weight-bold pt-4 pb-1">Title Of Ad:</h6>
+								{{ form_widget(form.productName, {
+                            'attr': {
+                                'class': 'form-control bg-white',
+                                'placeholder': 'Ad title go There'
+                            }
+                        }) }}
+
+								<h6 class="font-weight-bold pt-4 pb-1">Description:</h6>
+								{{ form_widget(form.productDescription, {
+                            'attr': {
+                                'class': 'form-control bg-white',
+                                'rows': '7',
+                                'placeholder': 'Write details about your product'
+                            }
+                        }) }}
+							</div>
+							<div class="col-lg-6">
+								<div class="col-lg-6">
+									<h6 class="font-weight-bold pt-4 pb-1">Select Ad Category:</h6>
+									{{ form_widget(form.categories, {
+        'attr': {
+            'class': 'form-control bg-white', 
+        }
+    }) }}
+								</div>
+
+								<div class="price">
+									<h6 class="font-weight-bold pt-4 pb-1">Item Price ($ USD):</h6>
+									<div class="row px-3">
+										<div class="col-lg-4 rounded my-2 px-0">
+											{{ form_widget(form.productPrice, {
+                                        'attr': {
+                                            'class': 'form-control bg-white',
+                                            'placeholder': 'Price',
+                                            'id': 'price',
+                                            'min': 0
+                                        }
+                                    }) }}
+										</div>
+									</div>
+								</div>
+
+								{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+
+								<h6 class="font-weight-bold pt-4 pb-1">Stock Availability:</h6>
+								<div class="row px-3">
+									<div class="col-lg-4 rounded my-2 px-0">
+										{{ form_widget(form.productStock, {
+                                    'attr': {
+                                        'class': 'form-control bg-white',
+                                        'placeholder': 'Stock',
+                                        'id': 'stock',
+                                        'min': 0
+                                    }
+                                }) }}
+									</div>
+								</div>
+
+								<!-- Move the file input section here -->
+								<h6 class="font-weight-bold pt-4 pb-1">Upload Image:</h6>
+								{{ form_widget(form.image_url, {
+                            'attr': {
+                                'class': 'form-control-file'
+                            }
+                        }) }}
+							</div>
+						</div>
+					</fieldset>
+					<!-- Post Your Ad end -->
+
+					<div class="checkbox d-inline-flex">
+						<input type="checkbox" id="terms-&-condition" class="mt-1">
+						<label for="terms-&-condition" class="ml-2">
+							By clicking you must agree with our
+							<span>
+								<a class="text-success" href="#">Terms &amp; Conditions and Posting Rules.</a>
+							</span>
+						</label>
+					</div>
+					<button type="submit" class="btn btn-primary d-block mt-2">Post Your Ad</button>
+					{{ form_end(form) }}
+				</div>
+			</section>
+		{% endblock %}
+	</body>
+	{# Scripts #}
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+const fileInput = document.getElementById('file-upload');
+const fileNameDisplay = document.getElementById('file-name');
+const selectFilesButton = document.querySelector('.select-files');
+
+// Open file input when clicking on the label
+selectFilesButton.addEventListener('click', function () {
+fileInput.click();
+});
+
+// Detect and display selected file name
+fileInput.addEventListener('change', function () {
+if (fileInput.files.length > 0) {
+fileNameDisplay.textContent = fileInput.files[0].name;
+fileNameDisplay.classList.remove('text-muted');
+} else {
+fileNameDisplay.textContent = "No file selected";
+fileNameDisplay.classList.add('text-muted');
+}
+});
+});
+	</script>
+	<script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
+	<script src="{{ asset('plugins/bootstrap/popper.min.js') }}"></script>
+	<script src="{{ asset('plugins/bootstrap/bootstrap.min.js') }}"></script>
+	<script src="{{ asset('plugins/bootstrap/bootstrap-slider.js') }}"></script>
+	<script src="{{ asset('plugins/tether/js/tether.min.js') }}"></script>
+	<script src="{{ asset('plugins/raty/jquery.raty-fa.js') }}"></script>
+	<script src="{{ asset('plugins/slick/slick.min.js') }}"></script>
+	<script src="{{ asset('plugins/jquery-nice-select/js/jquery.nice-select.min.js') }}"></script>
+	<script src="{{ asset('js/Product-script.js') }}"></script>
+</html>
