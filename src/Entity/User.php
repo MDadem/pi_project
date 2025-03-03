@@ -43,8 +43,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $isVerified = false;
+//    #[ORM\Column(type: 'boolean')]
+//    private bool $isVerified = false;
 
     #[ORM\Column(type: 'boolean')]
     private bool $isBlocked = false;
@@ -197,17 +197,17 @@ private ?Cart $cart = null;
         return $this->email;    }
 
 
-    public function isVerified(): bool
-    {
-        return $this->isVerified;
-    }
-
-    public function setIsVerified(bool $isVerified): static
-    {
-        $this->isVerified = $isVerified;
-
-        return $this;
-    }
+//    public function isVerified(): bool
+//    {
+//        return $this->isVerified;
+//    }
+//
+//    public function setIsVerified(bool $isVerified): static
+//    {
+//        $this->isVerified = $isVerified;
+//
+//        return $this;
+//    }
     public function isBlocked(): bool
     {
         return $this->isBlocked;
