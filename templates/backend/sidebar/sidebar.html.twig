@@ -27,15 +27,22 @@
     <div class="dropdown-menu bg-transparent border-0">
         <a href="{{ path('app_group') }}" class="dropdown-item">Liste Des Groupes</a>
         <a href="{{ path('app_ajoutergroup') }}" class="dropdown-item">Ajouter Groupes</a>
+        <a href="{{ path('join_request_list') }}" class="dropdown-item">Liste Des Request</a>
+        <a href="{{ path('community_post_list') }}" class="dropdown-item">Gestion Des Posts</a>
+
     </div>
 </div>
 
+<a href="{{ path('admin_commande') }}" class="nav-item nav-link">
+    <i class="fa fa-shopping-cart me-2"></i>Gestion Des Commandes
+</a>
             <a href="{{ path('app_dashboard') }}" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Widgets</a>
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-chart-bar me-2"></i>Statistics</a>
                 <div class="dropdown-menu bg-transparent border-0">
                     <a href="{{ path('app_dashboard_statistics') }}" class="dropdown-item">Dashboard</a>
                     <a href="{{ path('app_dashboard_statistics_charts') }}" class="dropdown-item">Event Analytics</a>
+                    <a href="{{ path('app_static_community_posts') }}" class="dropdown-item">Community Analytics</a>
                 </div>
             </div>
             <div class="nav-item dropdown">
@@ -44,7 +51,17 @@
                     <a href="{{ path('app_dashboard_sign_in') }}" class="dropdown-item">Sign In</a>
                     <a href="{{ path('app_dashboard_sign_up') }}" class="dropdown-item">Sign Up</a>
                     <a href="{{ path('app_dashboard_404') }}" class="dropdown-item">404 Error</a>
-                    <a href="{{ path('app_dashboard_blank') }}" class="dropdown-item">Blank Page</a>
+                  
+                </div>
+            </div>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fa fa-calendar me-2"></i>Events Management
+                </a>
+                <div class="dropdown-menu bg-transparent border-0">
+                    <a href="{{ path('app_dashboard_events') }}" class="dropdown-item">Events List</a>
+                    <a href="{{ path('app_dashboard_event_new') }}" class="dropdown-item">Add Event</a>
+                    <a href="{{ path('app_dashboard_category_index') }}" class="dropdown-item">Categories</a>
                 </div>
             </div>
         </div>

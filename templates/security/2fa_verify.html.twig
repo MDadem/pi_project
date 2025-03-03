@@ -1,0 +1,203 @@
+{#{% extends 'base.html.twig' %}#}
+
+{% block stylesheets %}
+    <style>
+        .auth-container {
+            max-width: 480px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        /* Improved Flash Message Styling */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .alert-danger {
+            background-color: #fff1f0;
+            border: 1px solid #ffa39e;
+            color: #a8071a;
+        }
+
+        .alert-success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #135200;
+        }
+
+        .alert-info {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #003a8c;
+        }
+
+        .alert-close {
+            cursor: pointer;
+            font-weight: bold;
+            color: inherit;
+            padding-left: 15px;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .email-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s ease;
+            background-color: #ffffff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        .form-control:invalid:not(:placeholder-shown) {
+            border-color: #dc3545;
+        }
+
+        .btn-verify {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-verify:hover {
+            background-color: #0056b3;
+        }
+
+        .resend-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+
+        .resend-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .resend-link a:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="auth-container">
+        <h1 class="auth-header">Two-Factor Authentication</h1>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">
+                    <span>{{ message }}</span>
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">&times;</span>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <p class="email-info">Please enter the 6-digit code sent to <strong>{{ email }}</strong></p>
+
+        <form method="post" action="{{ path('app_2fa_confirm') }}" novalidate>
+            <div class="form-group">
+                <label for="verification_code" class="form-label">Verification Code</label>
+                <input
+                        type="text"
+                        name="verification_code"
+                        id="verification_code"
+                        class="form-control"
+                        maxlength="6"
+                        minlength="6"
+                        required
+                        pattern="[0-9]{6}"
+                        placeholder="Enter 6-digit code"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6)"
+                >
+            </div>
+            <button type="submit" class="btn-verify">Verify</button>
+        </form>
+
+        <p class="resend-link">
+            Didn't receive the code?
+            <a href="{{ path('app_2fa_resend') }}">Resend code</a>
+        </p>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {# Optional: Add this if you want to ensure flash messages behave correctly #}
+    <script>
+        // Ensure alerts are properly styled (in case of rendering issues)
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (!alert.classList.contains('alert-danger') &&
+                    !alert.classList.contains('alert-success') &&
+                    !alert.classList.contains('alert-info')) {
+                    alert.classList.add('alert-info'); // Default to info if type is missing
+                }
+            });
+        });
+    </script>
+{% endblock %}

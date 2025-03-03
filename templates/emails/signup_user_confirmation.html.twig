@@ -1,40 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Welcome to CultureSpace</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center;">
-
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa; line-height: 1.6; color: #333;">
 <!-- Header -->
-<table role="presentation" width="100%" style="background-color: #4CAF50; padding: 20px;">
+<table role="presentation" width="100%" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); padding: 40px 20px; border-bottom: 4px solid #388e3c;">
     <tr>
         <td align="center">
-          <h3>Sign-in Welcome Email</h3>
+            <h1 style="color: #ffffff; font-size: 28px; font-weight: 600; margin: 0;">Welcome to CultureSpace</h1>
         </td>
     </tr>
 </table>
 
 <!-- Main Content -->
-<table role="presentation" width="100%" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+<table role="presentation" width="100%" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
     <tr>
-        <td align="center">
-            <h2 style="color: #333;">Welcome, {{ user.firstName|default('User') }}!</h2>
-            <p style="color: #555; font-size: 16px;">We're excited to have you on board as Student.</p>
-            <p style="color: #555; font-size: 16px;">Click below to access our content</p>
-            <a href="{{ login_url }}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 10px;">Login Now</a>
+        <td style="padding: 40px 30px; text-align: center;">
+            <h2 style="color: #2c3e50; font-size: 24px; font-weight: 600; margin: 0 0 20px;">Hello, {{ user.firstName|default('User') }}!</h2>
+            <p style="color: #7f8c8d; font-size: 16px; margin: 0 0 20px;">We're thrilled to welcome you to CultureSpace as a Student. Get ready to explore a world of learning and creativity!</p>
+            <p style="color: #7f8c8d; font-size: 16px; margin: 0 0 30px;">Click the button below to dive into our content:</p>
+            <a href="{{ login_url }}" style="display: inline-block; background-color: #4CAF50; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 25px; font-size: 16px; font-weight: 500; box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3); transition: background-color 0.3s ease;">Login Now</a>
         </td>
     </tr>
 </table>
 
 <!-- Footer -->
-<table role="presentation" width="100%" style="background-color: #333; padding: 20px; margin-top: 30px;">
+<table role="presentation" width="100%" style="background-color: #2c3e50; padding: 30px 20px; color: #ecf0f1;">
     <tr>
-        <td align="center" style="color: white; font-size: 14px;">
-            <p>&copy; {{ "now"|date("Y") }} CultureSpace Dev Team. All rights reserved.</p>
+        <td align="center">
+            <p style="font-size: 14px; margin: 0 0 15px;">© {{ "now"|date("Y") }} CultureSpace Dev Team. All rights reserved.</p>
+            <p style="font-size: 12px; margin: 0 0 15px;">Follow us:
+                <a href="#" style="color: #4CAF50; text-decoration: none; margin: 0 5px;">Facebook</a> |
+                <a href="#" style="color: #4CAF50; text-decoration: none; margin: 0 5px;">Twitter</a> |
+                <a href="#" style="color: #4CAF50; text-decoration: none; margin: 0 5px;">Instagram</a>
+            </p>
+            <p style="font-size: 12px; margin: 0;">Need help? Contact us at <a href="mailto:support@culturespace.com" style="color: #4CAF50; text-decoration: none;">support@culturespace.com</a></p>
         </td>
     </tr>
 </table>
-
 </body>
 </html>

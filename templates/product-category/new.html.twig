@@ -1,73 +1,144 @@
 <head>
-		{# Stylesheets #}
-		<meta charset="utf-8">
-		<title>CultureSpace</title>
-		<meta content="width=device-width, initial-scale=1.0" name="viewport">
-		<meta content="" name="keywords">
-		<meta
-		content="" name="description">
+    {# Stylesheets #}
+    <meta charset="utf-8">
+    <title>CultureSpace</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
 
-		<!-- Google Web Fonts -->
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link
-		href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-		<!-- Icon Font Stylesheet -->
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
-		<link
-		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
-		<!-- Libraries Stylesheet -->
-		<link rel="stylesheet" href="{{ asset('lib/animate/animate.min.css') }}"/>
-		<link href="{{ asset('lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
-		<link
-		href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <!-- Libraries Stylesheet -->
+    <link rel="stylesheet" href="{{ asset('lib/animate/animate.min.css') }}"/>
+    <link href="{{ asset('lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
 
-		<!-- Customized Bootstrap Stylesheet -->
-		<link
-		href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 
-		<!-- Template Stylesheet -->
-		<link
-		href="{{ asset('css/style.css') }}" rel="stylesheet">
-	{# <link href="{{ asset('css/Product-style.css') }}" rel="stylesheet"> #}
-	</head>
-	{% block header%}
-		{% include 'frontend/topbar/topbar.html.twig' %}
-		<!-- Topbar End -->
-		<!-- Navbar & Hero Start -->
-	{% include 'frontend/navbar/navbar.html.twig' %}
-	{% endblock %}
+    <!-- Template Stylesheet -->
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        .container {
+            max-width: 700px;
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+        h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        h1::after {
+            content: '';
+            width: 60px;
+            height: 4px;
+            background: #007bff;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: white;
+            padding: 2rem;
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        .form-label {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .mb-3 {
+            position: relative;
+        }
+        .text-danger {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+        .btn-secondary {
+            background: linear-gradient(to right, #bdc3c7, #2c3e50);
+            border: none;
+            border-radius: 25px;
+            padding: 0.6rem 1.5rem;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+{% block header %}
+    {% include 'frontend/topbar/topbar.html.twig' %}
+    {% include 'frontend/navbar/navbar.html.twig' %}
+{% endblock %}
 
 {% block body %}
-    <h1>Create New Category</h1>
+    <div class="container">
+        <div class="card animate__animated animate__fadeIn">
+            <h1>Create New Category</h1>
 
-    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
 
-    <div class="mb-3">
-        {{ form_label(form.name) }}
-        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-        {% for error in form.name.vars.errors %}
-            <div class="text-danger">{{ error.message }}</div>
-        {% endfor %}
+            <div class="mb-3">
+                {{ form_label(form.name, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Enter category name'}}) }}
+                {% for error in form.name.vars.errors %}
+                    <div class="text-danger">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Enter description', 'rows': '4'}}) }}
+                {% for error in form.description.vars.errors %}
+                    <div class="text-danger">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-primary" style="border-radius: 25px; padding: 0.6rem 1.5rem;">
+                    Create Category
+                </button>
+                <a href="{{ path('product_category_index') }}" class="btn btn-secondary">Back to List</a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
     </div>
-
-    <div class="mb-3">
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-        {% for error in form.description.vars.errors %}
-            <div class="text-danger">{{ error.message }}</div>
-        {% endfor %}
-    </div>
-
-
-    {{ form_end(form) }}
-
-    <a href="{{ path('product_category_index') }}" class="btn btn-secondary mt-3">Back to List</a>
 {% endblock %}
-{% block footer%}
-		<!-- Footer Start -->
-		{% include 'frontend/footer/footer.html.twig' %}
-		<!-- Footer End -->
-		{% endblock%}
+
+{% block footer %}
+    {% include 'frontend/footer/footer.html.twig' %}
+{% endblock %}

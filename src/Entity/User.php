@@ -4,7 +4,10 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 
+
+
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Cart;
 use App\Enum\Role;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -12,6 +15,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -38,8 +43,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $isVerified = false;
+//    #[ORM\Column(type: 'boolean')]
+//    private bool $isVerified = false;
 
     #[ORM\Column(type: 'boolean')]
     private bool $isBlocked = false;
@@ -73,11 +78,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'user')]
     private Collection $posts;
 
+
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+private ?Cart $cart = null;
+
+
+
+
     public function __construct()
     {
+        $this->roles = [];
         $this->communityMembers = new ArrayCollection();
         $this->joinRequests = new ArrayCollection();
         $this->posts = new ArrayCollection();
+
+        $this->postComments = new ArrayCollection();
+
+        $this->eventRegistrations = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -150,6 +168,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
+    /**
+     * @var Collection<int, PostComment>
+     */
+    #[ORM\OneToMany(targetEntity: PostComment::class, mappedBy: 'user')]
+    private Collection $postComments;
+
 
     public function getRoles(): array
     {
@@ -173,17 +197,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;    }
 
 
-    public function isVerified(): bool
-    {
-        return $this->isVerified;
-    }
-
-    public function setIsVerified(bool $isVerified): static
-    {
-        $this->isVerified = $isVerified;
-
-        return $this;
-    }
+//    public function isVerified(): bool
+//    {
+//        return $this->isVerified;
+//    }
+//
+//    public function setIsVerified(bool $isVerified): static
+//    {
+//        $this->isVerified = $isVerified;
+//
+//        return $this;
+//    }
     public function isBlocked(): bool
     {
         return $this->isBlocked;
@@ -286,7 +310,90 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+
+    /**
+     * @return Collection<int, PostComment>
+     */
+    public function getPostComments(): Collection
+    {
+        return $this->postComments;
+    }
+
+    public function addPostComment(PostComment $postComment): static
+    {
+        if (!$this->postComments->contains($postComment)) {
+            $this->postComments->add($postComment);
+            $postComment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostComment(PostComment $postComment): static
+    {
+        if ($this->postComments->removeElement($postComment)) {
+            // set the owning side to null (unless already changed)
+            if ($postComment->getUser() === $this) {
+                $postComment->setUser(null);
+            }
+        }
+
+        return $this;
+    }
     
 
+    /**
+     * @return Collection<int, EventRegistration>
+     */
+    public function getEventRegistrations(): Collection
+    {
+        return $this->eventRegistrations;
+    }
+
+    public function addEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if (!$this->eventRegistrations->contains($eventRegistration)) {
+            $this->eventRegistrations->add($eventRegistration);
+            $eventRegistration->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if ($this->eventRegistrations->removeElement($eventRegistration)) {
+            // set the owning side to null (unless already changed)
+            if ($eventRegistration->getUser() === $this) {
+                $eventRegistration->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+
+
+    public function getCart(): ?Cart
+{
+    return $this->cart;
+}
+
+public function setCart(?Cart $cart): static
+{
+    if ($cart === null && $this->cart !== null) {
+        $this->cart->setUser(null);
+    }
+
+    if ($cart !== null && $cart->getUser() !== $this) {
+        $cart->setUser($this);
+    }
+
+    $this->cart = $cart;
+
+    return $this; 
+}
 
 }
+
+

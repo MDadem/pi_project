@@ -35,7 +35,7 @@ class ProductCategory
     )]
     private ?string $description = null;
 
-    #[ORM\OneToMany(mappedBy: 'productCategory', targetEntity: Product::class)]
+    #[ORM\OneToMany(mappedBy: 'productCategory', targetEntity: Product::class,cascade: ['remove'])]
     private Collection $products;
 
     public function __construct()

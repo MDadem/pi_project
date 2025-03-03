@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirmation de commande{% endblock %}
+
+{% block header %}Confirmation de commande{% endblock %}
+
+{% block content %}
+    <h2>Bonjour {{ firstName }} {{ lastName }},</h2>
+    <p>Votre commande a été confirmée avec succès.</p>
+
+    <h3>Détails de la commande</h3>
+    <ul>
+        {% for item in order.getItems() %}
+            <li>{{ item.getName() }} - {{ item.getPrice() }} DT</li>
+        {% endfor %}
+    </ul>
+
+    <p><strong>Total :</strong> {{ order.getTotalPrice() }} DT</p>
+    <p>Merci pour votre confiance !</p>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>{{ event.title }}</h1>
+    <p>{{ event.eventDescription }}</p>
+    <p>Date: {{ event.eventDate|date('F d, Y H:i') }}</p>
+    <p>Location: {{ event.eventLocation }}</p>
+    <p>Available Places: {{ event.numberOfPlaces }}</p>
+
+    {% for flashMessage in app.flashes('success') %}
+        <div class="alert alert-success">{{ flashMessage }}</div>
+    {% endfor %}
+    {% for flashMessage in app.flashes('error') %}
+        <div class="alert alert-danger">{{ flashMessage }}</div>
+    {% endfor %}
+
+    {% set registrations = event.eventRegistrations|filter(reg => reg.user == app.user) %}
+    {% if app.user and registrations|length > 0 %}
+        <a href="{{ path('app_event_download_ticket', {'id': registrations|first.id}) }}" class="btn btn-success">Download Ticket</a>
+    {% else %}
+        <form action="{{ path('app_event_register', {'id': event.id}) }}" method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('register_event') }}">
+            <button type="submit" class="btn btn-primary">Register Now</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadButton = document.querySelector('.btn-success');
+            if (downloadButton) {
+                downloadButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    if (confirm('Do you want to download the ticket?')) {
+                        window.location.href = this.href;
+                        toastr.success('Ticket downloaded successfully!');
+                    } else {
+                        toastr.info('You chose not to download the ticket.');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
