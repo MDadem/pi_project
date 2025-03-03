@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+
 class AdminCommandeController extends AbstractController
 {
     #[Route('/admin/commande', name: 'admin_commande')]
@@ -50,8 +51,9 @@ class AdminCommandeController extends AbstractController
 
 
     #[Route('/admin/commande/{id}', name: 'admin_commande_detail')]
-public function show(OrderRepository $orderRepository, OrderItemRepository $orderItemRepository, int $id): Response
-{
+    public function show(OrderRepository $orderRepository, OrderItemRepository $orderItemRepository, int $id): Response
+    {
+
     $order = $orderRepository->find($id);
 
     if (!$order) {
@@ -64,6 +66,7 @@ public function show(OrderRepository $orderRepository, OrderItemRepository $orde
         'order' => $order,
         'orderItems' => $orderItems,
     ]);
+    
 }
 
 }
