@@ -30,21 +30,21 @@
                <div class="container mt-4">
     <h2 class="mb-4 text-center">Modifier le Groupe : {{ group.name }}</h2>
 
-    {{ form_start(form) }}
-        <div class="mb-3">
-            {{ form_label(form.name, 'Nom du groupe') }}
-            {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.description, 'Description') }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.category, 'Catégorie') }}
-            {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
-        </div>
-    {{ form_end(form) }}
- <button type="submit" class="btn btn-success">Enregistrer</button>
+                   {{ form_start(form) }}
+                   <div class="mb-3">
+                       {{ form_label(form.name, 'Nom du groupe') }}
+                       {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                   </div>
+                   <div class="mb-3">
+                       {{ form_label(form.description, 'Description') }}
+                       {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                   </div>
+                   <div class="mb-3">
+                       {{ form_label(form.category, 'Catégorie') }}
+                       {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+                   </div>
+                   <button type="submit" class="btn btn-success">Enregistrer</button>
+                   {{ form_end(form) }}
     <h3>Membres du Groupe</h3>
     <table class="table">
         <thead>

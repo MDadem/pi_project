@@ -7,7 +7,6 @@ use App\Repository\UserRepository;
 
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Cart;
 use App\Enum\Role;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -43,8 +42,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
 
-//    #[ORM\Column(type: 'boolean')]
-//    private bool $isVerified = false;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
 
     #[ORM\Column(type: 'boolean')]
     private bool $isBlocked = false;
@@ -59,8 +58,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profileIMG = null;
-  
-     /**
+
+    /**
      * @var Collection<int, CommunityMembers>
      */
     #[ORM\OneToMany(targetEntity: CommunityMembers::class, mappedBy: 'user')]
@@ -79,10 +78,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $posts;
 
 
-    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
-private ?Cart $cart = null;
-
-
+//    /**
+//     * @var Collection<int, EventRegistration>
+//     */
+//    #[ORM\OneToMany(mappedBy: 'user', targetEntity: EventRegistration::class)]
+//    private Collection $eventRegistrations;
 
 
     public function __construct()
@@ -197,17 +197,17 @@ private ?Cart $cart = null;
         return $this->email;    }
 
 
-//    public function isVerified(): bool
-//    {
-//        return $this->isVerified;
-//    }
-//
-//    public function setIsVerified(bool $isVerified): static
-//    {
-//        $this->isVerified = $isVerified;
-//
-//        return $this;
-//    }
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+
+        return $this;
+    }
     public function isBlocked(): bool
     {
         return $this->isBlocked;
@@ -341,7 +341,7 @@ private ?Cart $cart = null;
 
         return $this;
     }
-    
+
 
     /**
      * @return Collection<int, EventRegistration>
@@ -369,31 +369,7 @@ private ?Cart $cart = null;
                 $eventRegistration->setUser(null);
             }
         }
+
         return $this;
     }
-
-
-
-    public function getCart(): ?Cart
-{
-    return $this->cart;
 }
-
-public function setCart(?Cart $cart): static
-{
-    if ($cart === null && $this->cart !== null) {
-        $this->cart->setUser(null);
-    }
-
-    if ($cart !== null && $cart->getUser() !== $this) {
-        $cart->setUser($this);
-    }
-
-    $this->cart = $cart;
-
-    return $this; 
-}
-
-}
-
-

@@ -34,53 +34,35 @@
 
     <h1 class="text-center my-4">Liste des Groupes</h1>
 
-    <div class="container">
-        <div class="row">
-            {% for group in groups %}
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm">
-                        {% if group.banner %}
-                            <img src="{{asset(group.banner)}}" class="card-img-top" alt="Bannière de {{ group.name }}">
-                        {% else %}
-                            <img src="{{ asset(group.banner) }}" class="card-img-top" alt="Bannière par défaut">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ group.name }}</h5>
-                            <p class="card-text">{{ group.description }}</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#groupModal{{ group.id }}">
-                                Découvrir
-                            </button>
-                        </div>
-
     <!-- Formulaire de recherche -->
     <div class="container mb-4">
         <div class="card p-4 shadow-sm">
-            {{ form_start(form, { 'action': path('app_groupList') , 'attr': {'id': 'searchForm'}}) }}
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        {{ form_label(form.community, 'Communauté', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.community, {'attr': {'class': 'form-control'}}) }}
-                        <div class="form-error">{{ form_errors(form.community) }}</div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        {{ form_label(form.startDate, 'Date de début', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
-                        <div class="form-error">{{ form_errors(form.startDate) }}</div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        {{ form_label(form.endDate, 'Date de fin', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
-                        <div class="form-error">{{ form_errors(form.endDate) }}</div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        {{ form_label(form.category, 'Catégorie', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
-                        <div class="form-error">{{ form_errors(form.category) }}</div>
-                    </div>
+            {{ form_start(form, { 'action': path('app_groupList'), 'attr': {'id': 'searchForm'}}) }}
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    {{ form_label(form.community, 'Communauté', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.community, {'attr': {'class': 'form-control'}}) }}
+                    <div class="form-error">{{ form_errors(form.community) }}</div>
                 </div>
-                <div class="text-center mt-3">
-                    {{ form_widget(form.search, {'attr': {'class': 'btn btn-primary', 'type': 'submit'}}) }}
+                <div class="col-md-3 mb-3">
+                    {{ form_label(form.startDate, 'Date de début', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                    <div class="form-error">{{ form_errors(form.startDate) }}</div>
                 </div>
+                <div class="col-md-3 mb-3">
+                    {{ form_label(form.endDate, 'Date de fin', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                    <div class="form-error">{{ form_errors(form.endDate) }}</div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form_label(form.category, 'Catégorie', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+                    <div class="form-error">{{ form_errors(form.category) }}</div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                {{ form_widget(form.search, {'attr': {'class': 'btn btn-primary', 'type': 'submit'}}) }}
+            </div>
             {{ form_end(form) }}
         </div>
     </div>
@@ -90,7 +72,7 @@
         <div class="row" id="groupList">
             {% if groups is empty %}
                 <div class="col-12">
-                    <p class="no-results">Aucun Community Trouvé</p>
+                    <p class="no-results">Aucun groupe trouvé</p>
                 </div>
             {% else %}
                 {% for group in groups %}
@@ -120,7 +102,11 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <img src="{{ asset(group.banner) }}" class="img-fluid mb-3" alt="Bannière de {{ group.name }}">
+                                    {% if group.banner %}
+                                        <img src="{{ asset(group.banner) }}" class="img-fluid mb-3" alt="Bannière de {{ group.name }}">
+                                    {% else %}
+                                        <img src="{{ asset('images/default-banner.jpg') }}" class="img-fluid mb-3" alt="Bannière par défaut">
+                                    {% endif %}
                                     <p><strong>Description :</strong> {{ group.description }}</p>
                                     <p><strong>Catégorie :</strong> {{ group.category.value|default('Non spécifiée') }}</p>
                                     <p><strong>Date de création :</strong> {{ group.creationDate|date('d/m/Y') }}</p>

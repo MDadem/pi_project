@@ -63,17 +63,16 @@
 				position: relative;
 			}
 			.filter-panel {
-				/* Adjusted positioning to avoid header overlap */
 				position: fixed;
-				top: 200px; /* Increased to clear typical header height */
+				top: 200px;
 				left: 20px;
 				width: 300px;
-				max-height: calc(100vh - 220px); /* Adjusted to fit below header */
+				max-height: calc(100vh - 220px);
 				background: rgba(255, 255, 255, 0.95);
 				border-radius: 20px;
 				box-shadow: 0 10px 50px rgba(0, 0, 0, 0.15);
 				padding: 2rem;
-				z-index: 900; /* Lowered below header z-index */
+				z-index: 900;
 				transition: all 0.4s ease;
 				transform: translateX(-100%);
 				backdrop-filter: blur(5px);
@@ -110,9 +109,8 @@
 				pointer-events: none;
 			}
 			.filter-toggle {
-				/* Adjusted positioning to avoid header overlap */
 				position: fixed;
-				top: 160px; /* Increased to clear header */
+				top: 160px;
 				left: 20px;
 				background: linear-gradient(45deg, #7ac400, #a3e635);
 				color: white;
@@ -127,7 +125,7 @@
 				cursor: pointer;
 				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 				transition: all 0.3s ease;
-				z-index: 901; /* Below header but above panel */
+				z-index: 901;
 			}
 			.filter-toggle:hover {
 				transform: scale(1.1);
@@ -323,6 +321,9 @@
 			.btn-delete {
 				background: linear-gradient(45deg, #ff416c, #ff4b2b);
 			}
+			.btn-add-to-cart {
+				background: linear-gradient(45deg, #007bff, #00c4ff);
+			}
 			.carousel-control-prev,
 			.carousel-control-next {
 				height: 40px;
@@ -459,8 +460,8 @@
 														<p>{{ product.productDescription }}</p>
 														<p>{{ product.productCategory.name }}</p>
 														<span class="stock-status {{ product.productStock > 0 ? 'in-stock' : 'out-of-stock' }}">
-																	{{ product.productStock > 0 ? 'In Stock' : 'Out of Stock' }}
-																</span>
+                                                            {{ product.productStock > 0 ? 'In Stock' : 'Out of Stock' }}
+                                                        </span>
 														<p class="vote-score">Upvotes: {{ product.voteScore }}</p>
 														{% if product.useDynamicPricing %}
 															<p class="item-price">
@@ -495,6 +496,11 @@
 															<form action="{{ path('product_vote', {id: product.id, type: 'down'}) }}" method="post" style="display:inline-block;">
 																<button type="submit" class="btn btn-vote-down">
 																	<i class="fas fa-thumbs-down"></i>
+																</button>
+															</form>
+															<form action="{{ path('panier_add', {id: product.id}) }}" method="post" style="display:inline-block;">
+																<button type="submit" class="btn btn-add-to-cart" {% if product.productStock <= 0 %}disabled{% endif %}>
+																	<i class="fas fa-cart-plus"></i>
 																</button>
 															</form>
 														</div>
