@@ -2,10 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\OrderItemRepository;
+use App\Repository\CartRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: OrderItemRepository::class)]
+#[ORM\Entity(repositoryClass: CartRepository::class)]
 class OrderItem
 {
     #[ORM\Id]

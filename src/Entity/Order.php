@@ -30,8 +30,8 @@ class Order
     #[ORM\JoinColumn(nullable: true)] 
     private ?User $user = null;
 
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Cart::class, cascade: ['persist', 'remove'])]
-    private Collection $cartItems;
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
+private Collection $cartItems;
 
     public function __construct()
     {
@@ -113,4 +113,16 @@ class Order
         }
         return $this;
     }
+    public function addCartItem(OrderItem $cartItem): self
+    {
+        if (!$this->cartItems->contains($cartItem)) {
+            $this->cartItems[] = $cartItem;
+            $cartItem->setOrder($this); // Assure-toi d'établir la relation inverse
+        }
+    
+        return $this;
+    }
+
+
+
 }

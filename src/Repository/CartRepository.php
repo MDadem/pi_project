@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Cart;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,4 +41,15 @@ class CartRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+public function getPanierByUser(User $user): array
+{
+    return $this->createQueryBuilder('c')
+        ->andWhere('c.user = :user')
+        ->setParameter('user', $user)
+        ->getQuery()
+        ->getResult();
+}
+
+
 }

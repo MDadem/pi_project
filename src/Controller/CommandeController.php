@@ -3,11 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Entity\User;
 use App\Repository\OrderRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Service\MailService;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\MailerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 final class CommandeController extends AbstractController
@@ -29,7 +31,7 @@ final class CommandeController extends AbstractController
 
     
     #[Route('/commande/valider', name: 'commande_valider')]
-    public function validerCommande(Request $request, ManagerRegistry $doctrine, MailService $mailService): Response
+    public function validerCommande(User $user, ManagerRegistry $doctrine, MailService $mailService): Response
     {
         // Récupérer l'utilisateur connecté
         $user = $this->getUser();
