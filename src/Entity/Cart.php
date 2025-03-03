@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CartRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: CartRepository::class)]
 class Cart
@@ -22,7 +23,8 @@ class Cart
     #[ORM\Column]
     private ?int $product_quantity = null;
 
-    #[ORM\OneToOne(mappedBy: 'cart', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'carts')]
+    #[ORM\JoinColumn(nullable: true)] 
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'carts')]
@@ -32,7 +34,6 @@ class Cart
     #[ORM\JoinColumn(nullable: true)]
     private ?Order $order = null;
     
-
     public function getId(): ?int
     {
         return $this->id;
@@ -78,14 +79,6 @@ class Cart
 
     public function setUser(?User $user): static
     {
-        if ($user === null && $this->user !== null) {
-            $this->user->setCart(null);
-        }
-
-        if ($user !== null && $user->getCart() !== $this) {
-            $user->setCart($this);
-        }
-
         $this->user = $user;
         return $this;
     }
