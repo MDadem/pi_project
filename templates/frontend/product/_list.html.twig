@@ -1,0 +1,88 @@
+{# templates/frontend/product/_list.html.twig #}
+<div id="product-list-container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Featured <b>Products</b></h2>
+            <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="0">
+                {% set groups = products|batch(4) %}
+                <!-- Carousel indicators -->
+                <ol class="carousel-indicators">
+                    {% for group in groups %}
+                        <li data-target="#myCarousel" data-slide-to="{{ loop.index0 }}" class="{{ loop.first ? 'active' : '' }}"></li>
+                    {% endfor %}
+                </ol>
+                <!-- Wrapper for carousel items -->
+                <div class="carousel-inner">
+                    {% for productGroup in groups %}
+                        <div class="item carousel-item {{ loop.first ? 'active' : '' }}">
+                            <div class="row g-4">
+                                {% for product in productGroup %}
+                                    <div class="col-sm-3">
+                                        <div class="thumb-wrapper wow fadeInUp" data-wow-delay="{{ loop.index0 * 0.1 }}s">
+                                            <div class="img-box">
+                                                <img src="{{ product.imageUrl }}" class="img-fluid" alt="{{ product.productName }}">
+                                            </div>
+                                            <div class="thumb-content">
+                                                <h4>{{ product.productName }}</h4>
+                                                <p>{{ product.productDescription }}</p>
+                                                <p>{{ product.productCategory.name }}</p>
+                                                <span class="stock-status {{ product.productStock > 0 ? 'in-stock' : 'out-of-stock' }}">
+                                                    {{ product.productStock > 0 ? 'In Stock' : 'Out of Stock' }}
+                                                </span>
+                                                <p class="vote-score">Score: {{ product.voteScore }}</p>
+                                                {% if product.useDynamicPricing %}
+                                                    <p class="item-price">
+                                                        <b>${{ product.dynamicPrice|number_format(2) }}</b>
+                                                        <span class="text-muted">(Dynamic Pricing)</span>
+                                                    </p>
+                                                {% elseif product.discount and product.discount > 0 %}
+                                                    <p class="item-price">
+                                                        <span style="text-decoration: line-through;">${{ product.productPrice }}</span>
+                                                        <span style="color: #ff4b2b; font-weight: bold;">${{ (product.dynamicPrice * (1 - product.discount / 100))|number_format(2) }}</span>
+                                                        <span>({{ product.discount }}% off)</span>
+                                                    </p>
+                                                {% else %}
+                                                    <p class="item-price">
+                                                        <b>${{ product.dynamicPrice|number_format(2) }}</b>
+                                                    </p>
+                                                {% endif %}
+                                                <div class="button-group">
+                                                    <a href="{{ path('product_edit', {id: product.id}) }}" class="btn btn-edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form action="{{ path('product_delete', {id: product.id}) }}" method="post" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                                                        <button class="btn btn-delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form action="{{ path('product_vote', {id: product.id, type: 'up'}) }}" method="post" style="display:inline-block;">
+                                                        <button type="submit" class="btn btn-vote-up">
+                                                            <i class="fas fa-thumbs-up"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form action="{{ path('product_vote', {id: product.id, type: 'down'}) }}" method="post" style="display:inline-block;">
+                                                        <button type="submit" class="btn btn-vote-down">
+                                                            <i class="fas fa-thumbs-down"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <!-- Carousel controls -->
+                <a class="carousel-control-prev" href="#myCarousel" data-slide="prev">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                <a class="carousel-control-next" href="#myCarousel" data-slide="next">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

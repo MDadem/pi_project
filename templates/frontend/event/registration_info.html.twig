@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Registration Information{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>{{ event.title }}</h1>
+    <p>{{ event.eventDescription }}</p>
+    <p>Date: {{ event.eventDate|date('F d, Y H:i') }}</p>
+    <p>Location: {{ event.eventLocation }}</p>
+    <p>Available Places: {{ event.numberOfPlaces }}</p>
+    <h3>Registration Details</h3>
+    <p><strong>Name:</strong> {{ user.firstName }} {{ user.lastName }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Ticket Number:</strong> {{ registration.ticketNumber }}</p>
+    <a href="{{ path('app_event_list') }}" class="btn btn-secondary">Back to Events</a>
+</div>
+{% endblock %}

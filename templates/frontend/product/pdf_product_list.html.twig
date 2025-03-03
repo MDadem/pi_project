@@ -1,0 +1,61 @@
+{# templates/frontend/product/pdf_product_list.html.twig #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>CultureSpace - Product List PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10mm;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .product-item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            page-break-inside: avoid;
+        }
+        .product-item h2 {
+            font-size: 18px;
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        .product-item p {
+            margin: 3px 0;
+            font-size: 14px;
+            color: #34495e;
+        }
+        .product-item img {
+            max-width: 100px; /* Adjust size as needed */
+            max-height: 100px;
+            display: block;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product List</h1>
+    {% for product in products %}
+        <div class="product-item">
+            <h2>{{ product.productName }}</h2>
+            {% if product.imageUrl %}
+                <img src="{{ absolute_url(product.imageUrl) }}" alt="{{ product.productName }}">
+            {% endif %}
+            <p>Description: {{ product.productDescription }}</p>
+            <p>Category: {{ product.productCategory.name }}</p>
+            <p>Stock: {{ product.productStock > 0 ? 'In Stock' : 'Out of Stock' }}</p>
+            {% if product.discount %}
+                <p>Price: <span style="text-decoration: line-through;">${{ product.productPrice }}</span> ${{ (product.dynamicPrice * (1 - product.discount / 100))|number_format(2) }}</p>
+            {% else %}
+                <p>Price: ${{ product.dynamicPrice|number_format(2) }}</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+</body>
+</html>

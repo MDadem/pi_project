@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 
+
+
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum\Role;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -12,6 +14,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -73,12 +77,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'user')]
     private Collection $posts;
 
+
+//    /**
+//     * @var Collection<int, EventRegistration>
+//     */
+//    #[ORM\OneToMany(mappedBy: 'user', targetEntity: EventRegistration::class)]
+//    private Collection $eventRegistrations;
+
+
     public function __construct()
     {
+        $this->roles = [];
         $this->communityMembers = new ArrayCollection();
         $this->joinRequests = new ArrayCollection();
         $this->posts = new ArrayCollection();
+
         $this->postComments = new ArrayCollection();
+
+        $this->eventRegistrations = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -294,6 +311,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+
     /**
      * @return Collection<int, PostComment>
      */
@@ -325,5 +343,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
     
 
+    /**
+     * @return Collection<int, EventRegistration>
+     */
+    public function getEventRegistrations(): Collection
+    {
+        return $this->eventRegistrations;
+    }
 
+    public function addEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if (!$this->eventRegistrations->contains($eventRegistration)) {
+            $this->eventRegistrations->add($eventRegistration);
+            $eventRegistration->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if ($this->eventRegistrations->removeElement($eventRegistration)) {
+            // set the owning side to null (unless already changed)
+            if ($eventRegistration->getUser() === $this) {
+                $eventRegistration->setUser(null);
+            }
+        }
+
+        return $this;
+    }
 }

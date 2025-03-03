@@ -1,8 +1,32 @@
 controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
+    resource: ../src/Controller/
     type: attribute
+
+# Frontend routes
+frontend_controllers:
+    resource: 
+        path: ../src/Controller/Frontend
+        namespace: App\Controller\Frontend
+    type: attribute
+
+# Backend routes
+backend_controllers:
+    resource: 
+        path: ../src/Controller/Backend
+        namespace: App\Controller\Backend
+    type: attribute
+
+# Event registration routes
+app_event_register:
+    path: /events/register/{id}
+    controller: App\Controller\Frontend\EventRegistrationController::register
+    methods: [POST]
+
+app_event_download_ticket:
+    path: /events/ticket/{id}
+    controller: App\Controller\Frontend\EventRegistrationController::downloadTicket
+    methods: [GET]
+
 # Define the login route
 app_dashboard_signin:
     path: /dashboard/signin
