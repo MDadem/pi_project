@@ -3,11 +3,14 @@
 namespace App\Entity;
 
 use App\Repository\EventRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Category;
+use App\Entity\EventRegistration;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 class Event
@@ -51,9 +54,17 @@ class Event
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageFilename = null;
 
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: EventRegistration::class)]
+    private Collection $eventRegistrations;
+
     public const STATUS_ACTIVE = 'active';
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_COMPLETED = 'completed';
+
+    public function __construct()
+    {
+        $this->eventRegistrations = new ArrayCollection();
+    }
 
     public static function getStatusChoices(): array
     {
@@ -158,5 +169,48 @@ class Event
     {
         $this->imageFilename = $imageFilename;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, EventRegistration>
+     */
+    public function getEventRegistrations(): Collection
+    {
+        return $this->eventRegistrations;
+    }
+
+    public function addEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if (!$this->eventRegistrations->contains($eventRegistration)) {
+            $this->eventRegistrations->add($eventRegistration);
+            $eventRegistration->setEvent($this);
+            $this->decrementPlaces(); // Decrease available places
+        }
+
+        return $this;
+    }
+
+    public function removeEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if ($this->eventRegistrations->removeElement($eventRegistration)) {
+            if ($eventRegistration->getEvent() === $this) {
+                $eventRegistration->setEvent(null);
+            }
+            $this->numberOfPlaces++; // Increase available places
+        }
+
+        return $this;
+    }
+
+    public function hasAvailablePlaces(): bool
+    {
+        return $this->numberOfPlaces > 0;
+    }
+
+    public function decrementPlaces(): void
+    {
+        if ($this->hasAvailablePlaces()) {
+            $this->numberOfPlaces--;
+        }
     }
 }
