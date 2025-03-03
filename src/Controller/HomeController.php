@@ -7,18 +7,33 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Event;
-
+use App\Repository\CommunityRepository;
 
 final class HomeController extends AbstractController{
 
     #[Route('/home', name: 'app_home')]
 
-    public function index(): Response
+    public function index(CommunityRepository $communityRepository): Response
     {
+        $communty = $communityRepository->findAll();
+
         return $this->render('frontend/home/base.html.twig', [
-            'controller_name' => 'HomeController',
+            'community' => $communty,
         ]);
     }
+
+
+    #[Route('/home/blog', name: 'app_home_community')]
+
+    public function getCommunity(CommunityRepository $communityRepository): Response
+
+    {
+        $communty = $communityRepository->findAll();
+        dump($communty).die();
+        return $this->render('frontend/blog/blog.html.twig', [
+            'community' => $communty,
+        ]);
+    } 
 
 
     #[Route('/auth', name: 'app_auth')]
