@@ -1,0 +1,21 @@
+# config/packages/knp_snappy.yaml
+knp_snappy:
+    pdf:
+        enabled: true
+        binary: "C:\\PROGRA~1\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+        options:
+            disable-javascript: true            # Disable JS to avoid delays
+            no-stop-slow-scripts: false         # Stop slow scripts to prevent hangs
+            disable-smart-shrinking: false      # Enable smart shrinking for faster rendering
+            enable-local-file-access: true      # Required for local images
+            no-images: false                    # Changed to false to allow images
+            dpi: 72                             # Lower DPI for faster rendering
+            zoom: 1                             # Default zoom
+            grayscale: false                    # Keep colors for images
+            page-size: 'A4'                     # Standard page size
+            margin-top: '10mm'                  # Basic margins
+            margin-bottom: '10mm'
+            margin-left: '10mm'
+            margin-right: '10mm'
+    image:
+        enabled: false

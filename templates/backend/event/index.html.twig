@@ -1,0 +1,198 @@
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Events List{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('img/favicon.ico') }}" rel="icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/bootstrap-backoffice.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/backoffice-style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid position-relative bg-white d-flex p-0">
+        <!-- Spinner Start -->
+        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <!-- Spinner End -->
+
+        {% include 'backend/sidebar/sidebar.html.twig' %}
+
+        <div class="content">
+            {% include 'backend/navbar/navbar.html.twig' %}
+
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="bg-light rounded h-100 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2 class="mb-0">Liste des Événements</h2>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#filterSection">
+                                        <i class="fas fa-filter me-2"></i>Filtres
+                                    </button>
+                                    <a href="{{ path('app_dashboard_event_new') }}" class="btn btn-success">
+                                        <i class="fas fa-plus me-2"></i>Ajouter un Événement
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Filter Section -->
+                            <div class="collapse mb-4" id="filterSection">
+                                <div class="card card-body">
+                                    <form id="eventFilterForm" class="row g-3">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" id="searchQuery" name="search" placeholder="Rechercher..." value="{{ currentSearch }}">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select" id="categoryFilter" name="category">
+                                                <option value="">Toutes les catégories</option>
+                                                {% for category in categories %}
+                                                    <option value="{{ category.id }}" {% if currentCategory == category.id %}selected{% endif %}>
+                                                        {{ category.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select" id="statusFilter" name="status">
+                                                <option value="">Tous les statuts</option>
+                                                <option value="active" {% if currentStatus == 'active' %}selected{% endif %}>Actif</option>
+                                                <option value="cancelled" {% if currentStatus == 'cancelled' %}selected{% endif %}>Annulé</option>
+                                                <option value="completed" {% if currentStatus == 'completed' %}selected{% endif %}>Terminé</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="date" class="form-control" id="dateFrom" name="dateFrom" placeholder="Date début" value="{{ currentDateFrom }}">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="date" class="form-control" id="dateTo" name="dateTo" placeholder="Date fin" value="{{ currentDateTo }}">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Titre</th>
+                                            <th>Description</th>
+                                            <th>Date</th>
+                                            <th>Lieu</th>
+                                            <th>Places</th>
+                                            <th>Catégorie</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="eventsTableBody">
+                                        {% for event in events %}
+                                            <tr>
+                                                <td>{{ event.id }}</td>
+                                                <td>{{ event.title }}</td>
+                                                <td>{{ event.eventDescription|length > 50 ? event.eventDescription|slice(0, 50) ~ '...' : event.eventDescription }}</td>
+                                                <td>{{ event.eventDate ? event.eventDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                                <td>{{ event.eventLocation }}</td>
+                                                <td>{{ event.numberOfPlaces }}</td>
+                                                <td>{{ event.category.name }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ event.status == 'active' ? 'success' : (event.status == 'cancelled' ? 'danger' : 'secondary') }}">
+                                                        {{ event.status|capitalize }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{{ path('app_dashboard_event_edit', {'id': event.id}) }}" class="btn btn-warning btn-sm">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <form action="{{ path('app_dashboard_event_delete', {'id': event.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="9" class="text-center">
+                                                    <div class="p-4">
+                                                        <p class="mb-3">Aucun événement trouvé.</p>
+                                                        <a href="{{ path('app_dashboard_event_new') }}" class="btn btn-primary">
+                                                            <i class="fas fa-plus me-2"></i>Créer un événement
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include 'backend/footer/footer.html.twig' %}
+        </div>
+
+        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('lib/chart/chart.min.js') }}"></script>
+    <script src="{{ asset('lib/easing/easing.min.js') }}"></script>
+    <script src="{{ asset('lib/waypoints/waypoints.min.js') }}"></script>
+    <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
+    <script src="{{ asset('lib/tempusdominus/js/moment.min.js') }}"></script>
+    <script src="{{ asset('lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
+    <script src="{{ asset('lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+
+    <!-- AJAX Filter Script -->
+    <script>
+        $(document).ready(function() {
+            function updateEvents() {
+                $.ajax({
+                    url: '{{ path("app_dashboard_events") }}',
+                    data: $('#eventFilterForm').serialize(),
+                    method: 'GET',
+                    success: function(response) {
+                        $('#eventsTableBody').html($(response).find('#eventsTableBody').html());
+                    }
+                });
+            }
+
+            // Debounce function
+            function debounce(func, wait) {
+                let timeout;
+                return function() {
+                    const context = this;
+                    const args = arguments;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), wait);
+                };
+            }
+
+            // Add event listeners with debounce
+            $('#searchQuery, #categoryFilter, #statusFilter').on('input change', debounce(updateEvents, 300));
+            $('#dateFrom, #dateTo').on('change', updateEvents);
+        });
+    </script>
+{% endblock %}

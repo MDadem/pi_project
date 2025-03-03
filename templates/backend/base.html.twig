@@ -3,14 +3,14 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}Dashboard{% endblock %}</title>
+    <title>{% block title %}CultureSpace{% endblock %}</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
 
     {% block stylesheets %}
         <!-- Favicon -->
-        <link href="{{ asset('img/favicon.ico') }}" rel="icon">
+        <link href="{{ asset('img/logo3.png') }}" rel="icon">
 
         <!-- Google Web Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,6 +49,7 @@
         <script src="{{ asset('lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
 
         <!-- Template Javascript -->
+        <script src="{{ asset('js/main.js') }}"></script>
         <script src="{{ asset('js/backoffice-main.js') }}"></script>
     {% endblock %}
 </body>

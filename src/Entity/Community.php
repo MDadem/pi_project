@@ -128,7 +128,23 @@ class Community
 
         return $this;
     }
-
+    public function addMember(User $user): static
+    {
+        foreach ($this->communityMembers as $member) {
+            if ($member->getUser() === $user) {
+                return $this; // L'utilisateur est déjà membre
+            }
+        }
+    
+        $communityMember = new CommunityMembers();
+        $communityMember->setUser($user);
+        $communityMember->setCommunity($this);
+        
+        $this->communityMembers->add($communityMember);
+    
+        return $this;
+    }
+    
     public function removeCommunityMember(CommunityMembers $communityMember): static
     {
         if ($this->communityMembers->removeElement($communityMember)) {

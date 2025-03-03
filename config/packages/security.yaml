@@ -1,77 +1,44 @@
 
-#security:
-#    password_hashers:
-#        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-#
-#    providers:
-#        app_user_provider:
-#            entity:
-#                class: App\Entity\User
-#                property: email
-#
-#    firewalls:
-#        dev:
-#            pattern: ^/(_(profiler|wdt)|css|images|js)/
-#            security: false
-#
-#        main:
-#            lazy: true
-#            provider: app_user_provider
-#            entry_point: App\Security\LoginFormAuthenticator
-#            custom_authenticators:
-#                - App\Security\LoginFormAuthenticator
-#                - App\Security\UserLoginFormAuthenticator
-#            logout:
-#                path: app_logout
-#                target: app_dashboard_signin
-#
-#
-#    access_control:
-#        - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
-#        - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
-#
-#        - { path: ^/dashboard, roles: ROLE_ADMIN }
-
-
-
 
 security:
-    password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+  password_hashers:
+    Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-    providers:
-        app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
+  providers:
+    app_user_provider:
+      entity:
+        class: App\Entity\User
+        property: email
 
-    firewalls:
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
 
-        main:
-            lazy: true
-            provider: app_user_provider
-            entry_point: App\Security\UserLoginFormAuthenticator
-            custom_authenticators:
-                - App\Security\UserLoginFormAuthenticator  # User authentication
-                - App\Security\LoginFormAuthenticator
-            logout:
-                path: app_logout
-                target: app_home  # Redirect users to homepage after logout
-#
-#        admin:
-#            lazy: true
-#            provider: app_user_provider
-##            entry_point: App\Security\LoginFormAuthenticator
-#            custom_authenticators:
-#                - App\Security\LoginFormAuthenticator
-#            logout:
-#                path: app_logout
-#                target: app_dashboard_signin  # Redirect admins to dashboard login after logout
+    main:
+      lazy: true
+      provider: app_user_provider
+      entry_point: App\Security\UserLoginFormAuthenticator
+      custom_authenticators:
+        - App\Security\UserLoginFormAuthenticator  # User authentication
+        - App\Security\LoginFormAuthenticator  # User authentication
 
-    access_control:
-        - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
-        - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
-        - { path: ^/dashboard, roles: ROLE_ADMIN }
+      form_login:
+        login_path: home_signin  # Your existing login route
+        check_path: home_signin  # Where the login form submits
+        default_target_path: app_2fa_verify  # Redirect to 2FA after successful login
+        enable_csrf: true
+      logout:
+        path: app_logout
+        target: app_home  # Redirect users to homepage after logout
+
+
+  access_control:
+
+    - { path: ^/dashboard/signin, roles: PUBLIC_ACCESS }
+    - { path: ^/dashboard/signup, roles: PUBLIC_ACCESS }
+    - { path: ^/dashboard, roles: ROLE_ADMIN }
+    #new changes
+    - { path: ^/2fa/verify, roles: IS_AUTHENTICATED }
+    - { path: ^/2fa/resend, roles: IS_AUTHENTICATED }
+    - { path: ^/2fa/confirm, roles: IS_AUTHENTICATED }
