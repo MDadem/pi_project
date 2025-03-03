@@ -32,6 +32,7 @@ class ProductController extends AbstractController
 
                 $adjustedPrice = $basePrice;
 
+                // Stock-based adjustment
                 $idealStock = 30;
                 $stockDelta = $stock - $idealStock;
                 if ($stockDelta > 0) {
@@ -41,6 +42,7 @@ class ProductController extends AbstractController
                 }
                 $adjustedPrice *= max(0.5, min(1.5, $stockMultiplier));
 
+                // Discount-based adjustment
                 if ($discount > 30) {
                     $adjustedPrice *= 0.90;
                 } elseif ($discount > 20) {
@@ -49,6 +51,7 @@ class ProductController extends AbstractController
                     $adjustedPrice *= 0.98;
                 }
 
+                // Age-based adjustment
                 $ageInDays = (new \DateTime())->diff($createdAt)->days;
                 if ($ageInDays > 30) {
                     $daysOver = $ageInDays - 30;
@@ -56,15 +59,17 @@ class ProductController extends AbstractController
                     $adjustedPrice *= (1 - $ageDiscount);
                 }
 
+                // Category-based adjustment
                 $categoryMultipliers = [
                     'Premium' => 1.10,
                     'Budget' => 0.95,
-                    'Seasonal' => (date('m') >= 6 && date('m') <= 8) ? 1.05 : 0.95,
+                    'Seasonal' => (date('m') >= 6 && date('m') <= 8) ? 1.05 : 0.95 // Fixed syntax
                 ];
                 if (isset($categoryMultipliers[$category])) {
                     $adjustedPrice *= $categoryMultipliers[$category];
                 }
 
+                // Price boundaries
                 $minPrice = $basePrice * 0.5;
                 $maxPrice = $basePrice * 1.5;
                 $adjustedPrice = max($minPrice, min($maxPrice, $adjustedPrice));
@@ -83,10 +88,7 @@ class ProductController extends AbstractController
     {
         $user = $this->getUser();
         if (!$user) {
-            $user = $entityManager->getRepository(User::class)->find(1);
-            if (!$user) {
-                throw new \Exception("Test user not found. Please insert a test user.");
-            }
+            throw $this->createAccessDeniedException('You must be logged in to create a product.');
         }
 
         $product = new Product();
@@ -151,50 +153,35 @@ class ProductController extends AbstractController
         $priceMin = ($priceMin !== null && $priceMin !== '') ? (float)$priceMin : null;
         $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
 
-        // Fetch products without initial sorting
         $products = $entityManager->getRepository(Product::class)
             ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
 
         $products = $this->applyDynamicPricing($products);
 
-        // Custom sorting: Upvotes first (by voteScore DESC), then discounts (by discount DESC), then the rest
         usort($products, function ($a, $b) {
             $aVotes = $a->getVoteScore();
             $bVotes = $b->getVoteScore();
             $aDiscount = $a->getDiscount() ?? 0;
             $bDiscount = $b->getDiscount() ?? 0;
 
-            // Both have votes: sort by voteScore DESC
             if ($aVotes > 0 && $bVotes > 0) {
                 return $bVotes <=> $aVotes;
             }
-
-            // A has votes, B doesn’t: A comes first
             if ($aVotes > 0 && $bVotes == 0) {
                 return -1;
             }
-
-            // B has votes, A doesn’t: B comes first
             if ($bVotes > 0 && $aVotes == 0) {
                 return 1;
             }
-
-            // Neither has votes, both have discounts: sort by discount DESC
             if ($aVotes == 0 && $bVotes == 0 && $aDiscount > 0 && $bDiscount > 0) {
                 return $bDiscount <=> $aDiscount;
             }
-
-            // A has discount, B doesn’t: A comes first
             if ($aVotes == 0 && $bVotes == 0 && $aDiscount > 0 && $bDiscount == 0) {
                 return -1;
             }
-
-            // B has discount, A doesn’t: B comes first
             if ($aVotes == 0 && $bVotes == 0 && $bDiscount > 0 && $aDiscount == 0) {
                 return 1;
             }
-
-            // Neither has votes nor discounts: maintain original order
             return 0;
         });
 
@@ -282,9 +269,36 @@ class ProductController extends AbstractController
         $priceMax = ($priceMax !== null && $priceMax !== '') ? (float)$priceMax : null;
 
         $products = $entityManager->getRepository(Product::class)
-            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter, 'voteScore', 'DESC');
+            ->searchProducts($name, $dateFrom, $dateTo, $category, $priceMin, $priceMax, $availability, $discountFilter);
 
         $products = $this->applyDynamicPricing($products);
+
+        usort($products, function ($a, $b) {
+            $aVotes = $a->getVoteScore();
+            $bVotes = $b->getVoteScore();
+            $aDiscount = $a->getDiscount() ?? 0;
+            $bDiscount = $b->getDiscount() ?? 0;
+
+            if ($aVotes > 0 && $bVotes > 0) {
+                return $bVotes <=> $aVotes;
+            }
+            if ($aVotes > 0 && $bVotes == 0) {
+                return -1;
+            }
+            if ($bVotes > 0 && $aVotes == 0) {
+                return 1;
+            }
+            if ($aVotes == 0 && $bVotes == 0 && $aDiscount > 0 && $bDiscount > 0) {
+                return $bDiscount <=> $aDiscount;
+            }
+            if ($aVotes == 0 && $bVotes == 0 && $aDiscount > 0 && $bDiscount == 0) {
+                return -1;
+            }
+            if ($aVotes == 0 && $bVotes == 0 && $bDiscount > 0 && $aDiscount == 0) {
+                return 1;
+            }
+            return 0;
+        });
 
         $categories = $entityManager->getRepository(ProductCategory::class)->findAll();
 
@@ -311,10 +325,7 @@ class ProductController extends AbstractController
     {
         $user = $this->getUser();
         if (!$user) {
-            $user = $entityManager->getRepository(User::class)->find(1);
-            if (!$user) {
-                throw new \Exception("Test user not found. Please insert a test user.");
-            }
+            throw $this->createAccessDeniedException('You must be logged in to vote.');
         }
 
         $voteValue = ($type === 'up') ? 1 : -1;
