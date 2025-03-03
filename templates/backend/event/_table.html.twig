@@ -1,0 +1,51 @@
+<tbody id="eventsTableBody">
+    {% for event in events %}
+        <tr>
+            <td>{{ event.id }}</td>
+            <td>{{ event.title }}</td>
+            <td>{{ event.eventDescription|length > 50 ? event.eventDescription|slice(0, 50) ~ '...' : event.eventDescription }}</td>
+            <td>{{ event.eventDate ? event.eventDate|date('d/m/Y H:i') : 'N/A' }}</td>
+            <td>{{ event.eventLocation }}</td>
+            <td>{{ event.numberOfPlaces }}</td>
+            <td>{{ event.category.name }}</td>
+            <td>
+                <span class="badge bg-{{ event.status == 'active' ? 'success' : (event.status == 'cancelled' ? 'danger' : 'secondary') }}">
+                    {{ event.status|capitalize }}
+                </span>
+            </td>
+            <td>
+                <div class="btn-group" role="group">
+                    <a href="{{ path('app_dashboard_event_edit', {'id': event.id}) }}" 
+                       class="btn btn-warning btn-sm" 
+                       data-bs-toggle="tooltip" 
+                       title="Modifier">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <form action="{{ path('app_dashboard_event_delete', {'id': event.id}) }}" 
+                          method="post" 
+                          class="d-inline" 
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                        <button type="submit" 
+                                class="btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" 
+                                title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="9" class="text-center">
+                <div class="p-4">
+                    <p class="mb-3">Aucun événement trouvé.</p>
+                    <a href="{{ path('app_dashboard_event_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Créer un événement
+                    </a>
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+</tbody>

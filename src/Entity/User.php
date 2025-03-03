@@ -7,6 +7,7 @@ use App\Repository\UserRepository;
 
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Cart;
 use App\Enum\Role;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -78,12 +79,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $posts;
 
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+private ?Cart $cart = null;
+
+
+
+
     public function __construct()
     {
+        $this->roles = [];
         $this->communityMembers = new ArrayCollection();
         $this->joinRequests = new ArrayCollection();
         $this->posts = new ArrayCollection();
+
         $this->postComments = new ArrayCollection();
+
+        $this->eventRegistrations = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -331,5 +343,57 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
     
 
+    /**
+     * @return Collection<int, EventRegistration>
+     */
+    public function getEventRegistrations(): Collection
+    {
+        return $this->eventRegistrations;
+    }
+
+    public function addEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if (!$this->eventRegistrations->contains($eventRegistration)) {
+            $this->eventRegistrations->add($eventRegistration);
+            $eventRegistration->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventRegistration(EventRegistration $eventRegistration): static
+    {
+        if ($this->eventRegistrations->removeElement($eventRegistration)) {
+            // set the owning side to null (unless already changed)
+            if ($eventRegistration->getUser() === $this) {
+                $eventRegistration->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+
+
+    public function getCart(): ?Cart
+{
+    return $this->cart;
+}
+
+public function setCart(?Cart $cart): static
+{
+    if ($cart === null && $this->cart !== null) {
+        $this->cart->setUser(null);
+    }
+
+    if ($cart !== null && $cart->getUser() !== $this) {
+        $cart->setUser($this);
+    }
+
+    $this->cart = $cart;
+
+    return $this; 
+}
 
 }
+
+

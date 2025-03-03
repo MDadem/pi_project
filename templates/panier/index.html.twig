@@ -2,6 +2,33 @@
 
 {% block title %}Panier{% endblock %}
 
+{% block stylesheets %}
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link rel="stylesheet" href="{{ asset('lib/animate/animate.min.css') }}"/>
+    <link href="{{ asset('lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+    {% include 'frontend/topbar/topbar.html.twig' %}
+    {% include 'frontend/navbar/navbar.html.twig' %}
+{% endblock %}
+
 {% block body %}
 <h1 class="my-4">Panier</h1>
 
@@ -20,8 +47,8 @@
         <tbody>
             {% for item in cartItems %}
                 <tr>
-                    <td>{{ item.product.getNom() }}</td>
-                    <td>{{ item.product.getPrix() }} TND</td>
+                    <td>{{ item.product.getProductName() }}</td>
+                    <td>{{ item.product.getProductPrice() }} TND</td>
                     <td>
                         <form action="{{ path('panier_update', {'id': item.id}) }}" method="GET" class="d-flex">
                             <input type="number" name="quantity" value="{{ item.getProductQuantity() }}" min="1" class="form-control me-2" style="max-width: 80px;">
@@ -69,8 +96,11 @@
 
 <div class="d-flex justify-content-between mt-4">
     <a href="{{ path('product_list') }}" class="btn btn-outline-secondary">Continuer vos achats</a>
-    <a href="{{ path('order_validate') }}" class="btn btn-success">Valider ma commande</a>
+    <a href="{{ path('order_validate') }}" class="btn btn-success">Payer et Valider ma commande</a>
     <a href="{{ path('panier_clear') }}" class="btn btn-danger">Vider le panier</a>
 </div>
+{% endblock %}
 
+{% block footer %}
+    {% include 'frontend/footer/footer.html.twig' %}
 {% endblock %}

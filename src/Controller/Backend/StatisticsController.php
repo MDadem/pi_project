@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Backend;
 
 use App\Entity\Event;
 use App\Entity\Category;
@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[Route('/dashboard')]
 class StatisticsController extends AbstractController
 {
     #[Route('/statistics', name: 'app_dashboard_statistics')]
@@ -47,7 +48,7 @@ class StatisticsController extends AbstractController
     public function charts(EntityManagerInterface $entityManager): Response
     {
         $eventRepo = $entityManager->getRepository(Event::class);
-        
+
         // Get events with their dates
         $events = $eventRepo->createQueryBuilder('e')
             ->select('e.eventDate')

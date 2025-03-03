@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de commande</title>
+</head>
+<body>
+    <h2>Bonjour {{ user.firstName }} {{ user.lastName }},</h2>
+    <p>Votre commande #{{ order.id }} a bien été enregistrée.</p>
+    <p>Montant total : <strong>{{ order.totalPrice }} TND</strong></p>
+
+    <h3>Détails de votre commande :</h3>
+    <table border="1" cellspacing="0" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix Unitaire</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cartItems %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price }} TND</td>
+                    <td>{{ item.total }} TND</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>Merci pour votre confiance.</p>
+    <p>L'équipe de CultureSpace</p>
+</body>
+</html>
