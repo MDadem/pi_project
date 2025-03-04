@@ -39,4 +39,4 @@
 1. **Clone the Repository**:
    ```bash
    git@github.com:MDadem/pi_project.git
-   cd culturespace
+   cd pi_project
