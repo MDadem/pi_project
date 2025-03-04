@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\File\File;
 
 final class HomeController extends AbstractController{
 
-    #[Route('/home', name: 'app_home')]
+    #[Route('/', name: 'app_home_load')]
 
     public function index(CommunityRepository $communityRepository): Response
     {
@@ -29,19 +29,28 @@ final class HomeController extends AbstractController{
             'community' => $communty,
         ]);
     }
+    #[Route('/home', name: 'app_home')]
 
-
-    #[Route('/home/blog', name: 'app_home_community')]
-
-    public function getCommunity(CommunityRepository $communityRepository): Response
-
+    public function home(CommunityRepository $communityRepository): Response
     {
         $communty = $communityRepository->findAll();
-        dump($communty).die();
-        return $this->render('frontend/blog/blog.html.twig', [
+
+        return $this->render('frontend/home/base.html.twig', [
             'community' => $communty,
         ]);
-    } 
+    }
+
+//    #[Route('/home/blog', name: 'app_home_community')]
+//
+//    public function getCommunity(CommunityRepository $communityRepository): Response
+//
+//    {
+//        $communty = $communityRepository->findAll();
+//        dump($communty).die();
+//        return $this->render('frontend/blog/blog.html.twig', [
+//            'community' => $communty,
+//        ]);
+//    }
 
 
     #[Route('/auth', name: 'app_auth')]
