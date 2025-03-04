@@ -38,5 +38,5 @@
 ## Installation
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/culturespace.git
+   git@github.com:MDadem/pi_project.git
    cd culturespace
