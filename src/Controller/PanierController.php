@@ -150,7 +150,7 @@ class PanierController extends AbstractController
 
     if (!$user) {
         $this->addFlash('error', 'Vous devez être connecté pour valider une commande.');
-        return $this->redirectToRoute('app_login');
+        return $this->redirectToRoute('app_home');
     }
 
     if (!$user instanceof User) {
